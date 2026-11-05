@@ -576,7 +576,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     return;
   }
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.type = THREE.PCFShadowMap;   // 比 Soft 輕，手機比較不會卡
 
   var C = {};
   function readColors() {
@@ -1603,12 +1603,13 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
   }
 
   var cw = 0, ch = 0;
+  var QUAL = 1.5;
   function fit() {
     var r = cv.getBoundingClientRect();
     var w = Math.max(200, Math.round(r.width)), h = Math.max(150, Math.round(r.height));
     if (w === cw && h === ch) return;
     cw = w; ch = h;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, QUAL));
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
@@ -3134,7 +3135,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     });
   })();
 
-  var last = performance.now(), frame = 0;
+  var last = performance.now(), frame = 0, hudAt = 0, perfN = 0, perfSum = 0, perfLv = 0;
   function loop(now) {
     var dt = Math.min(0.05, (now - last) / 1000);
     last = now;
@@ -3144,8 +3145,18 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     cdFrame();
     netTick(now);
     if ((frame++ % 30) === 0) { readColors(); applyTheme(); }
+    // 自動降畫質：連續變慢（手機發燙、效能不夠）就先降解析度，再關陰影，避免越玩越卡
+    perfN++; perfSum += Math.min(100, now - (loop.prev || now)); loop.prev = now;
+    if (perfN >= 90) {
+      var avg = perfSum / perfN; perfN = 0; perfSum = 0;
+      if (avg > 28 && perfLv < 2) {
+        perfLv++;
+        if (perfLv === 1) { QUAL = 1; cw = 0; }                                  // 解析度降到 1 倍
+        else { sun.castShadow = false; renderer.shadowMap.autoUpdate = false; renderer.shadowMap.needsUpdate = true; }   // 關閉陰影
+      }
+    }
     render(dt);
-    hud();
+    if (now - hudAt > 90) { hudAt = now; hud(); }   // 畫面上的文字一秒更新約 10 次，不要每格都改，減少卡頓
     requestAnimationFrame(loop);
   }
   reset(true);
