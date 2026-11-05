@@ -976,11 +976,11 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     var t = e.target && e.target.closest ? e.target.closest('button,[role="button"],[role="switch"],.sw,.fb,label') : null;
     if (!t || t.disabled) return;
     if (performance.now() - (SND.lastTone || 0) < 80) return;
-    fx('key');
+    sfx('key');
   });
   function beep(n, f, d, gap, type, vol) { for (var i = 0; i < n; i++) tone(f, i * (d + gap), d, type, vol); }
   function vib(p) { if (SND.on && navigator.vibrate) { try { navigator.vibrate(p); } catch (e) {} } }
-  function fx(name, a) {
+  function sfx(name, a) {
     switch (name) {
       case 'speed': beep(a, 1800, 0.16, 0.16, 'square', 0.2); vib(Array.apply(null, Array(a)).reduce(function (r) { r.push(80, 80); return r; }, []).slice(0, -1)); break;            // 遙控器蜂鳴器：1聲慢速、2聲中速、3聲快速
       case 'unlock': beep(1, 2200, 0.12, 0); vib(40); break;
@@ -1202,7 +1202,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
   btnSnd.addEventListener('click', function () {
     SND.on = !SND.on; syncSnd();
     try { localStorage.setItem('drone-snd', SND.on ? '1' : '0'); } catch (e) {}
-    if (SND.on) fx('key');
+    if (SND.on) sfx('key');
   });
   syncSnd();
   $('btnReset').addEventListener('click', function () { CDAI = 0; reset(netOn()); });
@@ -1223,11 +1223,11 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
   }
   function setLed(n) { S.led = n; syncRc(); }
   function setHold(v) {
-    S.hold = v; syncRc(); fx('key');
+    S.hold = v; syncRc(); sfx('key');
     setMsg(v ? '定高模式：左搖桿往上推兩下起飛，放開搖桿會維持高度。' : '無定高模式：左搖桿先往下推，再往上推過中間起飛，沒有自動維持高度。搖桿推到約兩成半高度就能維持，放在中間會往下掉，要一直控制油門。');
   }
   function setUnlock(v) {
-    S.unlocked = v; syncRc(); fx(v ? 'unlock' : 'lock');
+    S.unlocked = v; syncRc(); sfx(v ? 'unlock' : 'lock');
     if (!v && S.mode !== 'landed' && S.mode !== 'fall') {
       S.mode = 'fall'; S.fallV = 0;
       setMsg('已上鎖，馬達立即停止，無人機掉下來了。');
@@ -1240,7 +1240,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     var now = performance.now();
     if (now - lastL < 450) {
       S.led = (S.led + 5) % 6;
-      S.headless = !S.headless; fx('key');
+      S.headless = !S.headless; sfx('key');
       setMsg(S.headless ? '<b>無頭模式開啟</b>：右搖桿的方向固定以選手面向的方向為準（朝對方球框），不管機頭轉到哪裡，往前推都是往對方球框飛。再連按兩下燈光鍵關閉。' : '<b>無頭模式關閉</b>：右搖桿的方向跟著機頭走。');
     } else {
       S.led = (S.led + 1) % 6;
@@ -1252,7 +1252,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     S.speedIdx = (S.speedIdx + 1) % 3;
     VMAX = SPEEDS[S.speedIdx];
     syncRc();
-    fx('speed', S.speedIdx + 1);
+    sfx('speed', S.speedIdx + 1);
   }
   swLock.addEventListener('click', function () { setUnlock(!S.unlocked); });
   swHold.addEventListener('click', function () { setHold(!S.hold); });
@@ -1356,9 +1356,12 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
   /* ---------- 撞擊：機身翻晃、整台打轉、護籠滾動、嚴重時失控掉高度 ---------- */
   // (nx, ny)：撞擊面朝向無人機的水平法向量；sp：撞上去的速度（公尺／秒）
   function impact(nx, ny, sp) {
-    if (sp < 0.3) return;
+    if (!(sp >= 0.3)) return;   // 小於 0.3 或不是數字都不算撞擊
     sp = Math.min(sp, 3);
-    fx('hit', sp);
+    // 貼著球框或牆壁一直推時，每一格都會判定撞擊：0.25 秒內只算一次，不然失控、後座力和飄移會一直疊加，球機就動不了
+    if (S.t - (S.lastImp || -9) < 0.25 && sp < 2) return;
+    S.lastImp = S.t;
+    sfx('hit', sp);
     if (S.mode !== 'landed') {
       // 後座力：被撞到會往反方向彈開，之後還會往各個方向（前後左右上下）飄一陣子
       S.vx += nx * sp * 0.55; S.vy += ny * sp * 0.55;
@@ -1376,6 +1379,12 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
 
   /* ---------- 物理 ---------- */
   function update(dt) {
+    // 保險：任何數值變成 NaN（非數字）球機就會永遠不動，發現時立刻歸零
+    var bad = false, fk = ['x', 'y', 'z', 'vx', 'vy', 'vz', 'yaw', 'kx', 'kz', 'kxv', 'kzv', 'spinY', 'drx', 'dry', 'drz', 'tiltX', 'tiltZ', 'stun', 'dropT'];
+    for (var fi = 0; fi < fk.length; fi++) {
+      if (!isFinite(S[fk[fi]])) { bad = true; S[fk[fi]] = 0; }
+    }
+    if (bad) { placeTeam(); S.z = Math.max(0, S.z); S.vx = S.vy = S.vz = 0; }
     S.t += dt;
     teamLockFrame();
     var flying = S.mode !== 'landed';
@@ -1558,7 +1567,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
             } else if (S.armed) {
               addGoal(S.team);
               S.armed = false;
-              S.pulse = 1; fx('goal');
+              S.pulse = 1; sfx('goal');
               setMsg('<b>得分！</b>目前 ' + S.scores[S.team] + ' 分。要<b>全隊</b>都回到中線才能再次得分。');
             } else {
               setMsg('還不能得分，要等<b>全隊</b>都回到中線才能再次得分。');
@@ -1873,7 +1882,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     if (S.t - (NET.hbT || -9) < 2) return;
     NET.hbT = S.t;
     if (netOn() && MS.ph === 'play') {
-      addFoul(S.team); fx('foul');
+      addFoul(S.team); sfx('foul');
       setMsg('<b>犯規！</b>攻擊手撞到你時，防守者的中心在我方球框中心，已記錄<b>' + teamName(S.team) + '</b>犯規 ' + S.fouls[S.team] + ' 次，賽後由裁判判定。');
     } else {
       setMsg('<b>犯規動作</b>：攻擊手撞到防守者時，防守者的中心不能在我方球框中心。' + (netOn() ? '比賽中才會記錄。' : '單機練習不記錄。'));
@@ -1883,7 +1892,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
   function foulCall() {
     if (!netOn()) { setMsg('<b>犯規！</b>防守者不能從球框後面往前穿過。單機練習不記錄。'); return; }
     if (MS.ph === 'play') {
-      addFoul(S.team); fx('foul');
+      addFoul(S.team); sfx('foul');
       setMsg('<b>犯規！</b>防守者從球框後面往前穿過，已記錄<b>' + teamName(S.team) + '</b>犯規 ' + S.fouls[S.team] + ' 次，賽後由裁判判定。');
     } else {
       setMsg('<b>犯規動作</b>：防守者不能從球框後面往前穿過。比賽中才會記錄。');
@@ -1920,7 +1929,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
   function refEndPlay() {
     if (!NET.amRef || MS.ph !== 'play') return;
     var total = S.fouls.blue + S.fouls.red;
-    msSet(total > 0 ? 'review' : 'done', { endAt: 0 }); fx('end');
+    msSet(total > 0 ? 'review' : 'done', { endAt: 0 }); sfx('end');
     setMsg(total > 0
       ? '<b>比賽結束</b>。藍方犯規 ' + S.fouls.blue + ' 次、紅方犯規 ' + S.fouls.red + ' 次，請選擇罰球或搶分（耗犯規或不耗犯規）。'
       : '<b>比賽結束</b>。沒有犯規。' + resultText());
@@ -1967,7 +1976,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     if (!NET.amRef) return;
     if (MS.ph === 'ready') {
       if (msRemMs() <= 0) {
-        msSet('play', { endAt: performance.now() + PLAY_MS }); fx('start');
+        msSet('play', { endAt: performance.now() + PLAY_MS }); sfx('start');
         setMsg('<b>比賽開始</b>，時間 3 分鐘。進球才算分；防守者不能從球框後面往前穿過，會被記犯規。');
       }
     } else if (MS.ph === 'play') {
@@ -1998,8 +2007,8 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
       if (ph === 'ready' || ph === 'review' || ph === 'done') goHome();
       recomputeScores();
       NET.listKey = '';
-      if (ph === 'play') fx('start');
-      if (ph === 'review' || ph === 'done') fx('end');
+      if (ph === 'play') sfx('start');
+      if (ph === 'review' || ph === 'done') sfx('end');
       if (ph === 'idle') setMsg('裁判開放<b>自由練習</b>，可以起飛練習，不計分。');
       else if (ph === 'ready') setMsg('<b>賽前倒數 10 秒</b>：所有球機回到起點，倒數結束才能起飛、開始比賽。');
       else if (ph === 'play') setMsg('<b>比賽開始</b>，時間 3 分鐘。進球才算分；防守者不能從球框後面往前穿過，會被記犯規。');
@@ -2021,13 +2030,13 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
   function cdFrame() {
     var l = cdLeft(), n = l < 0 ? -1 : Math.ceil(l / 1000);
     if (n !== cdLast) {
-      if (n >= 1 && n <= 10 && cdLast !== -1) fx('tick', n);
+      if (n >= 1 && n <= 10 && cdLast !== -1) sfx('tick', n);
       cdLast = n;
       setHidden(cdOv, n < 0);
       if (n >= 0) setTxt(cdNum, String(n));
     }
     if (!netOn() && CDAI > 0 && l <= 0) {
-      CDAI = 0; fx('start');
+      CDAI = 0; sfx('start');
       AI.run = true; AI.clock = PLAY_MS / 1000;
       setMsg('<b>比賽開始</b>，時間 3 分鐘。AI 對打（' + AI_LV[AI.lvl].name + '・' + aiDesc() + '）。');
     }
@@ -2435,7 +2444,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
       AI.clock -= dt;
       if (AI.clock <= 0) {
         AI.clock = 0; AI.over = true; AI.run = false;
-        aiHomeAll(); fx('end');
+        aiHomeAll(); sfx('end');
         var wasOn = AI.on; AI.on = false; goHome(); AI.on = wasOn;   // 你的球機也回原位停住
         setMsg('<b>時間到</b>。' + resultText());
       }
@@ -3135,15 +3144,16 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     });
   })();
 
+  var errAt = 0;
+  function loopErr(e) {   // 某一格出錯時不要讓整個遊戲停住，把錯誤顯示出來方便回報
+    if (performance.now() - errAt > 3000) { errAt = performance.now(); try { setMsg('程式出錯（已自動繼續）：' + String(e && e.message || e)); } catch (x) {} }
+  }
   var last = performance.now(), frame = 0, hudAt = 0, perfN = 0, perfSum = 0, perfLv = 0;
   function loop(now) {
     var dt = Math.min(0.05, (now - last) / 1000);
     last = now;
-    update(dt);
-    aiStep(dt);
-    msFrame();
-    cdFrame();
-    netTick(now);
+    try { update(dt); } catch (e) { loopErr(e); }
+    try { aiStep(dt); msFrame(); cdFrame(); netTick(now); } catch (e) { loopErr(e); }
     if ((frame++ % 30) === 0) { readColors(); applyTheme(); }
     // 自動降畫質：連續變慢（手機發燙、效能不夠）就先降解析度，再關陰影，避免越玩越卡
     perfN++; perfSum += Math.min(100, now - (loop.prev || now)); loop.prev = now;
@@ -3155,8 +3165,8 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
         else { sun.castShadow = false; renderer.shadowMap.autoUpdate = false; renderer.shadowMap.needsUpdate = true; }   // 關閉陰影
       }
     }
-    render(dt);
-    if (now - hudAt > 90) { hudAt = now; hud(); }   // 畫面上的文字一秒更新約 10 次，不要每格都改，減少卡頓
+    try { render(dt); } catch (e) { loopErr(e); }
+    if (now - hudAt > 90) { hudAt = now; try { hud(); } catch (e) { loopErr(e); } }   // 畫面上的文字一秒更新約 10 次，不要每格都改，減少卡頓
     requestAnimationFrame(loop);
   }
   reset(true);
