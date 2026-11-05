@@ -837,6 +837,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
       dome: new THREE.MeshStandardMaterial({ color: 0xf1f5f7, roughness: 0.35, emissive: 0xffffff, emissiveIntensity: 0.3 }),
       strip: new THREE.MeshBasicMaterial({ color: 0xffffff }),
       tail: new THREE.MeshBasicMaterial({ color: 0xffffff }),
+      beltGlow: new THREE.SpriteMaterial({ map: glowTex, color: 0xffffff, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending }),
       tailGlow: new THREE.SpriteMaterial({ map: glowTex, color: 0xffffff, transparent: true, opacity: 0.8, depthWrite: false }),
       shell: new THREE.MeshStandardMaterial({ color: PAL[1], roughness: 0.55 }),
       frame: new THREE.MeshStandardMaterial({ color: PAL[2], roughness: 0.5 })
@@ -901,7 +902,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     var base = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.02, 28), M.dome);
     base.position.y = 0.015;
     body.add(base);
-    var strip = new THREE.Mesh(new THREE.TorusGeometry(0.072, 0.005, 8, 40), M.strip);
+    var strip = new THREE.Mesh(new THREE.TorusGeometry(0.073, 0.012, 10, 48), M.strip);   // 腰帶燈加粗
     strip.rotation.x = Math.PI / 2; strip.position.y = 0.006;
     body.add(strip);
     var btn = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.004, 16), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 }));
@@ -919,6 +920,10 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
         body.add(tl);
       }
     }
+    var bglow = new THREE.Sprite(M.beltGlow);   // 腰帶燈光暈
+    bglow.scale.set(0.34, 0.34, 1);
+    bglow.position.set(0, 0.006, 0);
+    body.add(bglow);
     var tglow = new THREE.Sprite(M.tailGlow);   // 尾燈光暈
     tglow.scale.set(0.3, 0.3, 1);
     tglow.position.set(0, -0.037, 0.135);
@@ -1342,15 +1347,13 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     'hsl(195,95%,65%)',   // 淺藍
     'hsl(180,25%,96%)'    // 白
   ];
-  function ledColorFor(idx, flying, bat) {
-    // 電量低於 20% 時，燈會自動閃紅燈
-    if (flying && bat < 20) {
-      return (Math.floor(S.t * 3.5) % 2) ? 'hsl(2,92%,55%)' : 'hsl(2,45%,22%)';
-    }
+  // 腰帶燈顏色；無頭模式時腰帶燈閃爍（電量不影響燈色）
+  function ledColorFor(idx, flying, bat, blink) {
+    if (blink && (Math.floor(S.t * 3.5) % 2)) return 'hsl(0,0%,10%)';
     return LED_COLORS[idx];
   }
   function ledColor() {
-    return ledColorFor(S.led, S.mode !== 'landed' && S.mode !== 'fall', S.bat);
+    return ledColorFor(S.led, S.mode !== 'landed' && S.mode !== 'fall', S.bat, S.headless);
   }
 
   /* ---------- 撞擊：機身翻晃、整台打轉、護籠滾動、嚴重時失控掉高度 ---------- */
@@ -1510,7 +1513,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
       }
 
       var spd = Math.hypot(S.vx, S.vy);
-      S.bat -= dt * (100 / 240) * (1 + spd * 0.2);
+      S.bat = 100;   // 不計電量：不會耗電、不會自動降落、不會閃紅燈
       if (S.bat <= 0) {
         S.bat = 0;
         if (S.mode !== 'landing') { S.mode = 'landing'; setMsg('電量用完，自動降落。按「重新開始」可以再充滿。'); }
@@ -1649,8 +1652,10 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     var power = S.mode === 'landed' ? 0.5 : 1;
     tmpC.setStyle(led);
     domeMat.emissive.copy(tmpC);
-    domeMat.emissiveIntensity = 0.7 * power;
-    stripMat.color.copy(tmpC).multiplyScalar(0.55 + 0.45 * power);
+    domeMat.emissiveIntensity = 1.1 * power;
+    stripMat.color.copy(tmpC).multiplyScalar(1.15);   // 腰帶燈一律最亮
+    local.M.beltGlow.color.copy(tmpC);
+    local.M.beltGlow.opacity = 0.55 + 0.4 * power;
     ledLight.color.copy(tmpC);
     ledLight.intensity = 0.9 * power;
     ledLight.position.set(wx, S.z + RM - 0.05, wz);
@@ -1785,7 +1790,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
   var epoch = 0;        // 比分歸零的版本，較大的版本取代較小的
   var remotes = {};     // peer 標籤 -> 遠端無人機
   var NET = { myName: '', api: null, userCap: null, room: null, code: '', tok: 0, subs: [], asked: {}, names: {}, lastKey: '', lastAt: 0, listKey: '', dead: false, laneDone: false, retry: 0, amRef: false, refPeer: null, jt: 0, kicks: {} };
-  var PKEYS = ['id', 'tm', 'x', 'y', 'z', 'vx', 'vy', 'yw', 'ld', 'tl', 'md', 'bt', 'ep', 'g', 'rl', 'cc', 'fc', 'nm', 'f', 'jt', 'mx', 'kk'];
+  var PKEYS = ['id', 'tm', 'x', 'y', 'z', 'vx', 'vy', 'yw', 'ld', 'tl', 'md', 'bt', 'ep', 'g', 'rl', 'cc', 'fc', 'nm', 'f', 'jt', 'mx', 'kk', 'hl'];
   var LANES = [0, -0.5, 0.5, -1.0, 1.0];
   var noop = function () {};
 
@@ -2462,7 +2467,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
       id: MYID, tm: S.team === 'blue' ? 'b' : 'r',
       x: r3(S.x), y: r3(S.y), z: r3(S.z), vx: r2(S.vx), vy: r2(S.vy), yw: r3(S.yaw),
       ld: S.led, tl: S.tail, md: mdCode(), bt: Math.round(S.bat), ep: epoch, g: g, rl: S.role, cc: S.shell, fc: S.frame, nm: NET.myName,
-      f: f, jt: NET.jt, mx: NET.amRef ? msPublish() : null, kk: (NET.amRef && Object.keys(NET.kicks).length) ? NET.kicks : null
+      f: f, hl: S.headless ? 1 : 0, jt: NET.jt, mx: NET.amRef ? msPublish() : null, kk: (NET.amRef && Object.keys(NET.kicks).length) ? NET.kicks : null
     };
   }
   function netSend(force) {
@@ -2693,10 +2698,12 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
       var li = isNum(p.ld) ? clamp(Math.floor(p.ld), 0, 5) : 2;
       var ti = isNum(p.tl) ? clamp(Math.floor(p.tl), 0, 5) : 5;
       var power = p.md === 0 ? 0.5 : 1;
-      tmpC.setStyle(ledColorFor(li, p.md === 1, isNum(p.bt) ? p.bt : 100));
+      tmpC.setStyle(ledColorFor(li, p.md === 1, 100, p.hl === 1));
       r.M.dome.emissive.copy(tmpC);
-      r.M.dome.emissiveIntensity = 0.7 * power;
-      r.M.strip.color.copy(tmpC).multiplyScalar(0.55 + 0.45 * power);
+      r.M.dome.emissiveIntensity = 1.1 * power;
+      r.M.strip.color.copy(tmpC).multiplyScalar(1.15);
+      r.M.beltGlow.color.copy(tmpC);
+      r.M.beltGlow.opacity = 0.55 + 0.4 * power;
       tmpC.setStyle(LED_COLORS[ti]);
       r.M.tail.color.copy(tmpC);
       r.M.tailGlow.color.copy(tmpC);
