@@ -153,6 +153,7 @@ header .pill { flex: 0 1 auto; min-width: 0; max-width: 62%; overflow: hidden; t
 .lights { position: absolute; right: 8px; bottom: 8px; display: flex; align-items: center; gap: 8px; padding: 5px 10px; border-radius: 999px; background: rgba(0,0,0,.55); color: #fff; font-size: 13px; font-weight: 700; pointer-events: none; }
 .lights b { display: inline-flex; align-items: center; gap: 4px; font-weight: 700; }
 .lights u { display: inline-block; width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(255,255,255,.7); }
+.fsbtn { position: absolute; right: 8px; top: 8px; min-height: 0; padding: 4px 10px; border-radius: 999px; border: 0; background: rgba(0,0,0,.55); color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; }
 .gear.pop { transform: scale(1.18); }
 .gear i { display: inline-block; width: 7px; height: 14px; border-radius: 2px; background: rgba(255,255,255,.3); }
 .gear i.on { background: #6fe08a; }
@@ -405,6 +406,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
 
   <div class="stagebox">
     <canvas id="stage" aria-label="無人機 3D 場景"></canvas>
+    <button type="button" class="fsbtn" id="btnFs">全螢幕</button>
     <div class="lights" id="lightBox"><b>燈光 <u id="lgBelt"></u><span id="lgBeltT"></span></b><b>尾燈 <u id="lgTail"></u><span id="lgTailT"></span></b><span id="lgHead" hidden>無頭</span></div>
     <div class="gear" id="gearBox"><span id="gearTxt">檔位</span><span id="gearBars"><i></i> <i></i> <i></i></span></div>
     <div class="cdov" id="cdOv" hidden><b id="cdNum">10</b><span>所有球機回到起點，倒數結束開賽</span></div>
@@ -1202,6 +1204,21 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
       b.addEventListener('click', function () { setTeam(b.getAttribute('data-team')); });
     })(teamBtns[tbi]);
   }
+  var btnFs = $('btnFs');
+  function fsEl() { return document.fullscreenElement || document.webkitFullscreenElement || null; }
+  function syncFs() { btnFs.textContent = fsEl() ? '退出全螢幕' : '全螢幕'; }
+  btnFs.addEventListener('click', function () {
+    var de = document.documentElement;
+    try {
+      if (fsEl()) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); return; }
+      var rq = de.requestFullscreen || de.webkitRequestFullscreen;
+      if (!rq) { setMsg('這個瀏覽器不支援全螢幕。iPhone 可以按分享鈕，選「加入主畫面」，從主畫面開啟就是全螢幕。'); return; }
+      var pr = rq.call(de);
+      if (pr && pr.catch) pr.catch(function () { setMsg('全螢幕被瀏覽器擋住了。如果是在 Claude 裡開啟，請用網址在瀏覽器直接開啟再試。'); });
+    } catch (e) { setMsg('這個瀏覽器無法切換全螢幕。'); }
+  });
+  document.addEventListener('fullscreenchange', syncFs);
+  document.addEventListener('webkitfullscreenchange', syncFs);
   var btnSnd = $('btnSnd');
   function syncSnd() { btnSnd.textContent = '音效震動：' + (SND.on ? '開' : '關'); btnSnd.setAttribute('aria-pressed', String(SND.on)); }
   btnSnd.addEventListener('click', function () {
