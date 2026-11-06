@@ -557,8 +557,8 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
   var GOAL_X = 0.65;      // 球門圈離端牆距離
   var GOAL = 5;
   var START_D = (EDGE + GOAL_X - RM - 0.03) / 2;   // 出生位置：己方球框後方，離端牆的距離
-  var SPEEDS = [1.0, 1.8, 2.8], SPEED_NAMES = ['慢速', '中速', '快速'];
-  var VMAX = SPEEDS[1];
+  var SPEEDS = [1.8, 2.3, 2.8], SPEED_NAMES = ['慢速', '中速', '快速'];
+  var VMAX = SPEEDS[0];
   var LED_NAMES = ['綠', '紅', '藍', '黃', '淺藍', '白'];
 
   var $ = function (id) { return document.getElementById(id); };
@@ -950,9 +950,9 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     bump: 0, led: 2, flightT: 0, started: false, done: false, got: 0,
     rcType: 1, team: 'blue', scores: { blue: 0, red: 0 }, armed: true,
     px: AX / 2, pulse: 0, tiltX: 0, tiltZ: 0,
-    unlocked: false, hold: true, speedIdx: 1, headless: false, fallV: 0,
+    unlocked: false, hold: true, speedIdx: 0, headless: false, fallV: 0,
     upHeld: false, lastUp: -9, tail: 5, upTime: 0, role: 0, shell: 1, frame: 2,
-    kx: 0, kz: 0, kxv: 0, kzv: 0, spinY: 0, stun: 0, dropT: 0, drx: 0, dry: 0, drz: 0
+    kx: 0, kz: 0, kxv: 0, kzv: 0, spinY: 0, stun: 0, dropT: 0, drx: 0, dry: 0, drz: 0, dive: 0
   };
   var TL = { blue: false, red: false }, PG = { blue: 0, red: 0 };   // 隊伍得分後鎖住進攻，全隊都回到中線才解鎖
   /* ---------- 蜂鳴聲與震動（遙控器蜂鳴器、撞擊、得分、犯規、倒數） ---------- */
@@ -1181,7 +1181,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     aiReset();
     centerLeft();
     S.z = 0; S.vx = 0; S.vy = 0; S.vz = 0;
-    S.kx = S.kz = S.kxv = S.kzv = S.spinY = S.stun = S.dropT = S.drx = S.dry = S.drz = 0;
+    S.kx = S.kz = S.kxv = S.kzv = S.spinY = S.stun = S.dropT = S.drx = S.dry = S.drz = S.dive = 0;
     S.mode = 'landed'; S.bat = 100; S.spin = 0; S.bump = 0;
     S.flightT = 0; S.started = false; S.done = false; S.got = 0;
     if (!keepScores) clearScores();
@@ -1395,12 +1395,18 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     S.spinY += sgn * Math.min(5, sp * (1.4 + 1.6 * Math.abs(nr)));   // 擦撞會轉得比較多
     if (sp > 1.0) S.stun = Math.max(S.stun, 0.35 + 0.25 * sp);       // 撞很大力：短暫失控
     if (sp > 1.6) S.dropT = 0.4;                                      // 更大力：掉一小段高度
+    if (sp > 1.2 && S.mode !== 'landed') {
+      // 重重撞到：整台機器轉好幾圈（約 2～4 圈），而且向下爆衝，可能直接摔到地上
+      S.spinY += sgn * Math.min(20, 6 + sp * 5);
+      S.dive = Math.min(S.dive, -(1.2 + sp * 1.1));
+      S.stun = Math.max(S.stun, 0.9 + 0.3 * sp);
+    }
   }
 
   /* ---------- 物理 ---------- */
   function update(dt) {
     // 保險：任何數值變成 NaN（非數字）球機就會永遠不動，發現時立刻歸零
-    var bad = false, fk = ['x', 'y', 'z', 'vx', 'vy', 'vz', 'yaw', 'kx', 'kz', 'kxv', 'kzv', 'spinY', 'drx', 'dry', 'drz', 'tiltX', 'tiltZ', 'stun', 'dropT'];
+    var bad = false, fk = ['x', 'y', 'z', 'vx', 'vy', 'vz', 'yaw', 'kx', 'kz', 'kxv', 'kzv', 'spinY', 'drx', 'dry', 'drz', 'dive', 'tiltX', 'tiltZ', 'stun', 'dropT'];
     for (var fi = 0; fi < fk.length; fi++) {
       if (!isFinite(S[fk[fi]])) { bad = true; S[fk[fi]] = 0; }
     }
@@ -1606,7 +1612,18 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     S.kxv += (-45 * S.kx - 7 * S.kxv) * dt; S.kx = clamp(S.kx + S.kxv * dt, -1.1, 1.1);
     S.kzv += (-45 * S.kz - 7 * S.kzv) * dt; S.kz = clamp(S.kz + S.kzv * dt, -1.1, 1.1);
     if (flying) S.yaw += S.spinY * dt;
-    S.spinY *= Math.exp(-2.2 * dt);
+    S.spinY = clamp(S.spinY, -24, 24) * Math.exp(-(Math.abs(S.spinY) > 5 ? 0.9 : 2.2) * dt);   // 轉得快的時候慢慢減，才會轉好幾圈
+    if (S.dive < -0.01) {
+      if (flying && S.mode !== 'fall') {
+        S.z = Math.max(0, S.z + S.dive * dt);
+        if (S.z <= 0.001 && S.dive < -0.8) {   // 爆衝到地上：摔落
+          S.z = 0; S.vx *= 0.3; S.vy *= 0.3; S.mode = 'landed'; S.dive = 0;
+          sfx('hit', 3);
+          setMsg('撞擊後<b>向下爆衝</b>，摔到地上了。重新起飛就能繼續。');
+        }
+      }
+      S.dive *= Math.exp(-1.6 * dt);
+    } else S.dive = 0;
     S.stun = Math.max(0, S.stun - dt);
     if (S.dropT > 0) { S.dropT -= dt; if (flying) S.z = Math.max(0, S.z - 0.6 * dt); }
     S.bump = Math.max(0, S.bump - dt * 2.5);
@@ -2677,6 +2694,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
         var nff = nnx * Math.sin(ang) + nny * -Math.cos(ang), nrr = nnx * Math.cos(ang) + nny * Math.sin(ang);
         r.kxv += -nff * spk * 4.5; r.kzv += -nrr * spk * 4.5;
         r.spinY += (nrr > 0 ? -1 : 1) * Math.min(5, spk * (1.4 + 1.6 * Math.abs(nrr)));
+        if (spk > 1.2) r.spinY += (nrr > 0 ? -1 : 1) * Math.min(20, 6 + spk * 5);   // 重撞：轉好幾圈
       }
       var age = Math.min(0.2, Math.max(0, (now - r.at) / 1000));
       var tx = clamp(p.x + vx * age, EDGE, AX - EDGE);
@@ -2695,7 +2713,8 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
       r.holder.position.set(r.x - AX / 2, r.z + RM, r.y - AY / 2);
       r.kxv += (-45 * r.kx - 7 * r.kxv) * dt; r.kx = clamp(r.kx + r.kxv * dt, -1.1, 1.1);
       r.kzv += (-45 * r.kz - 7 * r.kzv) * dt; r.kz = clamp(r.kz + r.kzv * dt, -1.1, 1.1);
-      r.yawOff += r.spinY * dt; r.spinY *= Math.exp(-2.2 * dt); r.yawOff *= Math.exp(-1.2 * dt);
+      r.yawOff += r.spinY * dt; r.spinY = clamp(r.spinY, -24, 24) * Math.exp(-(Math.abs(r.spinY) > 5 ? 0.9 : 2.2) * dt);
+      r.yawOff = Math.atan2(Math.sin(r.yawOff), Math.cos(r.yawOff)) * Math.exp(-1.2 * dt);
       r.drone.rotation.order = 'YXZ';
       r.drone.rotation.x = r.kx; r.drone.rotation.z = r.kz;
       r.drone.rotation.y = -(r.yaw + r.yawOff);
