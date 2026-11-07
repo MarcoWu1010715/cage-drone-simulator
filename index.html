@@ -1149,7 +1149,26 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
 
   function makeStick(el, out, holdY) {
     var knob = el.querySelector('.knob');
-    var pid = null;
+    var pid = null, raf = 0;
+    // 放開後用彈簧阻尼慢慢回中（約 0.25 秒，帶一點點過衝），不是瞬間歸零，手感和實體搖桿一樣
+    function spring(tx, ty) {
+      cancelAnimationFrame(raf);
+      var vx = 0, vy = 0, t0 = performance.now(), K = 900, C = 2 * 0.55 * Math.sqrt(K);
+      function paint() {
+        var mp = el.getBoundingClientRect().width * 0.30;
+        knob.style.transform = 'translate(' + (out.x * mp) + 'px,' + (out.y * mp) + 'px)';
+      }
+      function step(t) {
+        var dt = Math.min(0.033, (t - t0) / 1000); t0 = t;
+        vx += (-K * (out.x - tx) - C * vx) * dt; vy += (-K * (out.y - ty) - C * vy) * dt;
+        out.x += vx * dt; out.y += vy * dt;
+        if (Math.abs(out.x - tx) < 0.003 && Math.abs(out.y - ty) < 0.003 && Math.abs(vx) < 0.03 && Math.abs(vy) < 0.03) { out.x = tx; out.y = ty; paint(); raf = 0; return; }
+        paint();
+        raf = requestAnimationFrame(step);
+      }
+      raf = requestAnimationFrame(step);
+    }
+    el._cancel = function () { cancelAnimationFrame(raf); raf = 0; };
     function move(e) {
       var r = el.getBoundingClientRect();
       var max = r.width * 0.30;
@@ -1167,13 +1186,11 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     }
     function end() {
       pid = null;
-      out.x = 0;
-      if (!(holdY && holdY())) out.y = 0;   // 遙控種類 2：左搖桿上下停在放開的位置
-      var mp = el.getBoundingClientRect().width * 0.30;
-      knob.style.transform = 'translate(0px,' + (out.y * mp) + 'px)';
+      spring(0, (holdY && holdY()) ? out.y : 0);   // 遙控種類 2：左搖桿上下停在放開的位置
     }
     el.addEventListener('pointerdown', function (e) {
       pid = e.pointerId;
+      el._cancel();
       try { el.setPointerCapture(pid); } catch (err) {}
       move(e);
       e.preventDefault();
@@ -1188,6 +1205,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
   // 遙控種類：1 所有搖桿回彈；2 左搖桿上下不回彈
   var rcBtns = document.querySelectorAll('[data-rc]');
   function centerLeft() {
+    $('padL')._cancel();
     stickL.x = 0; stickL.y = 0;
     $('padL').querySelector('.knob').style.transform = 'translate(0px,0px)';
   }
