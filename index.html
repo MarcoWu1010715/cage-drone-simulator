@@ -221,9 +221,12 @@ canvas#stage {
 #cmLayout { display: none; }
 @media (orientation: landscape) and (max-height: 560px) {
   body[data-ctl="touch"] #cmLayout { display: inline-block; }
-  body.lsplit[data-ctl="touch"] .wrap .play { display: block; position: relative; grid-column: 1 / -1; order: 1; --H: calc(100vh - 104px); --hh: calc(var(--H) * 0.82); --hw: calc(var(--hh) * 0.769); height: var(--H); }
-  body.lsplit[data-ctl="touch"] .wrap .play > .stagebox { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); grid-column: auto; grid-row: auto; margin: 0; width: min(calc(var(--H) * 1.5), calc(100% - 1.8 * var(--hw))); }
-  body.lsplit[data-ctl="touch"] .wrap .play > .rc { position: absolute; left: 0; right: 0; top: calc((var(--H) - var(--hh)) / 2); height: var(--hh); width: auto; margin: 0; aspect-ratio: auto; pointer-events: none; z-index: 3; grid-column: auto; }
+  /* 一切尺寸都跟著容器寬度走（cqw），不看螢幕高度，所以手機網址列、全螢幕、嵌入框都不會跑版 */
+  body.lsplit[data-ctl="touch"] .wrap .play { display: block; position: relative; grid-column: 1 / -1; order: 1; justify-self: center; margin: 0 auto;
+    width: min(100%, calc((100vh - 104px) / 0.351)); width: min(100%, calc((100dvh - 104px) / 0.351));
+    aspect-ratio: 1 / 0.351; container-type: inline-size; --hw: 27cqw; --hh: 35.1cqw; }
+  body.lsplit[data-ctl="touch"] .wrap .play > .stagebox { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); grid-column: auto; grid-row: auto; margin: 0; width: 44%; }
+  body.lsplit[data-ctl="touch"] .wrap .play > .rc { position: absolute; inset: 0; width: auto; height: auto; margin: 0; aspect-ratio: auto; pointer-events: none; z-index: 3; grid-column: auto; }
   body.lsplit[data-ctl="touch"] .rc svg:not(.half) { position: absolute; inset: auto; width: 0; height: 0; overflow: hidden; }
   body.lsplit[data-ctl="touch"] .rc svg.half { display: block; position: absolute; inset: auto; top: 0; height: 100%; width: var(--hw); }
   body.lsplit[data-ctl="touch"] .rc svg.half.l { left: 0; }
