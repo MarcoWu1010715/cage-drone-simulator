@@ -154,6 +154,15 @@ header .pill { flex: 0 1 auto; min-width: 0; max-width: 62%; overflow: hidden; t
 .lights b { display: inline-flex; align-items: center; gap: 4px; font-weight: 700; }
 .lights u { display: inline-block; width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(255,255,255,.7); }
 .fsbtn { position: absolute; right: 8px; top: 8px; min-height: 0; padding: 4px 10px; border-radius: 999px; border: 0; background: rgba(0,0,0,.55); color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; }
+.ctlmode { position: absolute; left: 8px; top: 8px; display: flex; gap: 4px; padding: 3px; border-radius: 999px; background: rgba(0,0,0,.55); pointer-events: auto; font-size: 12px; font-weight: 700; z-index: 5; }
+.ctlmode span { cursor: pointer; padding: 3px 9px; border-radius: 999px; color: rgba(255,255,255,.55); }
+.ctlmode span.on { background: #6fe08a; color: #0b2b14; }
+.ctlmode span.off { opacity: .35; }
+.chelp { margin: 8px auto; max-width: 560px; padding: 12px 14px; border-radius: 14px; background: rgba(127,127,127,.13); border: 1px solid rgba(127,127,127,.3); font-size: 14px; line-height: 1.5; }
+.chelp h4 { margin: 0 0 8px; font-size: 15px; }
+.chelp .row { display: flex; align-items: center; gap: 8px; padding: 3px 0; }
+.chelp .row > span { margin-left: auto; text-align: right; }
+.chelp kbd { display: inline-block; min-width: 24px; padding: 1px 7px; border-radius: 6px; border: 1px solid rgba(127,127,127,.55); border-bottom-width: 3px; background: rgba(127,127,127,.12); font: 700 13px/1.5 inherit; text-align: center; margin-right: 3px; }
 .gear.pop { transform: scale(1.18); }
 .gear i { display: inline-block; width: 7px; height: 14px; border-radius: 2px; background: rgba(255,255,255,.3); }
 .gear i.on { background: #6fe08a; }
@@ -408,6 +417,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     <canvas id="stage" aria-label="無人機 3D 場景"></canvas>
     <button type="button" class="fsbtn" id="btnFs">全螢幕</button>
     <div class="lights" id="lightBox"><b>燈光 <u id="lgBelt"></u><span id="lgBeltT"></span></b><b>尾燈 <u id="lgTail"></u><span id="lgTailT"></span></b><span id="lgHead" hidden>無頭</span></div>
+    <div class="ctlmode" id="ctlMode"><span id="cmTouch">觸控</span><span id="cmKey">鍵盤</span><span id="cmPad">手把</span></div>
     <div class="gear" id="gearBox"><span id="gearTxt">檔位</span><span id="gearBars"><i></i> <i></i> <i></i></span></div>
     <div class="cdov" id="cdOv" hidden><b id="cdNum">10</b><span>所有球機回到起點，倒數結束開賽</span></div>
   </div>
@@ -454,6 +464,34 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
 
     <button type="button" class="fb l at" id="fbL" style="left:41%;top:83%">燈光</button>
     <button type="button" class="fb r at" id="fbR" style="left:59%;top:83%">速度</button>
+  </div>
+  <div class="chelp" id="helpKey" hidden>
+    <h4>鍵盤操作</h4>
+    <div class="row"><b><kbd>W</kbd><kbd>S</kbd></b><span>前進／後退</span></div>
+    <div class="row"><b><kbd>A</kbd><kbd>D</kbd></b><span>向左／向右平移</span></div>
+    <div class="row"><b><kbd>↑</kbd><kbd>↓</kbd></b><span>升高／降低（油門）</span></div>
+    <div class="row"><b><kbd>←</kbd><kbd>→</kbd></b><span>向左／向右轉向</span></div>
+    <div class="row"><b><kbd>U</kbd></b><span>解鎖／上鎖</span></div>
+    <div class="row"><b><kbd>M</kbd></b><span>定高開關</span></div>
+    <div class="row"><b><kbd>Z</kbd></b><span>燈光鍵（連按兩下＝無頭模式）</span></div>
+    <div class="row"><b><kbd>X</kbd></b><span>速度（上鎖時＝換尾燈）</span></div>
+    <div class="row"><b><kbd>V</kbd></b><span>切換視角</span></div>
+    <div class="row"><b><kbd>C</kbd></b><span>換選手站位</span></div>
+    <div class="row"><b><kbd>T</kbd></b><span>換隊伍</span></div>
+    <div class="row"><b><kbd>R</kbd></b><span>換攻擊手／防守者</span></div>
+  </div>
+  <div class="chelp" id="helpPad" hidden>
+    <h4>手把操作 <small id="padState" style="font-weight:400"></small></h4>
+    <div class="row"><b><kbd>左搖桿</kbd></b><span>上下＝升降（油門）、左右＝轉向</span></div>
+    <div class="row"><b><kbd>右搖桿</kbd></b><span>前後＝前進後退、左右＝平移</span></div>
+    <div class="row"><b><kbd>A</kbd></b><span>解鎖／上鎖</span></div>
+    <div class="row"><b><kbd>B</kbd></b><span>定高開關</span></div>
+    <div class="row"><b><kbd>X</kbd></b><span>燈光鍵（連按兩下＝無頭模式）</span></div>
+    <div class="row"><b><kbd>Y</kbd></b><span>速度（上鎖時＝換尾燈）</span></div>
+    <div class="row"><b><kbd>LB</kbd></b><span>切換視角</span></div>
+    <div class="row"><b><kbd>RB</kbd></b><span>換選手站位</span></div>
+    <div class="row"><b><kbd>Back</kbd></b><span>換攻擊手／防守者</span></div>
+    <div class="row"><b><kbd>Start</kbd></b><span>換隊伍</span></div>
   </div>
   <p class="rcstat" id="rcstat"></p>
 
@@ -535,7 +573,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     </div>
   </div>
 
-  <p class="hint">和實體遙控器相同：左搖桿控制升降與轉向，右搖桿控制前後左右。定高模式起飛：左搖桿往上推兩下，或往上推住不放；無定高模式起飛：左搖桿往上推過中間，沒有自動爬升，推多高升多快，推到約四成位置才能維持高度，放在中間會慢慢往下掉；降落：把左搖桿往下推到底，一直推到落地。選藍方或紅方，無人機會放在己方球框後面；預設的選手視角站在場外己方球框後方，眼睛離地 1.6 公尺，看著無人機；站位可以改成球框後的左側、右側，或斜後方的左後、右後。穿過對方球框得分，得分後要回到中線才能再次進攻，穿過自己的球框不算分，從球框後面往場內穿過也不算分。只有攻擊手能得分，防守者不能；攻擊手的尾燈是對方隊伍的顏色，防守者的尾燈是自己隊伍的顏色。球機之間有碰撞，撞到會被彈開。<br>AI 對打（單機）：選簡單、普通或困難。1 對 1 時電腦扮演另一隊的攻擊手；選 3 對 3 時，每隊 1 個攻擊手加 2 個防守員，你佔一個位置（看你選攻擊手或防守者），其他由電腦補滿。電腦有反應延遲、會恍神、手會抖，攻擊手會等空檔和做假動作，防守員會守在己方球框前面，跟著對方攻擊手左右上下移動擋路。你第一次起飛時開始 3 分鐘比賽，兩邊都穿過對方球框得分，時間到比多少；電腦也有碰撞，會撞到球框和你。進多人房間時 AI 會自動關閉。<br>多人房間裡，最先加入的人是裁判，由裁判開始 3 分鐘的比賽，只有比賽中才算分。比賽中防守者從球框後面往前穿過算犯規；裁判可以在玩家列表按「踢出」把人請出房間（要按兩下確認）；賽後裁判可以選擇罰球（每球限時 1 分鐘）或搶分，兩種都分「耗犯規」和「不耗犯規」：罰球是每次犯規讓對方罰一球，搶分是每次犯規讓對方直接搶走 1 分（犯規方 -1、對方 +1）；耗犯規會把用掉的犯規次數扣掉（搶分後歸零），不耗犯規則保留犯規次數。球框顏色跟那一端的場地一樣，發亮並有綠光的是目前可以進攻的對方球框；解鎖滑桿往下撥會立即停槳；定高滑桿往下撥則不會自動維持高度；燈光鍵連按兩下切換無頭模式（地上或飛行中都可以，方向固定以選手面向的方向（朝對方球框）為準，開啟時上方會亮「無頭模式」）；右功能鍵在解鎖後循環切換慢、中、快，上鎖時（按鍵上的字會變成「尾燈」）是換尾燈顏色。遙控種類 2 的左搖桿上下不會回彈，放開後油門停在原位，要自己推回中間才會停止升降。<br>電腦操作：W A S D 移動，↑ ↓ 升降，← → 轉向，U 解鎖，M 定高，Z 燈光，X 速度，V 切換選手、平視、斜視、俯視，T 換隊伍，R 換攻擊手或防守者，C 輪流換選手站位。</p>
+  <p class="hint">和實體遙控器相同：左搖桿控制升降與轉向，右搖桿控制前後左右。定高模式起飛：左搖桿往上推第一下起槳（馬達轉動），第二下起飛；無定高模式起飛：左搖桿往上推過中間，沒有自動爬升，推多高升多快，推到約四成位置才能維持高度，放在中間會慢慢往下掉；降落：把左搖桿往下推到底，一直推到落地。選藍方或紅方，無人機會放在己方球框後面；預設的選手視角站在場外己方球框後方，眼睛離地 1.6 公尺，看著無人機；站位可以改成球框後的左側、右側，或斜後方的左後、右後。穿過對方球框得分，得分後要回到中線才能再次進攻，穿過自己的球框不算分，從球框後面往場內穿過也不算分。只有攻擊手能得分，防守者不能；攻擊手的尾燈是對方隊伍的顏色，防守者的尾燈是自己隊伍的顏色。球機之間有碰撞，撞到會被彈開。<br>AI 對打（單機）：選簡單、普通或困難。1 對 1 時電腦扮演另一隊的攻擊手；選 3 對 3 時，每隊 1 個攻擊手加 2 個防守員，你佔一個位置（看你選攻擊手或防守者），其他由電腦補滿。電腦有反應延遲、會恍神、手會抖，攻擊手會等空檔和做假動作，防守員會守在己方球框前面，跟著對方攻擊手左右上下移動擋路。你第一次起飛時開始 3 分鐘比賽，兩邊都穿過對方球框得分，時間到比多少；電腦也有碰撞，會撞到球框和你。進多人房間時 AI 會自動關閉。<br>多人房間裡，最先加入的人是裁判，由裁判開始 3 分鐘的比賽，只有比賽中才算分。比賽中防守者從球框後面往前穿過算犯規；裁判可以在玩家列表按「踢出」把人請出房間（要按兩下確認）；賽後裁判可以選擇罰球（每球限時 1 分鐘）或搶分，兩種都分「耗犯規」和「不耗犯規」：罰球是每次犯規讓對方罰一球，搶分是每次犯規讓對方直接搶走 1 分（犯規方 -1、對方 +1）；耗犯規會把用掉的犯規次數扣掉（搶分後歸零），不耗犯規則保留犯規次數。球框顏色跟那一端的場地一樣，發亮並有綠光的是目前可以進攻的對方球框；解鎖滑桿往下撥會立即停槳；定高滑桿往下撥則不會自動維持高度；燈光鍵連按兩下切換無頭模式（地上或飛行中都可以，方向固定以選手面向的方向（朝對方球框）為準，開啟時上方會亮「無頭模式」）；右功能鍵在解鎖後循環切換慢、中、快，上鎖時（按鍵上的字會變成「尾燈」）是換尾燈顏色。遙控種類 2 的左搖桿上下不會回彈，放開後油門停在原位，要自己推回中間才會停止升降。<br>電腦操作：W A S D 移動，↑ ↓ 升降，← → 轉向，U 解鎖，M 定高，Z 燈光，X 速度，V 切換選手、平視、斜視、俯視，T 換隊伍，R 換攻擊手或防守者，C 輪流換選手站位。<br>手把：接上手把後按任一鍵即可，左搖桿＝油門與轉向，右搖桿＝前後平移，A 解鎖／上鎖，B 定高開關，X 燈光鍵，Y 右功能鍵（速度／尾燈），LB 切視角，RB 切站位，Back 換攻擊手／防守者，Start 換隊伍。</p>
   <p class="hint" id="netHint">聯機載入中…（在 Claude 裡用已登入的帳號開啟，或在一般網站上用點對點連線）。</p>
 </div>
 
@@ -972,7 +1010,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
       var o = c.createOscillator(), g = c.createGain(), t = c.currentTime + at;
       o.type = 'square'; o.frequency.setValueAtTime(2000, t);   // 蜂鳴器只有一種聲音：固定 2000Hz 方波，只用長短和次數區分
       g.gain.setValueAtTime(0.0001, t);
-      g.gain.exponentialRampToValueAtTime(0.16, t + 0.008);
+      g.gain.exponentialRampToValueAtTime(0.5, t + 0.008);
       g.gain.exponentialRampToValueAtTime(0.0001, t + d);
       o.connect(g); g.connect(c.destination);
       o.start(t); o.stop(t + d + 0.02);
@@ -993,18 +1031,18 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     try {
       if (!MOT) {
         var g = c.createGain(), lp = c.createBiquadFilter(), o1 = c.createOscillator(), o2 = c.createOscillator(), o3 = c.createOscillator();
-        g.gain.value = 0; lp.type = 'lowpass'; lp.frequency.value = 1400; lp.Q.value = 1.2;
-        o1.type = 'sawtooth'; o2.type = 'sawtooth'; o3.type = 'square';
+        g.gain.value = 0; lp.type = 'lowpass'; lp.frequency.value = 2000; lp.Q.value = 0.8;
+        o1.type = 'sawtooth'; o2.type = 'triangle'; o3.type = 'sine';
         o1.connect(lp); o2.connect(lp); o3.connect(lp); lp.connect(g); g.connect(c.destination);
         o1.start(); o2.start(); o3.start();
         MOT = { g: g, o1: o1, o2: o2, o3: o3, lp: lp };
       }
-      var t = c.currentTime, f = 70 + spin * 150 + load * 90;
+      var t = c.currentTime, f = 140 + spin * 240 + load * 100;   // 清脆：頻率拉高，高頻哨音多
       MOT.o1.frequency.setTargetAtTime(f, t, 0.06);
-      MOT.o2.frequency.setTargetAtTime(f * 1.012, t, 0.06);
-      MOT.o3.frequency.setTargetAtTime(f * 2.02, t, 0.06);
-      MOT.lp.frequency.setTargetAtTime(700 + spin * 1500 + load * 600, t, 0.08);
-      MOT.g.gain.setTargetAtTime(spin < 0.02 ? 0 : 0.035 + 0.05 * spin + 0.03 * load, t, 0.08);
+      MOT.o2.frequency.setTargetAtTime(f * 1.5, t, 0.06);
+      MOT.o3.frequency.setTargetAtTime(f * 4.02, t, 0.06);
+      MOT.lp.frequency.setTargetAtTime(900 + spin * 1500 + load * 600, t, 0.08);
+      MOT.g.gain.setTargetAtTime(spin < 0.02 ? 0 : 0.12 + 0.2 * spin + 0.1 * load, t, 0.08);
     } catch (e) {}
   }
   function beep(n, f, d, gap, type, vol) { for (var i = 0; i < n; i++) tone(f, i * (d + gap), d, type, vol); }
@@ -1123,6 +1161,63 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
   });
   window.addEventListener('keyup', function (e) { keys[e.key.toLowerCase()] = false; });
   window.addEventListener('blur', function () { keys = {}; });
+
+  /* ---------- 實體手把（Gamepad API，支援 Xbox / PS / Switch Pro 等標準對應的手把） ----------
+     左搖桿＝油門與轉向，右搖桿＝前後與平移；A 解鎖／上鎖，B 定高開關，X 燈光鍵，Y 右功能鍵（速度／尾燈），
+     LB 切視角，RB 切站位，Back 換攻擊手／防守者，Start 換隊伍 */
+  // 操作模式顯示：觸控／鍵盤／手把，亮綠色的是目前正在用的（跟著最後一次操作自動切換）
+  var CTL = 'touch';
+  var CTL_PIN = false;   // 手動選了模式就固定住，不再自動切換（沒接手把也可以選手把）
+  function setCtl(m) {
+    if (CTL_PIN || CTL === m) return;
+    CTL = m; paintCtl();
+  }
+  var CTL_HINT = { touch: '<b>觸控模式</b>：用畫面上的虛擬遙控器操作。', key: '<b>鍵盤模式</b>：W A S D 移動，↑ ↓ 升降，← → 轉向，U 解鎖，M 定高，Z 燈光，X 速度。',
+    pad: function () { return '<b>手把模式</b>：左搖桿＝油門與轉向，右搖桿＝前後平移，A 解鎖、B 定高、X 燈光、Y 速度／尾燈、LB 視角、RB 站位。' + (GP.on ? '' : '（目前還沒偵測到手把，接上後按任一鍵即可。）'); } };
+  function paintCtl() {
+    var a = { touch: $('cmTouch'), key: $('cmKey'), pad: $('cmPad') };
+    for (var k in a) if (a[k]) a[k].className = (k === CTL ? 'on' : '');
+    // 選鍵盤或手把時，虛擬遙控器換成對應的操作提示
+    var rcEl = $('rc'), hk = $('helpKey'), hp = $('helpPad');
+    if (rcEl) rcEl.style.display = CTL === 'touch' ? '' : 'none';
+    if (hk) hk.hidden = CTL !== 'key';
+    if (hp) hp.hidden = CTL !== 'pad';
+    var ps = $('padState'); if (ps) ps.textContent = GP.on ? '（已連接）' : '（尚未偵測到手把，接上後按任一鍵）';
+  }
+  [['cmTouch', 'touch'], ['cmKey', 'key'], ['cmPad', 'pad']].forEach(function (a) {
+    $(a[0]).addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (CTL_PIN && CTL === a[1]) { CTL_PIN = false; setMsg('操作模式改回<b>自動</b>：跟著你最後一次操作切換。'); return; }   // 再點一下已選的＝解除固定
+      CTL = a[1]; CTL_PIN = true; paintCtl(); setMsg((typeof CTL_HINT[a[1]] === 'function' ? CTL_HINT[a[1]]() : CTL_HINT[a[1]]) + '（再點一次同一個模式可改回自動切換）');
+    });
+  });
+  window.addEventListener('pointerdown', function (e) { if (e.target && e.target.closest && e.target.closest('#ctlMode')) return; setCtl('touch'); }, { passive: true, capture: true });
+  window.addEventListener('keydown', function (e) { if (e.target && e.target.tagName === 'INPUT') return; setCtl('key'); }, true);
+  var GP = { lx: 0, ly: 0, rx: 0, ry: 0, on: false, prev: [], said: false };
+  paintCtl();
+  function gpPoll() {
+    var pads = navigator.getGamepads ? navigator.getGamepads() : null, p = null, i;
+    if (pads) for (i = 0; i < pads.length; i++) { if (pads[i] && pads[i].connected && pads[i].axes && pads[i].axes.length >= 4) { p = pads[i]; break; } }
+    if (!p) { GP.lx = GP.ly = GP.rx = GP.ry = 0; if (GP.on) { GP.on = false; if (CTL === 'pad' && !CTL_PIN) CTL = 'touch'; paintCtl(); } return; }
+    if (!GP.on) {
+      GP.on = true; paintCtl();
+      if (!GP.said) { GP.said = true; setMsg('已偵測到<b>手把</b>：左搖桿＝油門與轉向，右搖桿＝前後平移；A 解鎖、B 定高、X 燈光、Y 速度／尾燈、LB 視角、RB 站位。'); }
+    }
+    function ax(v) { v = +v || 0; return Math.abs(v) < 0.15 ? 0 : (v > 0 ? 1 : -1) * Math.min(1, (Math.abs(v) - 0.15) / 0.85); }
+    GP.lx = ax(p.axes[0]); GP.ly = ax(p.axes[1]); GP.rx = ax(p.axes[2]); GP.ry = ax(p.axes[3]);
+    if (GP.lx || GP.ly || GP.rx || GP.ry) setCtl('pad');
+    var b = p.buttons || [];
+    function pr(n) { return !!(b[n] && (b[n].pressed || b[n].value > 0.6)); }
+    var fns = { 0: function () { setUnlock(!S.unlocked); }, 1: function () { setHold(!S.hold); }, 2: pressLeft, 3: pressRight,
+      4: function () { setView(V.mode === 'pilot' ? 'chase' : (V.mode === 'chase' ? 'tilt' : (V.mode === 'tilt' ? 'top' : 'pilot'))); },
+      5: function () { setStand(STAND_ORDER[(STAND_ORDER.indexOf(V.stand) + 1) % STAND_ORDER.length]); },
+      8: function () { setRole(S.role === 0 ? 1 : 0); }, 9: function () { setTeam(S.team === 'blue' ? 'red' : 'blue'); } };
+    for (var n in fns) {
+      var now = pr(+n);
+      if (now && !GP.prev[n]) { setCtl('pad'); try { audioCtx(); fns[n](); } catch (e) {} }
+      GP.prev[n] = now;
+    }
+  }
 
   function oppIdx() { return S.team === 'blue' ? 1 : 0; }
   function teamName(t) { return t === 'blue' ? '藍方' : '紅方'; }
@@ -1268,7 +1363,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
   function setLed(n) { S.led = n; syncRc(); }
   function setHold(v) {
     S.hold = v; syncRc(); sfx('key');
-    setMsg(v ? '定高模式：左搖桿往上推兩下起飛，放開搖桿會維持高度。' : '無定高模式：左搖桿先往下推，再往上推過中間起飛，沒有自動維持高度。搖桿推到約兩成半高度就能維持，放在中間會往下掉，要一直控制油門。');
+    setMsg(v ? '定高模式：左搖桿往上推第一下起槳（馬達開始轉），第二下起飛，放開搖桿會維持高度。' : '無定高模式：左搖桿先往下推，再往上推過中間起飛，沒有自動維持高度。搖桿推到約兩成半高度就能維持，放在中間會往下掉，要一直控制油門。');
   }
   function setUnlock(v) {
     S.unlocked = v; syncRc(); sfx(v ? 'unlock' : 'lock');
@@ -1276,7 +1371,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
       S.mode = 'fall'; S.fallV = 0;
       setMsg('已上鎖，馬達立即停止，無人機掉下來了。');
     } else if (v && S.mode === 'landed') {
-      setMsg(S.hold ? '已解鎖。把左搖桿往上推兩下起飛（或往上推住不放）。' : '已解鎖。先把左搖桿往下推，再往上推過中間起飛。');
+      setMsg(S.hold ? '已解鎖。左搖桿往上推第一下起槳，再推第二下起飛。' : '已解鎖。先把左搖桿往下推，再往上推過中間起飛。');
     }
   }
   var lastL = 0;
@@ -1447,10 +1542,11 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     var flying = S.mode !== 'landed';
 
     // 實體遙控器：左搖桿＝油門與轉向，右搖桿＝前後與平移
-    var mx = clamp(dz(stickR.x) + (keys.d ? 1 : 0) - (keys.a ? 1 : 0), -1, 1);
-    var my = clamp(dz(stickR.y) + (keys.s ? 1 : 0) - (keys.w ? 1 : 0), -1, 1);
-    var al = clamp(-dz(stickL.y) + (keys.arrowup ? 1 : 0) - (keys.arrowdown ? 1 : 0), -1, 1);
-    var yw = clamp(dz(stickL.x) + (keys.arrowright ? 1 : 0) - (keys.arrowleft ? 1 : 0), -1, 1);
+    gpPoll();
+    var mx = clamp(dz(stickR.x) + GP.rx + (keys.d ? 1 : 0) - (keys.a ? 1 : 0), -1, 1);
+    var my = clamp(dz(stickR.y) + GP.ry + (keys.s ? 1 : 0) - (keys.w ? 1 : 0), -1, 1);
+    var al = clamp(-dz(stickL.y) - GP.ly + (keys.arrowup ? 1 : 0) - (keys.arrowdown ? 1 : 0), -1, 1);
+    var yw = clamp(dz(stickL.x) + GP.lx + (keys.arrowright ? 1 : 0) - (keys.arrowleft ? 1 : 0), -1, 1);
     if (S.stun > 0) { mx *= 0.25; my *= 0.25; yw *= 0.25; }   // 剛被撞到，操控變遲鈍
 
     // 搖桿手勢起飛
@@ -1467,13 +1563,14 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
         }
         if (pushUp && (S.unlocked || !S.upHeld)) { S.dnArm = false; toggleFly(); }
       } else if (pushUp && !S.upHeld) {
-        if (S.t - S.lastUp < 1.5) { S.lastUp = -9; toggleFly(); }
-        else {
-          S.lastUp = S.t;
-          if (S.unlocked && !S.done) setMsg('再往上推一次就會起飛。'); else toggleFly();
-        }
-      } else if (pushUp && S.upTime > 0.7 && S.unlocked && !S.done) {
-        S.upTime = -5;
+        S.idleAtPush = !!S.idle;
+        if (S.idle) { S.idle = false; toggleFly(); }   // 槳已經在轉：這一下才是起飛
+        else if (S.unlocked && !S.done && !matchLocked() && cdLeft() <= 0 && S.mode === 'landed') {
+          S.idle = true; sfx('key');   // 定高：第一下往上推＝起槳（馬達開始轉，還不會離地）
+          setMsg('<b>起槳</b>：馬達轉起來了。再往上推一次就會起飛。');
+        } else toggleFly();
+      } else if (pushUp && S.upTime > 0.7 && S.idleAtPush && S.unlocked && !S.done) {
+        S.upTime = -5; S.idle = false;
         toggleFly();
       }
       S.upHeld = pushUp;
@@ -1525,7 +1622,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
         }
         if (S.z <= 0) {
           S.z = 0; S.mode = 'landed'; S.vx = 0; S.vy = 0;
-          setMsg(S.hold ? '已降落。再飛一次：左搖桿往上推兩下。' : '已降落。再飛一次：左搖桿先往下推，再往上推過中間。');
+          setMsg(S.hold ? '已降落。再飛一次：左搖桿往上推一下起槳，再推一下起飛。' : '已降落。再飛一次：左搖桿先往下推，再往上推過中間。');
         }
       }
 
@@ -1639,7 +1736,8 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
       }
     }
 
-    var target = (S.mode === 'landed' || S.mode === 'fall') ? 0 : 1;
+    if (S.mode !== 'landed' || !S.unlocked) S.idle = false;
+    var target = (S.mode === 'landed' && !S.idle) || S.mode === 'fall' ? 0 : 1;
     S.spin += (target - S.spin) * Math.min(1, dt * 4);
     S.propA += S.spin * 60 * dt;
     motorSound(S.spin, clamp(Math.abs(S.vz || 0) / 3 + Math.hypot(S.vx, S.vy) / 6, 0, 1));
