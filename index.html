@@ -215,6 +215,30 @@ canvas#stage {
   .cdov b { font-size: clamp(60px, 22vh, 130px); }
 }
 
+/* 橫向觸控「分開」：左搖桿與左邊按鍵放左邊、右搖桿與右邊按鍵放右邊，3D 畫面置中，像遊戲手把 */
+#cmLayout { display: none; }
+@media (orientation: landscape) and (max-height: 560px) {
+  body[data-ctl="touch"] #cmLayout { display: inline-block; }
+  body.lsplit[data-ctl="touch"] .wrap > .stagebox { grid-column: 1 / -1; justify-self: center; grid-row: auto; }
+  body.lsplit[data-ctl="touch"] .wrap > .hud, body.lsplit[data-ctl="touch"] .wrap > .msg, body.lsplit[data-ctl="touch"] .wrap > .rcstat { grid-column: 1 / -1; order: 2; max-width: 560px; justify-self: center; width: 100%; }
+  body.lsplit[data-ctl="touch"] .wrap > .msg { order: 3; }
+  body.lsplit[data-ctl="touch"] .wrap > .rc { position: fixed; inset: 0; z-index: 30; width: auto; margin: 0; aspect-ratio: auto; pointer-events: none; }
+  body.lsplit[data-ctl="touch"] .rc svg { display: none; }
+  body.lsplit[data-ctl="touch"] .rc .at { pointer-events: auto; }
+  body.lsplit[data-ctl="touch"] .rc .cap { pointer-events: none; color: var(--fg); font-size: 11px; text-shadow: 0 0 4px var(--bg), 0 0 4px var(--bg); }
+  body.lsplit[data-ctl="touch"] .rc .well { width: 34vh; background: radial-gradient(circle, rgba(42,45,48,.82), rgba(18,20,22,.82)); box-shadow: 0 0 0 3px rgba(255,255,255,.55); }
+  body.lsplit[data-ctl="touch"] #padL { left: calc(18vh + env(safe-area-inset-left, 0px)) !important; top: 58% !important; }
+  body.lsplit[data-ctl="touch"] #padR { left: calc(100% - 18vh - env(safe-area-inset-right, 0px)) !important; top: 58% !important; }
+  body.lsplit[data-ctl="touch"] #swLock { left: calc(42vh + env(safe-area-inset-left, 0px)) !important; top: 38% !important; width: 7vh; height: 17vh; }
+  body.lsplit[data-ctl="touch"] #swHold { left: calc(100% - 42vh - env(safe-area-inset-right, 0px)) !important; top: 38% !important; width: 7vh; height: 17vh; }
+  body.lsplit[data-ctl="touch"] #fbL { left: calc(42vh + env(safe-area-inset-left, 0px)) !important; top: 70% !important; width: 15vh; height: 10vh; font-size: 12px; }
+  body.lsplit[data-ctl="touch"] #fbR { left: calc(100% - 42vh - env(safe-area-inset-right, 0px)) !important; top: 70% !important; width: 15vh; height: 10vh; font-size: 12px; }
+  body.lsplit[data-ctl="touch"] .rc .cap:nth-of-type(1) { left: calc(42vh + env(safe-area-inset-left, 0px)) !important; top: 53% !important; }
+  body.lsplit[data-ctl="touch"] .rc .cap:nth-of-type(2) { left: calc(100% - 42vh - env(safe-area-inset-right, 0px)) !important; top: 53% !important; }
+  body.lsplit[data-ctl="touch"] .rc .cap:nth-of-type(3) { left: calc(18vh + env(safe-area-inset-left, 0px)) !important; top: 82% !important; }
+  body.lsplit[data-ctl="touch"] .rc .cap:nth-of-type(4) { left: calc(100% - 18vh - env(safe-area-inset-right, 0px)) !important; top: 82% !important; }
+}
+
 .hud {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -450,7 +474,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     <canvas id="stage" aria-label="無人機 3D 場景"></canvas>
     <button type="button" class="fsbtn" id="btnFs">全螢幕</button>
     <div class="lights" id="lightBox"><b>燈光 <u id="lgBelt"></u><span id="lgBeltT"></span></b><b>尾燈 <u id="lgTail"></u><span id="lgTailT"></span></b><span id="lgHead" hidden>無頭</span></div>
-    <div class="ctlmode" id="ctlMode"><span id="cmTouch">觸控</span><span id="cmKey">鍵盤</span><span id="cmPad">手把</span></div>
+    <div class="ctlmode" id="ctlMode"><span id="cmTouch">觸控</span><span id="cmKey">鍵盤</span><span id="cmPad">手把</span><span id="cmLayout">版面：合併</span></div>
     <div class="gear" id="gearBox"><span id="gearTxt">檔位</span><span id="gearBars"><i></i> <i></i> <i></i></span></div>
     <div class="cdov" id="cdOv" hidden><b id="cdNum">10</b><span>所有球機回到起點，倒數結束開賽</span></div>
   </div>
@@ -1211,6 +1235,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     var a = { touch: $('cmTouch'), key: $('cmKey'), pad: $('cmPad') };
     for (var k in a) if (a[k]) a[k].className = (k === CTL ? 'on' : '');
     // 選鍵盤或手把時，虛擬遙控器換成對應的操作提示
+    document.body.setAttribute('data-ctl', CTL);
     var rcEl = $('rc'), hk = $('helpKey'), hp = $('helpPad');
     if (rcEl) rcEl.style.display = CTL === 'touch' ? '' : 'none';
     if (hk) hk.hidden = CTL !== 'key';
@@ -1223,6 +1248,20 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
       if (CTL_PIN && CTL === a[1]) { CTL_PIN = false; setMsg('操作模式改回<b>自動</b>：跟著你最後一次操作切換。'); return; }   // 再點一下已選的＝解除固定
       CTL = a[1]; CTL_PIN = true; paintCtl(); setMsg((typeof CTL_HINT[a[1]] === 'function' ? CTL_HINT[a[1]]() : CTL_HINT[a[1]]) + '（再點一次同一個模式可改回自動切換）');
     });
+  });
+  // 橫向觸控版面：合併（遙控器在右邊）／分開（左右各一邊，像手把）
+  function paintLayout() {
+    var sp = document.body.classList.contains('lsplit'), el = $('cmLayout');
+    if (el) el.textContent = sp ? '版面：分開' : '版面：合併';
+  }
+  try { if (localStorage.getItem('cd_split') === '1') document.body.classList.add('lsplit'); } catch (e) {}
+  paintLayout();
+  $('cmLayout').addEventListener('click', function (e) {
+    e.stopPropagation();
+    var on = document.body.classList.toggle('lsplit');
+    try { localStorage.setItem('cd_split', on ? '1' : '0'); } catch (er) {}
+    paintLayout();
+    setMsg(on ? '<b>分開</b>：左搖桿和左邊按鍵在畫面左側，右搖桿和右邊按鍵在右側。' : '<b>合併</b>：遙控器放在畫面右側。');
   });
   window.addEventListener('pointerdown', function (e) { if (e.target && e.target.closest && e.target.closest('#ctlMode')) return; setCtl('touch'); }, { passive: true, capture: true });
   window.addEventListener('keydown', function (e) { if (e.target && e.target.tagName === 'INPUT') return; setCtl('key'); }, true);
