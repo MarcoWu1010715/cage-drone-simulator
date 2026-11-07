@@ -182,6 +182,39 @@ canvas#stage {
   canvas#stage { aspect-ratio: 1 / 1; }
 }
 
+/* 橫向（手機橫放）：左邊 3D 畫面，右邊遙控器／操作提示、讀數和訊息，第一屏就能開飛；房間、按鈕列在下面 */
+@media (orientation: landscape) and (max-height: 560px) {
+  body { padding-block: 6px 16px; font-size: 14px; }
+  .wrap { max-width: none; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); column-gap: 12px; row-gap: 6px; align-items: start; }
+  .wrap > * { grid-column: 1 / -1; order: 5; }
+  .wrap > header, .wrap > .match, .wrap > .board { order: 0; }
+  h1 { font-size: 18px; }
+  header { gap: 6px; }
+  .pill { padding: 3px 9px; font-size: 11px; }
+  .wrap > .board { padding: 3px 12px; gap: 8px; }
+  .wrap > .board .side strong { font-size: 28px; }
+  .wrap > .board .side span { font-size: 12px; }
+  .wrap > .board .side { flex-wrap: nowrap; padding-bottom: 1px; border-bottom-width: 2px; }
+  .wrap > .board .side .fl { flex: 0 0 auto; font-size: 10px; }
+  .wrap > .board .mid b { font-size: 18px; }
+  .wrap > .board .mid small { font-size: 10px; }
+  .wrap > .stagebox { grid-column: 1; grid-row: span 6; order: 1; width: min(100%, calc((100vh - 104px) * 1.5)); margin: 0; }
+  .wrap > .rc, .wrap > .chelp, .wrap > .rcstat, .wrap > .hud, .wrap > .msg { grid-column: 2; order: 2; }
+  .wrap > .msg { order: 3; }
+  canvas#stage { aspect-ratio: 3 / 2; }
+  .wrap > .rc { width: min(100%, 360px, calc((100vh - 190px) * 1.54)); }
+  .wrap > .chelp { margin: 0; padding: 8px 10px; font-size: 12.5px; line-height: 1.35; max-width: none; max-height: calc(100vh - 150px); overflow-y: auto; }
+  .chelp h4 { margin-bottom: 4px; font-size: 13.5px; }
+  .chelp .row { padding: 1px 0; }
+  .wrap > .hud { gap: 5px; }
+  .wrap > .hud > div { padding: 2px 6px; }
+  .wrap > .hud span { font-size: 10px; letter-spacing: 0.04em; }
+  .wrap > .hud strong { font-size: 13px; }
+  .wrap .bar { height: 3px; margin-top: 2px; }
+  .wrap > .msg { height: 3.4em; font-size: 12.5px; line-height: 1.35; }
+  .cdov b { font-size: clamp(60px, 22vh, 130px); }
+}
+
 .hud {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
