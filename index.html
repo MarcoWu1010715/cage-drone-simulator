@@ -630,6 +630,20 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
       <button type="button" data-frame="1" data-pal="1" aria-pressed="false">紅</button>
       <button type="button" data-frame="2" data-pal="2" aria-pressed="true">藍</button>
     </div>
+    <div class="opts" role="group" aria-label="我方球框透明度">
+      <span class="lab">我方球框</span>
+      <button type="button" data-hoopo="100" aria-pressed="true">不透明</button>
+      <button type="button" data-hoopo="70" aria-pressed="false">70%</button>
+      <button type="button" data-hoopo="40" aria-pressed="false">40%</button>
+      <button type="button" data-hoopo="15" aria-pressed="false">15%</button>
+    </div>
+    <div class="opts" role="group" aria-label="對方球框透明度">
+      <span class="lab">對方球框</span>
+      <button type="button" data-hoopx="100" aria-pressed="true">不透明</button>
+      <button type="button" data-hoopx="70" aria-pressed="false">70%</button>
+      <button type="button" data-hoopx="40" aria-pressed="false">40%</button>
+      <button type="button" data-hoopx="15" aria-pressed="false">15%</button>
+    </div>
   </div>
 
   <p class="hint">和實體遙控器相同：左搖桿控制升降與轉向，右搖桿控制前後左右。定高模式起飛：左搖桿往上推第一下起槳（馬達轉動），第二下起飛；無定高模式起飛：左搖桿往上推過中間，沒有自動爬升，推多高升多快，推到約四成位置才能維持高度，放在中間會慢慢往下掉；降落：把左搖桿往下推到底，一直推到落地。選藍方或紅方，無人機會放在己方球框後面；預設的選手視角站在場外己方球框後方，眼睛離地 1.6 公尺，看著無人機；站位可以改成球框後的左側、右側，或斜後方的左後、右後。穿過對方球框得分，得分後要回到中線才能再次進攻，穿過自己的球框不算分，從球框後面往場內穿過也不算分。只有攻擊手能得分，防守者不能；攻擊手的尾燈是對方隊伍的顏色，防守者的尾燈是自己隊伍的顏色。球機之間有碰撞，撞到會被彈開。<br>AI 對打（單機）：選簡單、普通或困難。1 對 1 時電腦扮演另一隊的攻擊手；選 3 對 3 時，每隊 1 個攻擊手加 2 個防守員，你佔一個位置（看你選攻擊手或防守者），其他由電腦補滿。電腦有反應延遲、會恍神、手會抖，攻擊手會等空檔和做假動作，防守員會守在己方球框前面，跟著對方攻擊手左右上下移動擋路。你第一次起飛時開始 3 分鐘比賽，兩邊都穿過對方球框得分，時間到比多少；電腦也有碰撞，會撞到球框和你。進多人房間時 AI 會自動關閉。<br>多人房間裡，最先加入的人是裁判，由裁判開始 3 分鐘的比賽，只有比賽中才算分。比賽中防守者從球框後面往前穿過算犯規；裁判可以在玩家列表按「踢出」把人請出房間（要按兩下確認）；賽後裁判可以選擇罰球（每球限時 1 分鐘）或搶分，兩種都分「耗犯規」和「不耗犯規」：罰球是每次犯規讓對方罰一球，搶分是每次犯規讓對方直接搶走 1 分（犯規方 -1、對方 +1）；耗犯規會把用掉的犯規次數扣掉（搶分後歸零），不耗犯規則保留犯規次數。球框顏色跟那一端的場地一樣，發亮並有綠光的是目前可以進攻的對方球框；解鎖滑桿往下撥會立即停槳；定高滑桿往下撥則不會自動維持高度；燈光鍵（上鎖時單按換腰帶燈顏色）連按兩下切換無頭模式，上鎖、解鎖都可以（地上或飛行中都可以，方向固定以選手面向的方向（朝對方球框）為準，開啟時上方會亮「無頭模式」）；右功能鍵在解鎖後循環切換慢、中、快，上鎖時（按鍵上的字會變成「尾燈」）是換尾燈顏色。遙控種類 2 的左搖桿上下不會回彈，放開後油門停在原位，要自己推回中間才會停止升降。<br>電腦操作：W A S D 移動，↑ ↓ 升降，← → 轉向，U 解鎖，M 定高，Z 燈光，X 速度，V 切換選手、平視、斜視、俯視，T 換隊伍，R 換攻擊手或防守者，C 輪流換選手站位。<br>自訂按鍵：點上面的「鍵盤」或「手把」，再點提示表裡的按鍵標籤（會變黃色），按下想要的新按鍵或手把按鈕就設好了，Esc 取消，「還原預設」可以重來。<br>手把：接上手把後按任一鍵即可，左搖桿＝油門與轉向，右搖桿＝前後平移，A 解鎖／上鎖，B 定高開關，X 燈光鍵，Y 右功能鍵（速度／尾燈），LB 切視角，RB 切站位，Back 換攻擊手／防守者，Start 換隊伍。</p>
@@ -1645,7 +1659,34 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
   var STAND_NAMES = { lback: '球框左後（斜後方）', left: '球框後左側', back: '球框正後方', right: '球框後右側', rback: '球框右後（斜後方）', far: '球框正後方（遠）' };
   var STAND_POS = { lback: [1.7, -1.7], left: [0.9, -0.9], back: [0.5, 0], right: [0.9, 0.9], rback: [1.7, 1.7], far: [0.9, 0] };   // [離端牆距離, 左右偏移]，面向場內時左負右正
   var STAND_ORDER = ['back', 'far', 'right', 'rback', 'left', 'lback'];
+  // 球框透明度：我方球框（自己隊色的那個）與對方球框可以分開調，數字是不透明度百分比
+  var HA = { o: 100, x: 100 };
+  try { var ha0 = JSON.parse(localStorage.getItem('cd_hoopalpha') || '{}'); if (ha0.o >= 5 && ha0.o <= 100) HA.o = ha0.o; if (ha0.x >= 5 && ha0.x <= 100) HA.x = ha0.x; } catch (e) {}
+  var haKey = '';
+  function applyHoopAlpha() {
+    var key = S.team + '|' + HA.o + '|' + HA.x;
+    if (key === haKey || typeof goals === 'undefined') return;
+    haKey = key;
+    goals.forEach(function (g) {
+      var own = (g.name === '藍色') === (S.team === 'blue');
+      var a = (own ? HA.o : HA.x) / 100;
+      g.mat.transparent = a < 1; g.mat.opacity = a; g.mat.depthWrite = a >= 1; g.mat.needsUpdate = true;
+    });
+  }
+  var hoopOBtns = document.querySelectorAll('[data-hoopo]'), hoopXBtns = document.querySelectorAll('[data-hoopx]');
+  function syncHoopBtns() {
+    var i;
+    for (i = 0; i < hoopOBtns.length; i++) hoopOBtns[i].setAttribute('aria-pressed', String(parseInt(hoopOBtns[i].getAttribute('data-hoopo'), 10) === HA.o));
+    for (i = 0; i < hoopXBtns.length; i++) hoopXBtns[i].setAttribute('aria-pressed', String(parseInt(hoopXBtns[i].getAttribute('data-hoopx'), 10) === HA.x));
+  }
+  function setHoopAlpha(k, v) {
+    HA[k] = v;
+    try { localStorage.setItem('cd_hoopalpha', JSON.stringify(HA)); } catch (e) {}
+    syncHoopBtns(); applyHoopAlpha();
+    setMsg((k === 'o' ? '我方' : '對方') + '球框：' + (v >= 100 ? '不透明' : '不透明度 ' + v + '%') + '。');
+  }
   function syncOpts() {
+    applyHoopAlpha(); syncHoopBtns();
     var i;
     for (i = 0; i < roleBtns.length; i++) roleBtns[i].setAttribute('aria-pressed', String(parseInt(roleBtns[i].getAttribute('data-role'), 10) === S.role));
     for (i = 0; i < standBtns.length; i++) standBtns[i].setAttribute('aria-pressed', String(standBtns[i].getAttribute('data-stand') === V.stand));
@@ -1679,6 +1720,9 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
       })(list[i]);
     }
   }
+  applyHoopAlpha(); syncHoopBtns();
+  bindOpt(hoopOBtns, 'data-hoopo', function (v) { setHoopAlpha('o', v); }, true);
+  bindOpt(hoopXBtns, 'data-hoopx', function (v) { setHoopAlpha('x', v); }, true);
   bindOpt(roleBtns, 'data-role', setRole, true);
   bindOpt(standBtns, 'data-stand', setStand, false);
   bindOpt(shellBtns, 'data-shell', function (i) { S.shell = i; syncOpts(); netSend(true); }, true);
