@@ -1536,7 +1536,9 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
           S.x += cnx * cpush;
           S.y += cny * cpush;
           S.z = clamp(S.z + cnz * cpush, 0.02, ZMAX);
-          var cvn = S.vx * cnx + S.vy * cny;
+          // 用相對速度判斷：我撞別人、別人撞我，兩邊都算撞擊，被撞的也會被撞飛
+          var ovx = isNum(cr.p.vx) ? cr.p.vx : 0, ovy = isNum(cr.p.vy) ? cr.p.vy : 0;
+          var cvn = (S.vx - ovx) * cnx + (S.vy - ovy) * cny;
           if (cvn < 0) { impact(cnx, cny, -cvn); S.vx -= 1.5 * cvn * cnx; S.vy -= 1.5 * cvn * cny; }
           S.x = clamp(S.x, EDGE, AX - EDGE);
           S.y = clamp(S.y, EDGE, AY - EDGE);
@@ -2305,10 +2307,10 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     rm.at = Date.now();
   }
   function aiEntities() {
-    var a = [{ x: S.x, y: S.y, z: S.z, team: S.team, role: S.role, fly: S.mode !== 'landed' }], i, q;
+    var a = [{ x: S.x, y: S.y, z: S.z, vx: S.vx, vy: S.vy, team: S.team, role: S.role, fly: S.mode !== 'landed' }], i, q;
     for (i = 0; i < AI.bots.length; i++) {
       q = AI.bots[i];
-      a.push({ x: q.x, y: q.y, z: q.z, team: q.team, role: q.role, bot: q, fly: q.st !== 'ground' });
+      a.push({ x: q.x, y: q.y, z: q.z, vx: q.vx, vy: q.vy, team: q.team, role: q.role, bot: q, fly: q.st !== 'ground' });
     }
     return a;
   }
@@ -2480,6 +2482,13 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
         q.x = clamp(q.x + sx / sd * sp2, EDGE, AX - EDGE);
         q.y = clamp(q.y + sy / sd * sp2, EDGE, AY - EDGE);
         q.z = clamp(q.z + sz / sd * sp2, 0, ZMAX);
+        // 電腦球機被撞：依對方撞過來的相對速度被撞飛（速度突然改變，畫面上會翻晃打轉）
+        var clos = ((e.vx || 0) - q.vx) * sx / sd + ((e.vy || 0) - q.vy) * sy / sd;
+        if (clos > 0.3 && S.t - (q.lastHit || -9) > 0.25) {
+          q.lastHit = S.t;
+          var kc = Math.min(3, clos);
+          q.vx += sx / sd * kc * 1.2; q.vy += sy / sd * kc * 1.2;
+        }
       }
     }
     if (q.vx > 0.05) q.yaw += Math.atan2(Math.sin(Math.PI / 2 - q.yaw), Math.cos(Math.PI / 2 - q.yaw)) * Math.min(1, dt * 4);
