@@ -564,6 +564,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
   <div class="actions">
     <button id="btnReset" type="button">重新開始</button>
     <button id="btnSnd" type="button" aria-pressed="true">音效震動：開</button>
+    <button id="btnVibTest" type="button">測試震動</button>
     <div class="opts" role="group" aria-label="隊伍">
       <span class="lab">隊伍</span>
       <button type="button" data-team="blue" aria-pressed="true">藍方</button>
@@ -1119,13 +1120,35 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     } catch (e) {}
   }
   function beep(n, f, d, gap, type, vol) { for (var i = 0; i < n; i++) tone(f, i * (d + gap), d, type, vol); }
-  function vib(p) { if (SND.on && navigator.vibrate) { try { navigator.vibrate(p); } catch (e) {} } }
+  var VIB_WARNED = false;
+  function vib(p) {
+    if (!SND.on || !navigator.vibrate) return;
+    try {
+      var ok = navigator.vibrate(p);
+      if (ok === false && !VIB_WARNED && typeof setMsg === 'function') {   // 瀏覽器拒絕震動（常見：還沒點過畫面、或被嵌在別人的網頁裡）：提示一次
+        VIB_WARNED = true;
+        setMsg('瀏覽器擋掉了<b>震動</b>' + (window.top !== window ? '（目前頁面被嵌在別的網頁裡，常會被擋；直接用網址開啟比較可能有）' : '（先點一下畫面再試試）') + '。可以按「測試震動」看原因。');
+      }
+    } catch (e) {}
+  }
+  // 測試震動：直接回報這支手機／瀏覽器為什麼震不起來
+  function vibTest() {
+    var emb = window.top !== window ? '目前頁面被嵌在別的網頁裡（例如預覽頁），瀏覽器常會擋掉震動，請用網址直接開啟再試。' : '';
+    if (!navigator.vibrate) {
+      setMsg('這個瀏覽器<b>不支援網頁震動</b>。iPhone／iPad 的 Safari 和 Chrome 都不支援，只有 Android 的 Chrome、Edge、Firefox 等可以。' + emb);
+      return;
+    }
+    var r = false;
+    try { r = navigator.vibrate([250, 120, 250]); } catch (e) { r = false; }
+    if (r === false) setMsg('瀏覽器<b>拒絕了震動</b>。' + (emb || '請先在畫面上點一下，再按一次「測試震動」。'));
+    else setMsg('已送出震動指令，手機應該會震兩下。<b>如果沒感覺</b>，請檢查手機的系統設定：觸覺回饋／震動是否開啟、是否開著靜音或省電模式（有些手機省電模式會關掉網頁震動）。' + emb);
+  }
   function sfx(name, a) {
     switch (name) {
       case 'speed': beep(a, 1800, 0.16, 0.16, 'square', 0.2); vib(Array.apply(null, Array(a)).reduce(function (r) { r.push(80, 80); return r; }, []).slice(0, -1)); break;            // 遙控器蜂鳴器：1聲慢速、2聲中速、3聲快速
       case 'unlock': beep(1, 2200, 0.12, 0); vib(40); break;
       case 'lock': beep(1, 900, 0.18, 0); vib(60); break;
-      case 'key': beep(1, 2000, 0.05, 0, 'square', 0.07); vib(15); break;
+      case 'key': beep(1, 2000, 0.05, 0, 'square', 0.07); vib(30); break;
       case 'hit': {
         var nw = performance.now();
         if (nw - SND.lastHit < 120) break;
@@ -1564,6 +1587,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     if (SND.on) sfx('key');
   });
   syncSnd();
+  $('btnVibTest').addEventListener('click', vibTest);
   $('btnReset').addEventListener('click', function () { CDAI = 0; reset(netOn()); });
 
   /* ---------- 遙控器按鍵 ---------- */
@@ -1640,10 +1664,24 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     syncRc();
     sfx('speed', S.speedIdx + 1);
   }
-  swLock.addEventListener('click', function () { setUnlock(!S.unlocked); });
-  swHold.addEventListener('click', function () { setHold(!S.hold); });
-  fbL.addEventListener('click', pressLeft);
-  fbR.addEventListener('click', pressRight);
+  // 遙控器按鍵改用「按下去」就動作（pointerdown）：手指還按著搖桿時，另一根手指點按鍵也要有反應
+  // （手機瀏覽器在多指同時按的時候不會產生 click）。鍵盤操作（Tab＋Enter）還是走 click。
+  function pressOn(el, fn, beep) {
+    el.addEventListener('pointerdown', function (e) {
+      el._pd = performance.now();
+      e.preventDefault();
+      if (beep) sfx('key');
+      fn();
+    });
+    el.addEventListener('click', function (e) {
+      if (performance.now() - (el._pd || 0) < 800) { e.stopImmediatePropagation(); return; }   // 剛剛已經處理過了
+      fn();
+    });
+  }
+  pressOn(swLock, function () { setUnlock(!S.unlocked); });
+  pressOn(swHold, function () { setHold(!S.hold); });
+  pressOn(fbL, pressLeft, true);
+  pressOn(fbR, pressRight);
   syncRc();
 
   var viewBtns = document.querySelectorAll('[data-view]');
