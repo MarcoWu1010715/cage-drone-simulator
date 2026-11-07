@@ -180,7 +180,7 @@ canvas#stage {
   border-radius: 6px;
   border: 1px solid var(--line);
   background: var(--floor);
-  touch-action: none;
+  touch-action: pan-y;   /* 手指放在 3D 畫面上也能上下滑動頁面 */
 }
 @media (max-width: 600px) {
   .stagebox { width: min(100%, 52vh); }
@@ -288,7 +288,7 @@ canvas#stage {
   aspect-ratio: 400 / 260;
   user-select: none;
   -webkit-user-select: none;
-  touch-action: none;
+  touch-action: pan-y;   /* 遙控器的空白處也能滑動頁面；搖桿和按鍵自己仍然不會捲動 */
 }
 .rc svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .rc .at { position: absolute; transform: translate(-50%, -50%); }
