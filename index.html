@@ -159,6 +159,11 @@ header .pill { flex: 0 1 auto; min-width: 0; max-width: 62%; overflow: hidden; t
 .ctlmode span.on { background: #6fe08a; color: #0b2b14; }
 .ctlmode span.off { opacity: .35; }
 .chelp { margin: 8px auto; max-width: 560px; padding: 12px 14px; border-radius: 14px; background: rgba(127,127,127,.13); border: 1px solid rgba(127,127,127,.3); font-size: 14px; line-height: 1.5; }
+.chelp button.kbd { min-height: 0; display: inline-block; min-width: 24px; padding: 1px 9px; border-radius: 6px; border: 1px solid rgba(127,127,127,.55); border-bottom-width: 3px; background: rgba(127,127,127,.12); color: inherit; font: 700 13px/1.5 inherit; text-align: center; cursor: pointer; }
+.chelp button.kbd.learn { background: #ffd666; border-color: #c89b1a; color: #3a2a00; }
+.chelp .lay { display: flex; gap: 6px; margin: 0 0 6px; flex-wrap: wrap; }
+.chelp .lay button { min-height: 0; padding: 3px 11px; border-radius: 999px; border: 1px solid rgba(127,127,127,.5); background: transparent; color: inherit; font: 700 12.5px/1.4 inherit; cursor: pointer; }
+.chelp .lay button.on { background: #6fe08a; border-color: #6fe08a; color: #0b2b14; }
 .chelp h4 { margin: 0 0 8px; font-size: 15px; }
 .chelp .row { display: flex; align-items: center; gap: 8px; padding: 3px 0; }
 .chelp .row > span { margin-left: auto; text-align: right; }
@@ -537,32 +542,15 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
   </div>
   </div>
   <div class="chelp" id="helpKey" hidden>
-    <h4>鍵盤操作</h4>
-    <div class="row"><b><kbd>W</kbd><kbd>S</kbd></b><span>前進／後退</span></div>
-    <div class="row"><b><kbd>A</kbd><kbd>D</kbd></b><span>向左／向右平移</span></div>
-    <div class="row"><b><kbd>↑</kbd><kbd>↓</kbd></b><span>升高／降低（油門）</span></div>
-    <div class="row"><b><kbd>←</kbd><kbd>→</kbd></b><span>向左／向右轉向</span></div>
-    <div class="row"><b><kbd>U</kbd></b><span>解鎖／上鎖</span></div>
-    <div class="row"><b><kbd>M</kbd></b><span>定高開關</span></div>
-    <div class="row"><b><kbd>Z</kbd></b><span>燈光鍵（連按兩下＝無頭模式）</span></div>
-    <div class="row"><b><kbd>X</kbd></b><span>速度（上鎖時＝換尾燈）</span></div>
-    <div class="row"><b><kbd>V</kbd></b><span>切換視角</span></div>
-    <div class="row"><b><kbd>C</kbd></b><span>換選手站位</span></div>
-    <div class="row"><b><kbd>T</kbd></b><span>換隊伍</span></div>
-    <div class="row"><b><kbd>R</kbd></b><span>換攻擊手／防守者</span></div>
+    <h4>鍵盤操作 <small style="font-weight:400">點按鍵標籤可自訂</small></h4>
+    <div id="keyRows"></div>
+    <div class="lay"><button type="button" id="kbReset">還原預設</button></div>
   </div>
   <div class="chelp" id="helpPad" hidden>
     <h4>手把操作 <small id="padState" style="font-weight:400"></small></h4>
-    <div class="row"><b><kbd>左搖桿</kbd></b><span>上下＝升降（油門）、左右＝轉向</span></div>
-    <div class="row"><b><kbd>右搖桿</kbd></b><span>前後＝前進後退、左右＝平移</span></div>
-    <div class="row"><b><kbd>A</kbd></b><span>解鎖／上鎖</span></div>
-    <div class="row"><b><kbd>B</kbd></b><span>定高開關</span></div>
-    <div class="row"><b><kbd>X</kbd></b><span>燈光鍵（連按兩下＝無頭模式）</span></div>
-    <div class="row"><b><kbd>Y</kbd></b><span>速度（上鎖時＝換尾燈）</span></div>
-    <div class="row"><b><kbd>LB</kbd></b><span>切換視角</span></div>
-    <div class="row"><b><kbd>RB</kbd></b><span>換選手站位</span></div>
-    <div class="row"><b><kbd>Back</kbd></b><span>換攻擊手／防守者</span></div>
-    <div class="row"><b><kbd>Start</kbd></b><span>換隊伍</span></div>
+    <div class="lay" id="padLay" role="group" aria-label="手把鍵位"><button type="button" data-l="auto">自動</button><button type="button" data-l="xbox">Xbox</button><button type="button" data-l="ps">PS</button><button type="button" data-l="switch">Switch</button></div>
+    <div id="padRows"></div>
+    <div class="lay"><button type="button" id="padReset">還原預設</button></div>
   </div>
   <p class="rcstat" id="rcstat"></p>
 
@@ -644,7 +632,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     </div>
   </div>
 
-  <p class="hint">和實體遙控器相同：左搖桿控制升降與轉向，右搖桿控制前後左右。定高模式起飛：左搖桿往上推第一下起槳（馬達轉動），第二下起飛；無定高模式起飛：左搖桿往上推過中間，沒有自動爬升，推多高升多快，推到約四成位置才能維持高度，放在中間會慢慢往下掉；降落：把左搖桿往下推到底，一直推到落地。選藍方或紅方，無人機會放在己方球框後面；預設的選手視角站在場外己方球框後方，眼睛離地 1.6 公尺，看著無人機；站位可以改成球框後的左側、右側，或斜後方的左後、右後。穿過對方球框得分，得分後要回到中線才能再次進攻，穿過自己的球框不算分，從球框後面往場內穿過也不算分。只有攻擊手能得分，防守者不能；攻擊手的尾燈是對方隊伍的顏色，防守者的尾燈是自己隊伍的顏色。球機之間有碰撞，撞到會被彈開。<br>AI 對打（單機）：選簡單、普通或困難。1 對 1 時電腦扮演另一隊的攻擊手；選 3 對 3 時，每隊 1 個攻擊手加 2 個防守員，你佔一個位置（看你選攻擊手或防守者），其他由電腦補滿。電腦有反應延遲、會恍神、手會抖，攻擊手會等空檔和做假動作，防守員會守在己方球框前面，跟著對方攻擊手左右上下移動擋路。你第一次起飛時開始 3 分鐘比賽，兩邊都穿過對方球框得分，時間到比多少；電腦也有碰撞，會撞到球框和你。進多人房間時 AI 會自動關閉。<br>多人房間裡，最先加入的人是裁判，由裁判開始 3 分鐘的比賽，只有比賽中才算分。比賽中防守者從球框後面往前穿過算犯規；裁判可以在玩家列表按「踢出」把人請出房間（要按兩下確認）；賽後裁判可以選擇罰球（每球限時 1 分鐘）或搶分，兩種都分「耗犯規」和「不耗犯規」：罰球是每次犯規讓對方罰一球，搶分是每次犯規讓對方直接搶走 1 分（犯規方 -1、對方 +1）；耗犯規會把用掉的犯規次數扣掉（搶分後歸零），不耗犯規則保留犯規次數。球框顏色跟那一端的場地一樣，發亮並有綠光的是目前可以進攻的對方球框；解鎖滑桿往下撥會立即停槳；定高滑桿往下撥則不會自動維持高度；燈光鍵連按兩下切換無頭模式（地上或飛行中都可以，方向固定以選手面向的方向（朝對方球框）為準，開啟時上方會亮「無頭模式」）；右功能鍵在解鎖後循環切換慢、中、快，上鎖時（按鍵上的字會變成「尾燈」）是換尾燈顏色。遙控種類 2 的左搖桿上下不會回彈，放開後油門停在原位，要自己推回中間才會停止升降。<br>電腦操作：W A S D 移動，↑ ↓ 升降，← → 轉向，U 解鎖，M 定高，Z 燈光，X 速度，V 切換選手、平視、斜視、俯視，T 換隊伍，R 換攻擊手或防守者，C 輪流換選手站位。<br>手把：接上手把後按任一鍵即可，左搖桿＝油門與轉向，右搖桿＝前後平移，A 解鎖／上鎖，B 定高開關，X 燈光鍵，Y 右功能鍵（速度／尾燈），LB 切視角，RB 切站位，Back 換攻擊手／防守者，Start 換隊伍。</p>
+  <p class="hint">和實體遙控器相同：左搖桿控制升降與轉向，右搖桿控制前後左右。定高模式起飛：左搖桿往上推第一下起槳（馬達轉動），第二下起飛；無定高模式起飛：左搖桿往上推過中間，沒有自動爬升，推多高升多快，推到約四成位置才能維持高度，放在中間會慢慢往下掉；降落：把左搖桿往下推到底，一直推到落地。選藍方或紅方，無人機會放在己方球框後面；預設的選手視角站在場外己方球框後方，眼睛離地 1.6 公尺，看著無人機；站位可以改成球框後的左側、右側，或斜後方的左後、右後。穿過對方球框得分，得分後要回到中線才能再次進攻，穿過自己的球框不算分，從球框後面往場內穿過也不算分。只有攻擊手能得分，防守者不能；攻擊手的尾燈是對方隊伍的顏色，防守者的尾燈是自己隊伍的顏色。球機之間有碰撞，撞到會被彈開。<br>AI 對打（單機）：選簡單、普通或困難。1 對 1 時電腦扮演另一隊的攻擊手；選 3 對 3 時，每隊 1 個攻擊手加 2 個防守員，你佔一個位置（看你選攻擊手或防守者），其他由電腦補滿。電腦有反應延遲、會恍神、手會抖，攻擊手會等空檔和做假動作，防守員會守在己方球框前面，跟著對方攻擊手左右上下移動擋路。你第一次起飛時開始 3 分鐘比賽，兩邊都穿過對方球框得分，時間到比多少；電腦也有碰撞，會撞到球框和你。進多人房間時 AI 會自動關閉。<br>多人房間裡，最先加入的人是裁判，由裁判開始 3 分鐘的比賽，只有比賽中才算分。比賽中防守者從球框後面往前穿過算犯規；裁判可以在玩家列表按「踢出」把人請出房間（要按兩下確認）；賽後裁判可以選擇罰球（每球限時 1 分鐘）或搶分，兩種都分「耗犯規」和「不耗犯規」：罰球是每次犯規讓對方罰一球，搶分是每次犯規讓對方直接搶走 1 分（犯規方 -1、對方 +1）；耗犯規會把用掉的犯規次數扣掉（搶分後歸零），不耗犯規則保留犯規次數。球框顏色跟那一端的場地一樣，發亮並有綠光的是目前可以進攻的對方球框；解鎖滑桿往下撥會立即停槳；定高滑桿往下撥則不會自動維持高度；燈光鍵連按兩下切換無頭模式（地上或飛行中都可以，方向固定以選手面向的方向（朝對方球框）為準，開啟時上方會亮「無頭模式」）；右功能鍵在解鎖後循環切換慢、中、快，上鎖時（按鍵上的字會變成「尾燈」）是換尾燈顏色。遙控種類 2 的左搖桿上下不會回彈，放開後油門停在原位，要自己推回中間才會停止升降。<br>電腦操作：W A S D 移動，↑ ↓ 升降，← → 轉向，U 解鎖，M 定高，Z 燈光，X 速度，V 切換選手、平視、斜視、俯視，T 換隊伍，R 換攻擊手或防守者，C 輪流換選手站位。<br>自訂按鍵：點上面的「鍵盤」或「手把」，再點提示表裡的按鍵標籤（會變黃色），按下想要的新按鍵或手把按鈕就設好了，Esc 取消，「還原預設」可以重來。<br>手把：接上手把後按任一鍵即可，左搖桿＝油門與轉向，右搖桿＝前後平移，A 解鎖／上鎖，B 定高開關，X 燈光鍵，Y 右功能鍵（速度／尾燈），LB 切視角，RB 切站位，Back 換攻擊手／防守者，Start 換隊伍。</p>
   <p class="hint" id="netHint">聯機載入中…（在 Claude 裡用已登入的帳號開啟，或在一般網站上用點對點連線）。</p>
 </div>
 
@@ -1205,32 +1193,82 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
 
   function dz(v) { return Math.abs(v) < 0.12 ? 0 : v; }
 
+  /* ---------- 自訂按鍵（鍵盤、手把）：點提示表上的按鍵標籤，再按想要的新按鍵／按鈕 ---------- */
+  var ACT = [
+    ['fwd', '前進', 'w'], ['back', '後退', 's'], ['left', '向左平移', 'a'], ['right', '向右平移', 'd'],
+    ['up', '升高（油門）', 'arrowup'], ['down', '降低（油門）', 'arrowdown'], ['yawl', '向左轉向', 'arrowleft'], ['yawr', '向右轉向', 'arrowright'],
+    ['unlock', '解鎖／上鎖', 'u'], ['hold', '定高開關', 'm'], ['light', '燈光鍵（連按兩下＝無頭模式）', 'z'], ['speed', '速度（上鎖時＝換尾燈）', 'x'],
+    ['view', '切換視角', 'v'], ['stand', '換選手站位', 'c'], ['team', '換隊伍', 't'], ['role', '換攻擊手／防守者', 'r']
+  ];
+  var KB = {}, KBREV = {}, LEARN = null;
+  function kbLoad() {
+    var sv = {};
+    try { sv = JSON.parse(localStorage.getItem('cd_kb') || '{}') || {}; } catch (e) { sv = {}; }
+    ACT.forEach(function (a) { KB[a[0]] = (typeof sv[a[0]] === 'string') ? sv[a[0]] : a[2]; });
+    kbRev();
+  }
+  function kbRev() { KBREV = {}; ACT.forEach(function (a) { if (KB[a[0]]) KBREV[KB[a[0]]] = a[0]; }); }
+  function kbSave() { try { localStorage.setItem('cd_kb', JSON.stringify(KB)); } catch (e) {} }
+  function keyName(k) {
+    if (!k) return '—';
+    var m = { arrowup: '↑', arrowdown: '↓', arrowleft: '←', arrowright: '→', ' ': '空白鍵', shift: 'Shift', control: 'Ctrl', alt: 'Alt', enter: 'Enter', tab: 'Tab', backspace: '退格' };
+    return m[k] || (k.length === 1 ? k.toUpperCase() : k);
+  }
+  var ACT_FN = {
+    unlock: function () { setUnlock(!S.unlocked); }, hold: function () { setHold(!S.hold); }, light: function () { pressLeft(); }, speed: function () { pressRight(); },
+    view: function () { setView(V.mode === 'pilot' ? 'chase' : (V.mode === 'chase' ? 'tilt' : (V.mode === 'tilt' ? 'top' : 'pilot'))); },
+    stand: function () { setStand(STAND_ORDER[(STAND_ORDER.indexOf(V.stand) + 1) % STAND_ORDER.length]); },
+    team: function () { setTeam(S.team === 'blue' ? 'red' : 'blue'); }, role: function () { setRole(S.role === 0 ? 1 : 0); }
+  };
+  var MOVE_ACT = { fwd: 1, back: 1, left: 1, right: 1, up: 1, down: 1, yawl: 1, yawr: 1 };
+  function paintKeyHelp() {
+    var el = $('keyRows'); if (!el) return;
+    var h = '';
+    ACT.forEach(function (a) {
+      var on = LEARN && LEARN.kind === 'key' && LEARN.action === a[0];
+      h += '<div class="row"><b><button type="button" class="kbd' + (on ? ' learn' : '') + '" data-a="' + a[0] + '">' + (on ? '按下按鍵…' : keyName(KB[a[0]])) + '</button></b><span>' + a[1] + '</span></div>';
+    });
+    el.innerHTML = h;
+  }
+  function learnStart(kind, action) {
+    if (LEARN && LEARN.kind === kind && LEARN.action === action) { LEARN = null; paintKeyHelp(); paintPadHelp(); return; }
+    LEARN = { kind: kind, action: action };
+    paintKeyHelp(); paintPadHelp();
+    setMsg('請按下要設定的<b>' + (kind === 'key' ? '鍵盤按鍵' : '手把按鈕') + '</b>（按 Esc 取消）。');
+  }
+  function learnDone(msg) { LEARN = null; paintKeyHelp(); paintPadHelp(); if (msg) setMsg(msg); }
+  document.addEventListener('click', function (e) {
+    var bt = e.target && e.target.closest ? e.target.closest('button[data-a]') : null;
+    if (!bt) return;
+    e.stopPropagation();
+    learnStart(bt.closest('#helpPad') ? 'pad' : 'key', bt.getAttribute('data-a'));
+  }, true);
+  // 學習模式：最先攔截鍵盤
+  window.addEventListener('keydown', function (e) {
+    if (!LEARN) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    var k = e.key.toLowerCase();
+    if (k === 'escape') { learnDone('已取消。'); return; }
+    if (LEARN.kind !== 'key') return;   // 學手把按鈕時，鍵盤只有 Esc 有用
+    if (k === 'dead' || k === 'unidentified' || /^f\d+$/.test(k) || (k >= '1' && k <= '6' && k.length === 1)) { setMsg('這個鍵不能用（數字 1～6 是燈光顏色、F 鍵留給瀏覽器），請換一個。'); return; }
+    var act = LEARN.action;
+    ACT.forEach(function (a) { if (a[0] !== act && KB[a[0]] === k) KB[a[0]] = ''; });   // 搶走別人的鍵：對方變成未設定
+    KB[act] = k; kbSave(); kbRev();
+    learnDone('已設定：<b>' + keyName(k) + '</b>。');
+  }, true);
+  kbLoad();
   window.addEventListener('keydown', function (e) {
     if (e.target && e.target.tagName === 'INPUT') return;
-    var k = e.key.toLowerCase();
-    if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].indexOf(k) >= 0) {
-      keys[k] = true; e.preventDefault();
-    } else if (k === 't') {
-      setTeam(S.team === 'blue' ? 'red' : 'blue');
-    } else if (k === 'v') {
-      setView(V.mode === 'pilot' ? 'chase' : (V.mode === 'chase' ? 'tilt' : (V.mode === 'tilt' ? 'top' : 'pilot')));
-    } else if (k === 'u') {
-      setUnlock(!S.unlocked);
-    } else if (k === 'm') {
-      setHold(!S.hold);
-    } else if (k === 'z') {
-      pressLeft();
-    } else if (k === 'x') {
-      pressRight();
-    } else if (k === 'r') {
-      setRole(S.role === 0 ? 1 : 0);
-    } else if (k === 'c') {
-      setStand(STAND_ORDER[(STAND_ORDER.indexOf(V.stand) + 1) % STAND_ORDER.length]);
-    } else if (k >= '1' && k <= '6') {
+    var k = e.key.toLowerCase(), act = KBREV[k];
+    if (act && MOVE_ACT[act]) {
+      keys[act] = true; e.preventDefault();
+    } else if (act && ACT_FN[act]) {
+      ACT_FN[act]();
+    } else if (!act && k >= '1' && k <= '6' && k.length === 1) {
       setLed(parseInt(k, 10) - 1);
     }
   });
-  window.addEventListener('keyup', function (e) { keys[e.key.toLowerCase()] = false; });
+  window.addEventListener('keyup', function (e) { var act = KBREV[e.key.toLowerCase()]; if (act) keys[act] = false; });
   window.addEventListener('blur', function () { keys = {}; });
 
   /* ---------- 實體手把（Gamepad API，支援 Xbox / PS / Switch Pro 等標準對應的手把） ----------
@@ -1244,7 +1282,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     CTL = m; paintCtl();
   }
   var CTL_HINT = { touch: '<b>觸控模式</b>：用畫面上的虛擬遙控器操作。', key: '<b>鍵盤模式</b>：W A S D 移動，↑ ↓ 升降，← → 轉向，U 解鎖，M 定高，Z 燈光，X 速度。',
-    pad: function () { return '<b>手把模式</b>：左搖桿＝油門與轉向，右搖桿＝前後平移，A 解鎖、B 定高、X 燈光、Y 速度／尾燈、LB 視角、RB 站位。' + (GP.on ? '' : '（目前還沒偵測到手把，接上後按任一鍵即可。）'); } };
+    pad: function () { return '<b>手把模式</b>（' + padLay().n + ' 鍵位）：左搖桿＝油門與轉向，右搖桿＝前後平移，' + padName('unlock') + ' 解鎖、' + padName('hold') + ' 定高、' + padName('light') + ' 燈光、' + padName('speed') + ' 速度／尾燈、' + padName('view') + ' 視角、' + padName('stand') + ' 站位。' + (GP.on ? '' : '（目前還沒偵測到手把，接上後按任一鍵即可。）'); } };
   function paintCtl() {
     var a = { touch: $('cmTouch'), key: $('cmKey'), pad: $('cmPad') };
     for (var k in a) if (a[k]) a[k].className = (k === CTL ? 'on' : '');
@@ -1279,7 +1317,62 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
   });
   window.addEventListener('pointerdown', function (e) { if (e.target && e.target.closest && e.target.closest('#ctlMode')) return; setCtl('touch'); }, { passive: true, capture: true });
   window.addEventListener('keydown', function (e) { if (e.target && e.target.tagName === 'INPUT') return; setCtl('key'); }, true);
+  // 手把鍵位：Xbox／PS／Switch（瀏覽器的標準對應是依「位置」編號：0 下、1 右、2 左、3 上），自動依手把名稱判斷
+  var PAD_LAY = {
+    xbox: { n: 'Xbox', id: { unlock: 0, hold: 1, light: 2, speed: 3, view: 4, stand: 5, role: 8, team: 9 } },
+    ps: { n: 'PS', id: { unlock: 0, hold: 1, light: 2, speed: 3, view: 4, stand: 5, role: 8, team: 9 } },
+    'switch': { n: 'Switch', id: { unlock: 1, hold: 0, light: 3, speed: 2, view: 4, stand: 5, role: 8, team: 9 } }
+  };
+  // 每個按鈕編號在不同手把上的名字（標準對應：0 下、1 右、2 左、3 上、4 5＝肩鍵、6 7＝扳機、8 9＝中間兩顆、10 11＝搖桿按下、12～15＝十字鍵）
+  var PAD_NM = {
+    xbox: ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'View', 'Menu', '左搖桿按下', '右搖桿按下', '十字鍵↑', '十字鍵↓', '十字鍵←', '十字鍵→'],
+    ps: ['✕', '○', '□', '△', 'L1', 'R1', 'L2', 'R2', 'Create', 'Options', 'L3', 'R3', '十字鍵↑', '十字鍵↓', '十字鍵←', '十字鍵→'],
+    'switch': ['B', 'A', 'Y', 'X', 'L', 'R', 'ZL', 'ZR', '−', '+', '左搖桿按下', '右搖桿按下', '十字鍵↑', '十字鍵↓', '十字鍵←', '十字鍵→']
+  };
+  var PAD_ACT = ['unlock', 'hold', 'light', 'speed', 'view', 'stand', 'role', 'team'];
+  var PAD_CUS = {};
+  try { PAD_CUS = JSON.parse(localStorage.getItem('cd_padcus') || '{}') || {}; } catch (e) { PAD_CUS = {}; }
+  function padIdx(a) { return typeof PAD_CUS[a] === 'number' ? PAD_CUS[a] : padLay().id[a]; }
+  function padKey() { return PAD_SEL === 'auto' ? PAD_DET : PAD_SEL; }
+  function padName(a) { var i = padIdx(a); return i < 0 ? '—' : (PAD_NM[padKey()][i] || ('按鈕' + i)); }
+  var PAD_SEL = 'auto', PAD_DET = 'xbox';
+  try { var pl0 = localStorage.getItem('cd_padlay'); if (pl0 === 'auto' || PAD_LAY[pl0]) PAD_SEL = pl0; } catch (e) {}
+  function padKind(id) {
+    id = String(id || '').toLowerCase();
+    if (/057e|nintendo|switch|joy-?con|pro controller/.test(id)) return 'switch';
+    if (/054c|sony|playstation|dualshock|dualsense|wireless controller|ps[345]/.test(id)) return 'ps';
+    return 'xbox';
+  }
+  function padLay() { return PAD_LAY[PAD_SEL === 'auto' ? PAD_DET : PAD_SEL]; }
+  function padRowsHtml() {
+    function r(k, t) { return '<div class="row"><b><kbd>' + k + '</kbd></b><span>' + t + '</span></div>'; }
+    var h = r('左搖桿', '上下＝升降（油門）、左右＝轉向') + r('右搖桿', '前後＝前進後退、左右＝平移');
+    var desc = { unlock: '解鎖／上鎖', hold: '定高開關', light: '燈光鍵（連按兩下＝無頭模式）', speed: '速度（上鎖時＝換尾燈）', view: '切換視角', stand: '換選手站位', role: '換攻擊手／防守者', team: '換隊伍' };
+    PAD_ACT.forEach(function (a) {
+      var on = LEARN && LEARN.kind === 'pad' && LEARN.action === a;
+      h += '<div class="row"><b><button type="button" class="kbd' + (on ? ' learn' : '') + '" data-a="' + a + '">' + (on ? '按下按鈕…' : padName(a)) + '</button></b><span>' + desc[a] + '</span></div>';
+    });
+    return h;
+  }
+  function paintPadHelp() {
+    var rows = $('padRows'); if (rows) rows.innerHTML = padRowsHtml();
+    var bs = document.querySelectorAll('#padLay button');
+    for (var i = 0; i < bs.length; i++) bs[i].className = bs[i].getAttribute('data-l') === PAD_SEL ? 'on' : '';
+  }
   var GP = { lx: 0, ly: 0, rx: 0, ry: 0, on: false, prev: [], said: false };
+  document.querySelectorAll('#padLay button').forEach(function (bt) {
+    bt.addEventListener('click', function (e) {
+      e.stopPropagation();
+      PAD_SEL = bt.getAttribute('data-l');
+      try { localStorage.setItem('cd_padlay', PAD_SEL); } catch (er) {}
+      paintPadHelp();
+      setMsg('手把鍵位：<b>' + (PAD_SEL === 'auto' ? '自動（依手把判斷，目前是 ' + PAD_LAY[PAD_DET].n + '）' : PAD_LAY[PAD_SEL].n) + '</b>。');
+    });
+  });
+  $('padReset').addEventListener('click', function (e) { e.stopPropagation(); PAD_CUS = {}; try { localStorage.removeItem('cd_padcus'); } catch (er) {} learnDone('手把按鈕已還原預設。'); });
+  $('kbReset').addEventListener('click', function (e) { e.stopPropagation(); try { localStorage.removeItem('cd_kb'); } catch (er) {} kbLoad(); learnDone('鍵盤按鍵已還原預設。'); });
+  paintKeyHelp();
+  paintPadHelp();
   paintCtl();
   function gpPoll() {
     var pads = navigator.getGamepads ? navigator.getGamepads() : null, p = null, i;
@@ -1287,20 +1380,29 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     if (!p) { GP.lx = GP.ly = GP.rx = GP.ry = 0; if (GP.on) { GP.on = false; if (CTL === 'pad' && !CTL_PIN) CTL = 'touch'; paintCtl(); } return; }
     if (!GP.on) {
       GP.on = true; paintCtl();
-      if (!GP.said) { GP.said = true; setMsg('已偵測到<b>手把</b>：左搖桿＝油門與轉向，右搖桿＝前後平移；A 解鎖、B 定高、X 燈光、Y 速度／尾燈、LB 視角、RB 站位。'); }
+      if (!GP.said) { GP.said = true; setMsg('已偵測到<b>手把</b>（' + padLay().n + ' 鍵位）：左搖桿＝油門與轉向，右搖桿＝前後平移；' + padName('unlock') + ' 解鎖、' + padName('hold') + ' 定高、' + padName('light') + ' 燈光、' + padName('speed') + ' 速度／尾燈。'); }
     }
     function ax(v) { v = +v || 0; return Math.abs(v) < 0.15 ? 0 : (v > 0 ? 1 : -1) * Math.min(1, (Math.abs(v) - 0.15) / 0.85); }
+    var kd = padKind(p.id); if (kd !== PAD_DET) { PAD_DET = kd; paintPadHelp(); }
     GP.lx = ax(p.axes[0]); GP.ly = ax(p.axes[1]); GP.rx = ax(p.axes[2]); GP.ry = ax(p.axes[3]);
     if (GP.lx || GP.ly || GP.rx || GP.ry) setCtl('pad');
     var b = p.buttons || [];
     function pr(n) { return !!(b[n] && (b[n].pressed || b[n].value > 0.6)); }
-    var fns = { 0: function () { setUnlock(!S.unlocked); }, 1: function () { setHold(!S.hold); }, 2: pressLeft, 3: pressRight,
-      4: function () { setView(V.mode === 'pilot' ? 'chase' : (V.mode === 'chase' ? 'tilt' : (V.mode === 'tilt' ? 'top' : 'pilot'))); },
-      5: function () { setStand(STAND_ORDER[(STAND_ORDER.indexOf(V.stand) + 1) % STAND_ORDER.length]); },
-      8: function () { setRole(S.role === 0 ? 1 : 0); }, 9: function () { setTeam(S.team === 'blue' ? 'red' : 'blue'); } };
-    for (var n in fns) {
-      var now = pr(+n);
-      if (now && !GP.prev[n]) { setCtl('pad'); try { audioCtx(); fns[n](); } catch (e) {} }
+    var rev = {};
+    PAD_ACT.forEach(function (a) { var ix = padIdx(a); if (ix >= 0) rev[ix] = a; });
+    for (var n = 0; n < b.length; n++) {
+      var now = pr(n);
+      if (now && !GP.prev[n]) {
+        if (LEARN && LEARN.kind === 'pad') {
+          var act = LEARN.action;
+          PAD_ACT.forEach(function (a2) { if (a2 !== act && padIdx(a2) === n) PAD_CUS[a2] = -1; });   // 搶走別人的按鈕：對方變成未設定
+          PAD_CUS[act] = n;
+          try { localStorage.setItem('cd_padcus', JSON.stringify(PAD_CUS)); } catch (e) {}
+          learnDone('已設定：<b>' + (PAD_NM[padKey()][n] || ('按鈕' + n)) + '</b>。');
+        } else if (rev[n]) {
+          setCtl('pad'); try { audioCtx(); ACT_FN[rev[n]](); } catch (e) {}
+        }
+      }
       GP.prev[n] = now;
     }
   }
@@ -1647,10 +1749,10 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
 
     // 實體遙控器：左搖桿＝油門與轉向，右搖桿＝前後與平移
     gpPoll();
-    var mx = clamp(dz(stickR.x) + GP.rx + (keys.d ? 1 : 0) - (keys.a ? 1 : 0), -1, 1);
-    var my = clamp(dz(stickR.y) + GP.ry + (keys.s ? 1 : 0) - (keys.w ? 1 : 0), -1, 1);
-    var al = clamp(-dz(stickL.y) - GP.ly + (keys.arrowup ? 1 : 0) - (keys.arrowdown ? 1 : 0), -1, 1);
-    var yw = clamp(dz(stickL.x) + GP.lx + (keys.arrowright ? 1 : 0) - (keys.arrowleft ? 1 : 0), -1, 1);
+    var mx = clamp(dz(stickR.x) + GP.rx + (keys.right ? 1 : 0) - (keys.left ? 1 : 0), -1, 1);
+    var my = clamp(dz(stickR.y) + GP.ry + (keys.back ? 1 : 0) - (keys.fwd ? 1 : 0), -1, 1);
+    var al = clamp(-dz(stickL.y) - GP.ly + (keys.up ? 1 : 0) - (keys.down ? 1 : 0), -1, 1);
+    var yw = clamp(dz(stickL.x) + GP.lx + (keys.yawr ? 1 : 0) - (keys.yawl ? 1 : 0), -1, 1);
     if (S.stun > 0) { mx *= 0.25; my *= 0.25; yw *= 0.25; }   // 剛被撞到，操控變遲鈍
 
     // 搖桿手勢起飛
