@@ -1261,9 +1261,11 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
   function pressLeft() {
     var now = performance.now();
     if (now - lastL < 450) {
-      S.led = (S.led + 5) % 6;
+      if (!S.unlocked) S.led = (S.led + 5) % 6;   // 上鎖時第一下已換色，連按兩下要還原
       S.headless = !S.headless; sfx('key');
       setMsg(S.headless ? '<b>無頭模式開啟</b>：右搖桿的方向固定以選手面向的方向為準（朝對方球框），不管機頭轉到哪裡，往前推都是往對方球框飛。再連按兩下燈光鍵關閉。' : '<b>無頭模式關閉</b>：右搖桿的方向跟著機頭走。');
+    } else if (S.unlocked) {
+      setMsg('已解鎖，<b>腰帶燈顏色不能切換</b>（連按兩下可切無頭模式）。要換色請先上鎖。');
     } else {
       S.led = (S.led + 1) % 6;
     }
