@@ -146,7 +146,7 @@ header .pill { flex: 0 1 auto; min-width: 0; max-width: 62%; overflow: hidden; t
 .hud strong { overflow: hidden; text-overflow: ellipsis; }
 .msg b { color: var(--fg); font-weight: 700; }
 
-.stagebox { width: min(100%, 640px); margin: 0 auto; position: relative; }
+.stagebox { width: min(100%, calc(640px * var(--sz, 1))); margin: 0 auto; position: relative; }
 .cdov { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; color: #fff; text-align: center; background: rgba(0,0,0,.28); border-radius: 6px; }
 .cdov b { font-size: clamp(84px, 24vw, 170px); line-height: 1; font-weight: 800; text-shadow: 0 4px 18px rgba(0,0,0,.65); font-variant-numeric: tabular-nums; }
 .gear { position: absolute; left: 8px; bottom: 8px; display: flex; align-items: center; gap: 7px; padding: 5px 10px; border-radius: 999px; background: rgba(0,0,0,.55); color: #fff; font-size: 13px; font-weight: 700; pointer-events: none; transition: transform .15s; }
@@ -183,7 +183,7 @@ canvas#stage {
   touch-action: pan-y;   /* 手指放在 3D 畫面上也能上下滑動頁面 */
 }
 @media (max-width: 600px) {
-  .stagebox { width: min(100%, 52vh); }
+  .stagebox { width: min(100%, calc(52vh * var(--sz, 1))); }
   canvas#stage { aspect-ratio: 1 / 1; }
 }
 
@@ -205,7 +205,7 @@ canvas#stage {
   .wrap > .board .side .fl { flex: 0 0 auto; font-size: 10px; }
   .wrap > .board .mid b { font-size: 18px; }
   .wrap > .board .mid small { font-size: 10px; }
-  .wrap .stagebox { grid-column: 1; grid-row: span 6; order: 1; width: min(100%, calc((100vh - 104px) * 1.5)); margin: 0; }
+  .wrap .stagebox { grid-column: 1; grid-row: span 6; order: 1; width: min(100%, calc((100vh - 104px) * 1.5 * var(--sz, 1))); margin: 0; }
   .wrap .rc, .wrap > .chelp, .wrap .rcstat, .wrap > .hud, .wrap > .msg { grid-column: 2; order: 2; }
   .wrap > .msg { order: 3; }
   canvas#stage { aspect-ratio: 3 / 2; }
@@ -230,7 +230,7 @@ canvas#stage {
   body.lsplit[data-ctl="touch"] .wrap .play { display: block; position: relative; grid-column: 1 / -1; justify-self: center; margin: 0 auto;
     width: min(100%, calc((100vh - 104px) / 0.351)); width: min(100%, calc((100dvh - 104px) / 0.351));
     aspect-ratio: 1 / 0.351; container-type: inline-size; --hw: 27cqw; --hh: 35.1cqw; }
-  body.lsplit[data-ctl="touch"] .wrap .play > .stagebox { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); grid-column: auto; grid-row: auto; margin: 0; width: 44%; }
+  body.lsplit[data-ctl="touch"] .wrap .play > .stagebox { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); grid-column: auto; grid-row: auto; margin: 0; width: min(100%, calc(44% * var(--sz, 1))); }
   body.lsplit[data-ctl="touch"] .wrap .play > .rc { position: absolute; inset: 0; width: auto; height: auto; margin: 0; aspect-ratio: auto; pointer-events: none; z-index: 3; grid-column: auto; }
   body.lsplit[data-ctl="touch"] .rc svg:not(.half) { position: absolute; inset: auto; width: 0; height: 0; overflow: hidden; }
   body.lsplit[data-ctl="touch"] .rc svg.half { display: block; position: absolute; inset: auto; top: 0; height: 100%; width: var(--hw); }
@@ -631,8 +631,15 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
       <button type="button" data-frame="1" data-pal="1" aria-pressed="false">紅</button>
       <button type="button" data-frame="2" data-pal="2" aria-pressed="true">藍</button>
     </div>
+    <div class="opts" role="group" aria-label="畫面大小">
+      <span class="lab">畫面大小</span>
+      <input type="range" id="szRange" min="40" max="200" step="5" value="100" aria-label="3D 畫面大小" style="flex: 1 1 140px; min-width: 120px; accent-color: #6fe08a;">
+      <span id="szVal" style="min-width: 3.2em; text-align: right;">100%</span>
+      <button type="button" id="szReset">重設</button>
+    </div>
     <div class="opts" role="group" aria-label="我方球框透明度">
       <span class="lab">我方球框</span>
+      <button type="button" data-hoopo="0" aria-pressed="false">自動</button>
       <button type="button" data-hoopo="100" aria-pressed="true">不透明</button>
       <button type="button" data-hoopo="70" aria-pressed="false">70%</button>
       <button type="button" data-hoopo="40" aria-pressed="false">40%</button>
@@ -640,6 +647,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     </div>
     <div class="opts" role="group" aria-label="對方球框透明度">
       <span class="lab">對方球框</span>
+      <button type="button" data-hoopx="0" aria-pressed="false">自動</button>
       <button type="button" data-hoopx="100" aria-pressed="true">不透明</button>
       <button type="button" data-hoopx="70" aria-pressed="false">70%</button>
       <button type="button" data-hoopx="40" aria-pressed="false">40%</button>
@@ -1717,7 +1725,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
   var STAND_ORDER = ['back', 'far', 'right', 'rback', 'left', 'lback'];
   // 球框透明度：我方球框（自己隊色的那個）與對方球框可以分開調，數字是不透明度百分比
   var HA = { o: 100, x: 100 };
-  try { var ha0 = JSON.parse(localStorage.getItem('cd_hoopalpha') || '{}'); if (ha0.o >= 5 && ha0.o <= 100) HA.o = ha0.o; if (ha0.x >= 5 && ha0.x <= 100) HA.x = ha0.x; } catch (e) {}
+  try { var ha0 = JSON.parse(localStorage.getItem('cd_hoopalpha') || '{}'); if (ha0.o === 0 || (ha0.o >= 5 && ha0.o <= 100)) HA.o = ha0.o; if (ha0.x === 0 || (ha0.x >= 5 && ha0.x <= 100)) HA.x = ha0.x; } catch (e) {}
   var haKey = '';
   function applyHoopAlpha() {
     var key = S.team + '|' + HA.o + '|' + HA.x;
@@ -1725,7 +1733,9 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     haKey = key;
     goals.forEach(function (g) {
       var own = (g.name === '藍色') === (S.team === 'blue');
-      var a = (own ? HA.o : HA.x) / 100;
+      var v = own ? HA.o : HA.x;
+      if (v === 0) { g.autoA = undefined; return; }   // 自動：每個畫面依有沒有擋到視線決定，交給 hoopAutoStep
+      var a = v / 100;
       g.mat.transparent = a < 1; g.mat.opacity = a; g.mat.depthWrite = a >= 1; g.mat.needsUpdate = true;
     });
   }
@@ -1735,11 +1745,34 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     for (i = 0; i < hoopOBtns.length; i++) hoopOBtns[i].setAttribute('aria-pressed', String(parseInt(hoopOBtns[i].getAttribute('data-hoopo'), 10) === HA.o));
     for (i = 0; i < hoopXBtns.length; i++) hoopXBtns[i].setAttribute('aria-pressed', String(parseInt(hoopXBtns[i].getAttribute('data-hoopx'), 10) === HA.x));
   }
+  // 自動：球框擋在鏡頭和我的飛機中間時變微透明，沒擋到就恢復不透明（慢慢漸變）
+  var hoopTmp = new THREE.Vector3(), hoopSeg = new THREE.Vector3();
+  function hoopAutoStep(dt) {
+    if (HA.o !== 0 && HA.x !== 0) return;
+    var cp = camera.position, dp = drone.position;
+    hoopSeg.subVectors(dp, cp);
+    var len2 = hoopSeg.lengthSq();
+    goals.forEach(function (g) {
+      var own = (g.name === '藍色') === (S.team === 'blue');
+      if ((own ? HA.o : HA.x) !== 0) return;
+      var t = len2 > 1e-6 ? clamp(hoopTmp.subVectors(g.ring.position, cp).dot(hoopSeg) / len2, 0, 1) : 0;
+      hoopTmp.copy(hoopSeg).multiplyScalar(t).add(cp).sub(g.ring.position);
+      var block = hoopTmp.length() < GOAL_OUT + 0.3;
+      var cur = typeof g.autoA === 'number' ? g.autoA : 1;
+      var tgt = block ? 0.3 : 1;
+      cur += (tgt - cur) * Math.min(1, dt * 8);
+      if (Math.abs(cur - tgt) < 0.01) cur = tgt;
+      if (cur !== g.autoA) {
+        g.autoA = cur;
+        g.mat.transparent = cur < 0.999; g.mat.opacity = cur; g.mat.depthWrite = cur >= 0.999; g.mat.needsUpdate = true;
+      }
+    });
+  }
   function setHoopAlpha(k, v) {
     HA[k] = v;
     try { localStorage.setItem('cd_hoopalpha', JSON.stringify(HA)); } catch (e) {}
     syncHoopBtns(); applyHoopAlpha();
-    setMsg((k === 'o' ? '我方' : '對方') + '球框：' + (v >= 100 ? '不透明' : '不透明度 ' + v + '%') + '。');
+    setMsg((k === 'o' ? '我方' : '對方') + '球框：' + (v === 0 ? '自動（擋到視線時變微透明）' : (v >= 100 ? '不透明' : '不透明度 ' + v + '%')) + '。');
   }
   function syncOpts() {
     applyHoopAlpha(); syncHoopBtns();
@@ -1776,6 +1809,18 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
       })(list[i]);
     }
   }
+  // 畫面大小：拖拉滑桿自由縮放 3D 畫面（最小 40%，放大到版面寬度為止），設定會記住
+  var SZ = 100;
+  try { var sz0 = parseInt(localStorage.getItem('cd_sz'), 10); if (sz0 >= 40 && sz0 <= 200) SZ = sz0; } catch (e) {}
+  function applySz() {
+    document.documentElement.style.setProperty('--sz', String(SZ / 100));
+    $('szRange').value = String(SZ); $('szVal').textContent = SZ + '%';
+    try { localStorage.setItem('cd_sz', String(SZ)); } catch (e) {}
+    window.dispatchEvent(new Event('resize'));
+  }
+  $('szRange').addEventListener('input', function () { SZ = parseInt(this.value, 10) || 100; applySz(); });
+  $('szReset').addEventListener('click', function () { SZ = 100; applySz(); });
+  applySz();
   applyHoopAlpha(); syncHoopBtns();
   bindOpt(hoopOBtns, 'data-hoopo', function (v) { setHoopAlpha('o', v); }, true);
   bindOpt(hoopXBtns, 'data-hoopx', function (v) { setHoopAlpha('x', v); }, true);
@@ -2195,6 +2240,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     }
     V.ready = true;
 
+    hoopAutoStep(dt);
     renderer.render(scene, camera);
   }
 
