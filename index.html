@@ -470,6 +470,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     <div class="netrow" id="mCtl" hidden>
       <button type="button" id="mStart" hidden>開始比賽（3 分鐘）</button>
       <button type="button" id="mFree" hidden>自由練習</button>
+      <button type="button" id="mPause" hidden>暫停</button>
       <button type="button" id="mEnd" hidden>提前結束比賽</button>
       <button type="button" id="mPen" hidden>罰球・耗犯規</button>
       <button type="button" id="mPen2" hidden>罰球・不耗犯規</button>
@@ -1505,7 +1506,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
   var CDAI = 0;   // AI 對打的賽前倒數結束時間（0＝沒在倒數）
   var CD_MS = 10000;
   function cdLeft() {
-    if (netOn()) return MS.ph === 'ready' ? Math.max(0, MS.endAt - performance.now()) : -1;
+    if (netOn()) return MS.ph === 'ready' ? msRemMs() : -1;
     return CDAI > 0 ? Math.max(0, CDAI - performance.now()) : -1;
   }
   // 全隊得分規則：隊伍進球後，整隊（含防守者、電腦隊友）都要回到中線自己這一側，才能再次得分
@@ -2435,17 +2436,18 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
   // 比賽狀態由裁判發布在自己的 presence 裡，其他人跟著；裁判離開時，下一位最早加入的人接手。
   var PLAY_MS = 180000, SHOT_MS = 60000;
   var fouls = {};       // 玩家 id -> [藍方犯規, 紅方犯規]
-  var MS = { v: 0, ph: 'idle', endAt: 0, q: '', cur: '', fm: '', base: 0, cs: false };
+  var MS = { v: 0, ph: 'idle', endAt: 0, q: '', cur: '', fm: '', base: 0, cs: false, pz: false, pzRem: 0 };
   S.fouls = { blue: 0, red: 0 };
   S.foulShow = { blue: 0, red: 0 };
   S.goals = { blue: 0, red: 0 };
   function teamKey(c) { return c === 'b' ? 'blue' : 'red'; }
-  function msFresh() { MS = { v: 0, ph: 'idle', endAt: 0, q: '', cur: '', fm: '', base: 0, cs: false }; }
-  function msRemMs() { return (MS.ph === 'play' || MS.ph === 'pen' || MS.ph === 'ready') ? Math.max(0, MS.endAt - performance.now()) : 0; }
+  function msFresh() { MS = { v: 0, ph: 'idle', endAt: 0, q: '', cur: '', fm: '', base: 0, cs: false, pz: false, pzRem: 0 }; }
+  function msRemMs() { if (MS.pz) return MS.pzRem; return (MS.ph === 'play' || MS.ph === 'pen' || MS.ph === 'ready') ? Math.max(0, MS.endAt - performance.now()) : 0; }
 
   // 聯機時，只有比賽中（或輪到自己隊的罰球）才計分；單機練習一律計分
   function scoreOpen() {
     if (!netOn()) return !(AI.on && AI.over);
+    if (MS.pz) return false;   // 裁判暫停中不計分
     if (MS.ph === 'play') return true;
     if (MS.ph === 'pen') return S.team === teamKey(MS.cur);
     return false;
@@ -2501,7 +2503,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     if (Math.abs(S.x - og.sx) > 0.2 || Math.hypot(S.y - AY / 2, S.z + RM - GOAL_H) > 0.12) return;
     if (S.t - (NET.hbT || -9) < 2) return;
     NET.hbT = S.t;
-    if (netOn() && MS.ph === 'play') {
+    if (netOn() && MS.ph === 'play' && !MS.pz) {
       addFoul(S.team); sfx('foul');
       setMsg('<b>犯規！</b>攻擊手撞到你時，防守者的中心在我方球框中心，已記錄<b>' + teamName(S.team) + '</b>犯規 ' + S.fouls[S.team] + ' 次，賽後由裁判判定。');
     } else {
@@ -2511,7 +2513,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
   // 防守者從球框後面穿過、往前進入場內，算犯規
   function foulCall() {
     if (!netOn()) { setMsg('<b>犯規！</b>防守者不能從球框後面往前穿過。單機練習不記錄。'); return; }
-    if (MS.ph === 'play') {
+    if (MS.ph === 'play' && !MS.pz) {
       addFoul(S.team); sfx('foul');
       setMsg('<b>犯規！</b>防守者從球框後面往前穿過，已記錄<b>' + teamName(S.team) + '</b>犯規 ' + S.fouls[S.team] + ' 次，賽後由裁判判定。');
     } else {
@@ -2521,11 +2523,11 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
 
   /* ----- 裁判的操作 ----- */
   function msPublish() {
-    return { v: MS.v, ph: MS.ph, rem: Math.ceil(msRemMs() / 1000), q: MS.q, cur: MS.cur, fm: MS.fm, cs: MS.cs ? 1 : 0 };
+    return { v: MS.v, ph: MS.ph, rem: Math.ceil(msRemMs() / 1000), q: MS.q, cur: MS.cur, fm: MS.fm, cs: MS.cs ? 1 : 0, pz: MS.pz ? 1 : 0 };
   }
   function msSet(ph, extra) {
     MS.v++;
-    MS.ph = ph;
+    MS.ph = ph; MS.pz = false;
     if (extra) for (var k in extra) MS[k] = extra[k];
     NET.listKey = '';
     if (ph === 'review' || ph === 'done') goHome();   // 比賽結束：球機回原位停住
@@ -2545,6 +2547,19 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     if (!NET.amRef || MS.ph !== 'done') return;
     msSet('idle', { endAt: 0, q: '', cur: '', fm: '', cs: false });
     setMsg('<b>自由練習</b>：可以起飛練習，不計分。要比賽時按「開始比賽」。');
+  }
+  // 裁判暫停／繼續：計時凍結，暫停中不計分、不記犯規
+  function refPause() {
+    if (!NET.amRef || (MS.ph !== 'ready' && MS.ph !== 'play' && MS.ph !== 'pen')) return;
+    if (!MS.pz) {
+      var rem = msRemMs();
+      msSet(MS.ph, { pz: true, pzRem: rem, endAt: 0 }); sfx('key');
+      setMsg('<b>裁判暫停</b>：計時停止，暫停中不計分。按「繼續比賽」恢復。');
+    } else {
+      var r0 = MS.pzRem;
+      msSet(MS.ph, { pz: false, pzRem: 0, endAt: performance.now() + r0 }); sfx('key');
+      setMsg('<b>繼續比賽</b>。');
+    }
   }
   function refEndPlay() {
     if (!NET.amRef || MS.ph !== 'play') return;
@@ -2593,7 +2608,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
   }
   // 每一格畫面檢查計時；只有裁判會推進比賽
   function msFrame() {
-    if (!NET.amRef) return;
+    if (!NET.amRef || MS.pz) return;
     if (MS.ph === 'ready') {
       if (msRemMs() <= 0) {
         msSet('play', { endAt: performance.now() + PLAY_MS }); sfx('start');
@@ -2621,7 +2636,8 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
       MS.cur = (mx.cur === 'b' || mx.cur === 'r') ? mx.cur : '';
       MS.fm = (mx.fm === 'd' || mx.fm === 'p' || mx.fm === 's') ? mx.fm : '';
       MS.cs = mx.cs === 1;
-      MS.endAt = run ? performance.now() + rem * 1000 : 0;
+      MS.pz = run && mx.pz === 1; MS.pzRem = MS.pz ? rem * 1000 : 0;
+      MS.endAt = run && !MS.pz ? performance.now() + rem * 1000 : 0;
       if (ph === 'pen') MS.base = S.goals[teamKey(MS.cur)];
       if (run) { S.armed = true; TL.blue = TL.red = false; }
       if (ph === 'ready' || ph === 'review' || ph === 'done') goHome();
@@ -2629,13 +2645,14 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
       NET.listKey = '';
       if (ph === 'play') sfx('start');
       if (ph === 'review' || ph === 'done') sfx('end');
-      if (ph === 'idle') setMsg('裁判開放<b>自由練習</b>，可以起飛練習，不計分。');
+      if (MS.pz) setMsg('<b>裁判暫停</b>：計時停止，暫停中不計分。');
+      else if (ph === 'idle') setMsg('裁判開放<b>自由練習</b>，可以起飛練習，不計分。');
       else if (ph === 'ready') setMsg('<b>賽前倒數 10 秒</b>：所有球機回到起點，倒數結束才能起飛、開始比賽。');
       else if (ph === 'play') setMsg('<b>比賽開始</b>，時間 3 分鐘。進球才算分；防守者不能從球框後面往前穿過，會被記犯規。');
       else if (ph === 'review') setMsg('<b>比賽結束</b>。等裁判選擇罰球或搶分。');
       else if (ph === 'pen') setMsg('罰球：<b>' + teamName(teamKey(MS.cur)) + '</b>，限時 1 分鐘。');
       else if (ph === 'done') setMsg('<b>比賽結束</b>。' + resultText());
-    } else if (mx.v === MS.v && run && Math.abs(rem * 1000 - msRemMs()) > 1600) {
+    } else if (mx.v === MS.v && run && !MS.pz && Math.abs(rem * 1000 - msRemMs()) > 1600) {
       MS.endAt = performance.now() + rem * 1000;   // 和裁判的計時差太多時，校正一次
     }
   }
@@ -2665,7 +2682,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
   /* ----- 比賽區的畫面 ----- */
   var bTime = $('bTime'), bLab = $('bLab'), aiGo = $('aiGo');
   var mBox = $('matchBox'), mChip = $('mChip'), mInfo = $('mInfo'), mCtl = $('mCtl');
-  var mFree = $('mFree'), aiFree = $('aiFree'), mStart = $('mStart'), mEnd = $('mEnd'), mPen = $('mPen'), mPen2 = $('mPen2'), mDed = $('mDed'), mDed2 = $('mDed2'), mStop = $('mStop');
+  var mFree = $('mFree'), aiFree = $('aiFree'), mStart = $('mStart'), mEnd = $('mEnd'), mPen = $('mPen'), mPen2 = $('mPen2'), mDed = $('mDed'), mDed2 = $('mDed2'), mStop = $('mStop'), mPause = $('mPause');
   function fmtTime(ms) { var s = Math.ceil(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
   function setTxt(el, t) { if (el.textContent !== t) el.textContent = t; }
   function setHidden(el, h) { if (el.hidden !== h) el.hidden = h; }
@@ -2688,12 +2705,14 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
       return;
     }
     var ph = MS.ph, chip = '等待開賽', st = 'idle', time = '', note = '';
+    var pzOn = MS.pz && (ph === 'ready' || ph === 'play' || ph === 'pen');
     if (ph === 'ready') { chip = '賽前倒數'; st = 'low'; time = fmtTime(msRemMs()); note = '所有球機回起點，倒數結束開賽'; }
     else if (ph === 'play') { chip = '比賽中'; st = 'fly'; time = fmtTime(msRemMs()); }
     else if (ph === 'review') { chip = '賽後判罰'; st = 'low'; note = NET.amRef ? '' : '等裁判選擇罰球或搶分'; }
     else if (ph === 'pen') { chip = '罰球・' + teamName(teamKey(MS.cur)); st = 'low'; time = fmtTime(msRemMs()); note = '還剩 ' + (MS.q.length + 1) + ' 球'; }
     else if (ph === 'done') { chip = '比賽結束'; note = NET.amRef ? '' : '球機停在原位，等裁判按「自由練習」或開始新的比賽'; }
     else { note = NET.amRef ? '' : '等裁判開始比賽，比賽中才算分'; }
+    if (pzOn) { chip = '暫停・' + chip; st = 'low'; note = NET.amRef ? '按「繼續比賽」恢復' : '裁判暫停中'; }
     setTxt(mChip, chip);
     if (mChip.getAttribute('data-s') !== st) mChip.setAttribute('data-s', st);
     var shown = time || (ph === 'idle' ? fmtTime(PLAY_MS) : '0:00');
@@ -2709,13 +2728,18 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     var showStart = r && (ph === 'idle' || ph === 'done'), showEnd = r && (ph === 'play' || ph === 'ready');
     var showPick = r && ph === 'review', showStop = r && ph === 'pen';
     setHidden(mStart, !showStart); setHidden(mEnd, !showEnd); setHidden(mFree, !(r && ph === 'done'));
-    setHidden(mPen, !showPick); setHidden(mPen2, !showPick); setHidden(mDed, !showPick); setHidden(mDed2, !showPick); setHidden(mStop, !showStop);
+    // 犯規按鈕（罰球／搶分）給裁判永久顯示，只有賽後判罰時才能按
+    setHidden(mPen, !r); setHidden(mPen2, !r); setHidden(mDed, !r); setHidden(mDed2, !r); setHidden(mStop, !showStop);
+    mPen.disabled = mPen2.disabled = mDed.disabled = mDed2.disabled = !showPick;
+    setHidden(mPause, !(r && (ph === 'ready' || ph === 'play' || ph === 'pen')));
+    setTxt(mPause, MS.pz ? '繼續比賽' : '暫停');
     setHidden(btnScore, !r);   // 比分歸零只給裁判
     setHidden(mCtl, !r);
   }
   mStart.addEventListener('click', refStart);
   mFree.addEventListener('click', refFree);
   mEnd.addEventListener('click', refEndPlay);
+  mPause.addEventListener('click', refPause);
   mPen.addEventListener('click', function () { refPenalty(true); });
   mPen2.addEventListener('click', function () { refPenalty(false); });
   mDed.addEventListener('click', function () { refGrab(true); });
