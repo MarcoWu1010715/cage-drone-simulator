@@ -147,6 +147,9 @@ header .pill { flex: 0 1 auto; min-width: 0; max-width: 62%; overflow: hidden; t
 .msg b { color: var(--fg); font-weight: 700; }
 
 .stagebox { width: min(100%, calc(640px * var(--sz, 1))); margin: 0 auto; position: relative; }
+#flipHud { position: absolute; left: 50%; top: 44px; transform: translateX(-50%); padding: 6px 14px; border-radius: 999px; background: rgba(255,160,0,.92); color: #1a1200; font-weight: 700; font-size: 14px; pointer-events: none; white-space: nowrap; animation: flipPulse 1s ease-in-out infinite; z-index: 5; }
+#flipHud[hidden] { display: none; }
+@keyframes flipPulse { 50% { opacity: .55; } }
 .cdov { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; color: #fff; text-align: center; background: rgba(0,0,0,.28); border-radius: 6px; }
 .cdov b { font-size: clamp(84px, 24vw, 170px); line-height: 1; font-weight: 800; text-shadow: 0 4px 18px rgba(0,0,0,.65); font-variant-numeric: tabular-nums; }
 .gear { position: absolute; left: 8px; bottom: 8px; display: flex; align-items: center; gap: 7px; padding: 5px 10px; border-radius: 999px; background: rgba(0,0,0,.55); color: #fff; font-size: 13px; font-weight: 700; pointer-events: none; transition: transform .15s; }
@@ -209,7 +212,7 @@ canvas#stage {
   .wrap .rc, .wrap > .chelp, .wrap .rcstat, .wrap > .hud, .wrap > .msg { grid-column: 2; order: 2; }
   .wrap > .msg { order: 3; }
   canvas#stage { aspect-ratio: 3 / 2; }
-  .wrap .rc { width: min(100%, 360px, calc((100vh - 190px) * 1.54)); }
+  .wrap .rc { width: min(100%, calc(360px * var(--sz, 1)), calc((100vh - 190px) * 1.54 * var(--sz, 1))); margin-left: auto; margin-right: auto; }
   .wrap > .chelp { margin: 0; padding: 8px 10px; font-size: 12.5px; line-height: 1.35; max-width: none; max-height: calc(100vh - 150px); overflow-y: auto; }
   .chelp h4 { margin-bottom: 4px; font-size: 13.5px; }
   .chelp .row { padding: 1px 0; }
@@ -236,6 +239,7 @@ canvas#stage {
   body.lsplit[data-ctl="touch"] .rc svg.half { display: block; position: absolute; inset: auto; top: 0; height: 100%; width: var(--hw); }
   body.lsplit[data-ctl="touch"] .rc svg.half.l { left: 0; }
   body.lsplit[data-ctl="touch"] .rc svg.half.r { right: 0; }
+  body.lsplit[data-ctl="touch"] .wrap .play > .rc { transform: scale(min(var(--sz, 1), 1.3)); transform-origin: 50% 50%; }   /* 遙控器跟著畫面大小縮放 */
   body.lsplit[data-ctl="touch"] .rc .at { pointer-events: auto; }
   body.lsplit[data-ctl="touch"] .rc .cap { pointer-events: none; font-size: 10px; }
   body.lsplit[data-ctl="touch"] .rc .well { width: calc(var(--hh) * 0.385); }
@@ -490,6 +494,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
   <div class="play" id="play">
   <div class="stagebox">
     <canvas id="stage" aria-label="無人機 3D 場景"></canvas>
+    <div id="flipHud" hidden>翻滾準備　把右搖桿推向要翻的方向</div>
     <button type="button" class="fsbtn" id="btnFs">全螢幕</button>
     <div class="lights" id="lightBox"><b>燈光 <u id="lgBelt"></u><span id="lgBeltT"></span></b><b>尾燈 <u id="lgTail"></u><span id="lgTailT"></span></b><span id="lgHead" hidden>無頭</span></div>
     <div class="ctlmode" id="ctlMode"><span id="cmTouch">觸控</span><span id="cmKey">鍵盤</span><span id="cmPad">手把</span><span id="cmLayout">版面：合併</span></div>
@@ -1599,7 +1604,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
   $('btnReset').addEventListener('click', function () { CDAI = 0; reset(netOn()); });
 
   /* ---------- 遙控器按鍵 ---------- */
-  var swLock = $('swLock'), swHold = $('swHold'), fbL = $('fbL'), fbR = $('fbR');
+  var swLock = $('swLock'), swHold = $('swHold'), fbL = $('fbL'), fbR = $('fbR'), flipHud = $('flipHud');
   var rcBar = $('rcBar'), rcP1 = $('rcP1'), rcP2 = $('rcP2'), rcStat = $('rcstat');
   // 分開版面：把遙控器圖片切成左右兩半（複製兩份，各顯示一半）
   (function () {
@@ -1628,6 +1633,8 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     mirrorRc();
     rcStat.textContent = (S.unlocked ? '已解鎖' : '已上鎖') + '・' + (S.hold ? '定高' : '無定高') + '・' +
       SPEED_NAMES[S.speedIdx] + '・' + (S.headless ? '無頭模式' : '一般模式') + '・燈光 ' + LED_NAMES[S.led] + '・尾燈 ' + LED_NAMES[S.tail] + '・' + (S.role === 0 ? '攻擊手' : '防守者');
+    flipHud.hidden = !(S.flipArm > 0);
+    fbL.textContent = S.unlocked ? '翻滾' : '燈光';   // 解鎖後這顆鍵是翻滾
     fbR.textContent = S.unlocked ? '速度' : '尾燈';   // 上鎖時這顆鍵是換尾燈顏色
   }
   function setLed(n) { S.led = n; syncRc(); }
@@ -1658,8 +1665,9 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
         flipTmr = setTimeout(function () {
           flipTmr = 0;
           if (!S.unlocked || (S.mode !== 'flying' && S.mode !== 'takeoff')) return;
-          S.flipArm = 4; sfx('key');
-          setMsg('<b>翻滾準備</b>：4 秒內把右搖桿往 <b>前／後／左／右</b> 推，就會翻一圈。（連按兩下是無頭模式）');
+          if (S.flipArm > 0) { S.flipArm = 0; setMsg('已取消翻滾準備。'); return; }   // 準備中再按一下＝取消
+          S.flipArm = 1e9; S.flipB = 0; sfx('key');
+          setMsg('<b>翻滾準備</b>：把右搖桿往 <b>前／後／左／右</b> 推就會翻一圈（準備中每秒嗶一聲，再按一下左鍵取消）。');
         }, 460);
       } else setMsg('已解鎖，<b>腰帶燈顏色不能切換</b>。飛起來後按一下左鍵可以翻滾（連按兩下切無頭模式）。');
     } else {   // 上鎖：等 0.46 秒確定沒有第二下才換腰帶燈顏色
@@ -1918,6 +1926,8 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     if (!(S.flipArm > 0) || !flying || S.mode === 'fall' || !S.unlocked) S.flipArm = 0;
     else {
       S.flipArm -= dt;
+      S.flipB = (S.flipB || 0) + dt;
+      if (S.flipB >= 1 && !S.flip) { S.flipB = 0; sfx('key'); }   // 準備中每秒嗶一聲，直到翻滾
       if (!S.flip && Math.hypot(mx, my) > 0.6) {
         var fAx = Math.abs(my) >= Math.abs(mx) ? 'x' : 'z';
         var fDir = fAx === 'x' ? (my < 0 ? -1 : 1) : (mx > 0 ? -1 : 1);   // 前翻＝機頭朝下
@@ -1930,6 +1940,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
         sfx('key'); setMsg('<b>翻滾！</b>');
       }
     }
+    if (flipHud.hidden === (S.flipArm > 0)) flipHud.hidden = !(S.flipArm > 0);
     if (S.flip) { S.flip.t += dt / 0.55; if (S.flip.t >= 1 || !flying) S.flip = null; }
 
     // 搖桿手勢起飛
