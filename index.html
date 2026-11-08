@@ -1866,7 +1866,16 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
   });
   (function () {
     var bs = $('backStage'), box = document.querySelector('.stagebox');
-    bs.addEventListener('click', function () { box.scrollIntoView({ behavior: 'smooth', block: 'center' }); });
+    bs.addEventListener('click', function () {
+      // 畫面和遙控器一起算進去：兩個一起放進比分列下面的可視範圍，放不下就以遙控器底邊為準
+      var bd = document.querySelector('.board'), off = 8;
+      if (bd) off += (parseFloat(getComputedStyle(bd).top) || 0) + bd.offsetHeight;
+      var a = box.getBoundingClientRect(), rcEl = document.querySelector('.wrap .rc'), top = a.top, bot = a.bottom;
+      if (rcEl) { var c = rcEl.getBoundingClientRect(); if (c.width > 0) { top = Math.min(top, c.top); bot = Math.max(bot, c.bottom); } }
+      var y = window.scrollY + top - off;
+      if (bot - top > window.innerHeight - off - 8) y = window.scrollY + bot - window.innerHeight + 8;
+      window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+    });
     function upd() { var r = box.getBoundingClientRect(), H = window.innerHeight; bs.hidden = r.bottom > 40 && r.top < H - 40; }
     window.addEventListener('scroll', upd, { passive: true }); window.addEventListener('resize', upd); upd();
   })();
@@ -2564,10 +2573,8 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
   function refEndPlay() {
     if (!NET.amRef || MS.ph !== 'play') return;
     var total = S.fouls.blue + S.fouls.red;
-    msSet(total > 0 ? 'review' : 'done', { endAt: 0 }); sfx('end');
-    setMsg(total > 0
-      ? '<b>比賽結束</b>。藍方犯規 ' + S.fouls.blue + ' 次、紅方犯規 ' + S.fouls.red + ' 次，請選擇罰球或搶分（耗犯規或不耗犯規）。'
-      : '<b>比賽結束</b>。沒有犯規。' + resultText());
+    msSet('review', { endAt: 0 }); sfx('end');   // 不管有沒有犯規，都先進結算，由裁判選罰球／搶分
+    setMsg('<b>比賽結束</b>。藍方犯規 ' + S.fouls.blue + ' 次、紅方犯規 ' + S.fouls.red + ' 次，請選擇罰球或搶分（耗犯規或不耗犯規）。' + (total > 0 ? '' : '沒有犯規時，選哪一個都會直接結算。'));
   }
   // 搶分：每次犯規，對方搶走 1 分（犯規方 -1、對方 +1）。耗犯規＝用掉後犯規次數歸零；不耗犯規＝犯規次數保留
   function refGrab(cs) {
@@ -2588,6 +2595,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
       if (i < S.fouls.blue) q += 'r';
       if (i < S.fouls.red) q += 'b';
     }
+    if (!q) { msSet('done', { fm: 'p', cs: !!cs, q: '', cur: '', endAt: 0 }); setMsg('沒有犯規，不用罰球。' + resultText()); return; }
     msSet('pen', { fm: 'p', cs: !!cs, q: q.slice(1), cur: q.charAt(0), endAt: performance.now() + SHOT_MS });
     startShot('裁判選擇<b>罰球（' + (cs ? '耗犯規：每罰一球用掉一次犯規' : '不耗犯規：犯規次數保留') + '）</b>，每球限時 1 分鐘。現在是');
   }
