@@ -148,7 +148,8 @@ header .pill { flex: 0 1 auto; min-width: 0; max-width: 62%; overflow: hidden; t
 
 .stagebox { width: min(100%, calc(640px * var(--sz, 1))); margin: 0 auto; position: relative; }
 #flipHud { position: absolute; left: 50%; top: 44px; transform: translateX(-50%); padding: 6px 14px; border-radius: 999px; background: rgba(255,160,0,.92); color: #1a1200; font-weight: 700; font-size: 14px; pointer-events: none; white-space: nowrap; animation: flipPulse 1s ease-in-out infinite; z-index: 5; }
-#flipHud[hidden], #szHud[hidden] { display: none; }
+#flipHud[hidden], #szHud[hidden], #backStage[hidden] { display: none; }
+#backStage { position: fixed; right: 14px; bottom: 14px; z-index: 60; padding: 10px 16px; border-radius: 999px; border: 0; background: rgba(40,160,90,.95); color: #fff; font-weight: 700; font-size: 14px; box-shadow: 0 2px 10px rgba(0,0,0,.4); cursor: pointer; }
 #szHud { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); padding: 7px 16px; border-radius: 999px; background: rgba(255,120,0,.95); color: #1a0d00; font-weight: 700; font-size: 14px; pointer-events: none; z-index: 50; white-space: nowrap; }
 @keyframes flipPulse { 50% { opacity: .55; } }
 .cdov { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; color: #fff; text-align: center; background: rgba(0,0,0,.28); border-radius: 6px; }
@@ -490,11 +491,13 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     <span class="pill" id="teamChip" data-team="blue">操作：藍方</span>
     <span class="pill" id="armChip" data-s="fly">可進攻</span>
     <span class="pill" id="headChip" data-s="net" style="visibility:hidden">無頭模式</span>
+    <button type="button" class="pill" id="btnToSet" style="cursor:pointer;font:inherit">⚙ 設定 ↓</button>
   </div>
 
   <div class="play" id="play">
   <div class="stagebox">
     <canvas id="stage" aria-label="無人機 3D 場景"></canvas>
+    <button type="button" id="backStage" hidden>↑ 回到畫面</button>
     <div id="szHud" hidden>⚠ 超出板面　請調小畫面大小</div>
     <div id="flipHud" hidden>翻滾準備　把右搖桿推向要翻的方向</div>
     <button type="button" class="fsbtn" id="btnFs">全螢幕</button>
@@ -568,16 +571,54 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     <div><span>電量</span><strong id="hBat">100%</strong><div class="bar"><i id="batBar"></i></div></div>
   </div>
 
-  <div class="actions">
+  <div class="actions" id="setTop">
     <button id="btnReset" type="button">重新開始</button>
     <button id="btnSnd" type="button" aria-pressed="true">音效震動：開</button>
     <button id="btnVibTest" type="button">測試震動</button>
+  </div>
+
+  <div class="actions">
+    <div class="opts" role="group" aria-label="遙控種類">
+      <span class="lab">遙控種類</span>
+      <button type="button" data-rc="1" aria-pressed="true">1 所有搖桿回彈</button>
+      <button type="button" data-rc="2" aria-pressed="false">2 左搖桿上下不回彈</button>
+    </div>
+  </div>
+
+  <div class="actions">
     <div class="opts" role="group" aria-label="隊伍">
       <span class="lab">隊伍</span>
       <button type="button" data-team="blue" aria-pressed="true">藍方</button>
       <button type="button" data-team="red" aria-pressed="false">紅方</button>
     </div>
-    <span class="grow"></span>
+  </div>
+
+  <div class="actions">
+    <div class="opts" role="group" aria-label="角色">
+      <span class="lab">角色</span>
+      <button type="button" data-role="0" aria-pressed="true">攻擊手</button>
+      <button type="button" data-role="1" aria-pressed="false">防守者</button>
+    </div>
+  </div>
+
+  <div class="actions">
+    <div class="opts" role="group" aria-label="AI 對打">
+      <span class="lab">AI 對打</span>
+      <button type="button" data-ai="0" aria-pressed="true">關</button>
+      <button type="button" data-ai="1" aria-pressed="false">簡單</button>
+      <button type="button" data-ai="2" aria-pressed="false">普通</button>
+      <button type="button" data-ai="3" aria-pressed="false">困難</button>
+      <button type="button" id="aiGo" hidden>開始比賽（倒數 10 秒）</button>
+      <button type="button" id="aiFree" hidden>自由練習</button>
+    </div>
+    <div class="opts" role="group" aria-label="賽制">
+      <span class="lab">賽制</span>
+      <button type="button" data-fmt="1" aria-pressed="true">1 對 1</button>
+      <button type="button" data-fmt="3" aria-pressed="false">3 對 3（1攻2守）</button>
+    </div>
+  </div>
+
+  <div class="actions">
     <div class="opts" role="group" aria-label="視角">
       <span class="lab">視角</span>
       <button type="button" data-view="pilot" aria-pressed="true">選手</button>
@@ -599,52 +640,6 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
   </div>
 
   <div class="actions">
-    <div class="opts" role="group" aria-label="遙控種類">
-      <span class="lab">遙控種類</span>
-      <button type="button" data-rc="1" aria-pressed="true">1 所有搖桿回彈</button>
-      <button type="button" data-rc="2" aria-pressed="false">2 左搖桿上下不回彈</button>
-    </div>
-  </div>
-
-  <div class="actions">
-    <div class="opts" role="group" aria-label="角色">
-      <span class="lab">角色</span>
-      <button type="button" data-role="0" aria-pressed="true">攻擊手</button>
-      <button type="button" data-role="1" aria-pressed="false">防守者</button>
-    </div>
-    <div class="opts" role="group" aria-label="AI 對打">
-      <span class="lab">AI 對打</span>
-      <button type="button" data-ai="0" aria-pressed="true">關</button>
-      <button type="button" data-ai="1" aria-pressed="false">簡單</button>
-      <button type="button" data-ai="2" aria-pressed="false">普通</button>
-      <button type="button" data-ai="3" aria-pressed="false">困難</button>
-      <button type="button" id="aiGo" hidden>開始比賽（倒數 10 秒）</button>
-      <button type="button" id="aiFree" hidden>自由練習</button>
-    </div>
-    <div class="opts" role="group" aria-label="賽制">
-      <span class="lab">賽制</span>
-      <button type="button" data-fmt="1" aria-pressed="true">1 對 1</button>
-      <button type="button" data-fmt="3" aria-pressed="false">3 對 3（1攻2守）</button>
-    </div>
-    <div class="opts" role="group" aria-label="球殼顏色">
-      <span class="lab">球殼</span>
-      <button type="button" data-shell="0" data-pal="0" aria-pressed="false">綠</button>
-      <button type="button" data-shell="1" data-pal="1" aria-pressed="true">紅</button>
-      <button type="button" data-shell="2" data-pal="2" aria-pressed="false">藍</button>
-    </div>
-    <div class="opts" role="group" aria-label="支架顏色">
-      <span class="lab">支架</span>
-      <button type="button" data-frame="0" data-pal="0" aria-pressed="false">綠</button>
-      <button type="button" data-frame="1" data-pal="1" aria-pressed="false">紅</button>
-      <button type="button" data-frame="2" data-pal="2" aria-pressed="true">藍</button>
-    </div>
-    <div class="opts" role="group" aria-label="畫面大小">
-      <span class="lab">畫面大小</span>
-      <input type="range" id="szRange" min="40" max="200" step="5" value="100" aria-label="3D 畫面大小" style="flex: 1 1 140px; min-width: 120px; accent-color: #6fe08a;">
-      <span id="szVal" style="min-width: 3.2em; text-align: right;">100%</span>
-      <button type="button" id="szReset">重設</button>
-      <span id="szWarn" hidden style="flex: 1 0 100%; color: #ffb347; font-weight: 700;">⚠ 畫面或遙控器已超出板面，請把畫面大小調小一點</span>
-    </div>
     <div class="opts" role="group" aria-label="我方球框透明度">
       <span class="lab">我方球框</span>
       <button type="button" data-hoopo="0" aria-pressed="false">自動</button>
@@ -663,8 +658,31 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     </div>
   </div>
 
+  <div class="actions">
+    <div class="opts" role="group" aria-label="畫面大小">
+      <span class="lab">畫面大小</span>
+      <input type="range" id="szRange" min="40" max="200" step="5" value="100" aria-label="3D 畫面大小" style="flex: 1 1 140px; min-width: 120px; accent-color: #6fe08a;">
+      <span id="szVal" style="min-width: 3.2em; text-align: right;">100%</span>
+      <button type="button" id="szReset">重設</button>
+      <span id="szWarn" style="flex: 1 0 100%; height: 1.4em; line-height: 1.4em; overflow: hidden; visibility: hidden; color: #ffb347; font-weight: 700; font-size: 12px;">⚠ 畫面或遙控器已超出板面，請把畫面大小調小一點</span>
+    </div>
+    <div class="opts" role="group" aria-label="球殼顏色">
+      <span class="lab">球殼</span>
+      <button type="button" data-shell="0" data-pal="0" aria-pressed="false">綠</button>
+      <button type="button" data-shell="1" data-pal="1" aria-pressed="true">紅</button>
+      <button type="button" data-shell="2" data-pal="2" aria-pressed="false">藍</button>
+    </div>
+    <div class="opts" role="group" aria-label="支架顏色">
+      <span class="lab">支架</span>
+      <button type="button" data-frame="0" data-pal="0" aria-pressed="false">綠</button>
+      <button type="button" data-frame="1" data-pal="1" aria-pressed="false">紅</button>
+      <button type="button" data-frame="2" data-pal="2" aria-pressed="true">藍</button>
+    </div>
+  </div>
+
   <p class="hint">和實體遙控器相同：左搖桿控制升降與轉向，右搖桿控制前後左右。定高模式起飛：左搖桿往上推第一下起槳（馬達轉動），第二下起飛；無定高模式起飛：左搖桿往上推過中間，沒有自動爬升，推多高升多快，推到約四成位置才能維持高度，放在中間會慢慢往下掉；降落：把左搖桿往下推到底，一直推到落地。選藍方或紅方，無人機會放在己方球框後面；預設的選手視角站在場外己方球框後方，眼睛離地 1.6 公尺，看著無人機；站位可以改成球框後的左側、右側，或斜後方的左後、右後。穿過對方球框得分，得分後要回到中線才能再次進攻，穿過自己的球框不算分，從球框後面往場內穿過也不算分。只有攻擊手能得分，防守者不能；攻擊手的尾燈是對方隊伍的顏色，防守者的尾燈是自己隊伍的顏色。球機之間有碰撞，撞到會被彈開。<br>AI 對打（單機）：選簡單、普通或困難。1 對 1 時電腦扮演另一隊的攻擊手；選 3 對 3 時，每隊 1 個攻擊手加 2 個防守員，你佔一個位置（看你選攻擊手或防守者），其他由電腦補滿。電腦有反應延遲、會恍神、手會抖，攻擊手會等空檔和做假動作，防守員會守在己方球框前面，跟著對方攻擊手左右上下移動擋路。你第一次起飛時開始 3 分鐘比賽，兩邊都穿過對方球框得分，時間到比多少；電腦也有碰撞，會撞到球框和你。進多人房間時 AI 會自動關閉。<br>多人房間裡，最先加入的人是裁判，由裁判開始 3 分鐘的比賽，只有比賽中才算分。比賽中防守者從球框後面往前穿過算犯規；裁判可以在玩家列表按「踢出」把人請出房間（要按兩下確認）；賽後裁判可以選擇罰球（每球限時 1 分鐘）或搶分，兩種都分「耗犯規」和「不耗犯規」：罰球是每次犯規讓對方罰一球，搶分是每次犯規讓對方直接搶走 1 分（犯規方 -1、對方 +1）；耗犯規會把用掉的犯規次數扣掉（搶分後歸零），不耗犯規則保留犯規次數。球框顏色跟那一端的場地一樣，發亮並有綠光的是目前可以進攻的對方球框；解鎖滑桿往下撥會立即停槳；定高滑桿往下撥則不會自動維持高度；燈光鍵（上鎖時單按換腰帶燈顏色）連按兩下切換無頭模式，上鎖、解鎖都可以（地上或飛行中都可以，方向固定以選手面向的方向（朝對方球框）為準，開啟時上方會亮「無頭模式」）；右功能鍵在解鎖後循環切換慢、中、快，上鎖時（按鍵上的字會變成「尾燈」）是換尾燈顏色。遙控種類 2 的左搖桿上下不會回彈，放開後油門停在原位，要自己推回中間才會停止升降。<br>電腦操作：W A S D 移動，↑ ↓ 升降，← → 轉向，U 解鎖，M 定高，Z 燈光，X 速度，V 切換選手、平視、斜視、俯視，T 換隊伍，R 換攻擊手或防守者，C 輪流換選手站位。<br>自訂按鍵：點上面的「鍵盤」或「手把」，再點提示表裡的按鍵標籤（會變黃色），按下想要的新按鍵或手把按鈕就設好了，Esc 取消，「還原預設」可以重來。<br>手把：接上手把後按任一鍵即可，左搖桿＝油門與轉向，右搖桿＝前後平移，A 解鎖／上鎖，B 定高開關，X 燈光鍵，Y 右功能鍵（速度／尾燈），LB 切視角，RB 切站位，Back 換攻擊手／防守者，Start 換隊伍。</p>
   <p class="hint" id="netHint">聯機載入中…（在 Claude 裡用已登入的帳號開啟，或在一般網站上用點對點連線）。</p>
+  <div id="pgPad" style="height:0"></div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -1836,6 +1854,21 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
   // 畫面大小：拖拉滑桿自由縮放 3D 畫面（最小 40%，放大到版面寬度為止），設定會記住
   var SZ = 100;
   try { var sz0 = parseInt(localStorage.getItem('cd_sz'), 10); if (sz0 >= 40 && sz0 <= 200) SZ = sz0; } catch (e) {}
+  $('btnToSet').addEventListener('click', function () {
+    var bd = document.querySelector('.board'), off = 8;
+    if (bd) off += (parseFloat(getComputedStyle(bd).top) || 0) + bd.offsetHeight;   // 比分列黏在最上方時的底邊（不是它現在的位置）
+    if (false) {}   // 上方黏住的比分列高度算進去
+    var pad = $('pgPad'); pad.style.height = '0px';
+    var st = $('setTop').getBoundingClientRect().top + window.scrollY, docH = document.documentElement.scrollHeight;
+    pad.style.height = Math.max(0, Math.round(window.innerHeight - off - (docH - st))) + 'px';   // 頁面太短捲不到時，補一段空白讓設定能停在比分列下面
+    window.scrollTo({ top: st - off, behavior: 'smooth' });
+  });
+  (function () {
+    var bs = $('backStage'), box = document.querySelector('.stagebox');
+    bs.addEventListener('click', function () { box.scrollIntoView({ behavior: 'smooth', block: 'center' }); });
+    function upd() { var r = box.getBoundingClientRect(), H = window.innerHeight; bs.hidden = r.bottom > 40 && r.top < H - 40; }
+    window.addEventListener('scroll', upd, { passive: true }); window.addEventListener('resize', upd); upd();
+  })();
   function applySz() {
     document.documentElement.style.setProperty('--sz', String(SZ / 100));
     $('szRange').value = String(SZ); $('szVal').textContent = SZ + '%';
@@ -1849,10 +1882,10 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     var els = document.querySelectorAll('.stagebox, .wrap .rc, .rc svg.half');
     for (var i = 0; i < els.length; i++) {
       var r = els[i].getBoundingClientRect();
-      if (r.width > 0 && (r.left < -2 || r.right > W + 2)) over = true;
+      if (r.width > 0 && (r.left < -6 || r.right > W + 6)) over = true;
     }
     if (document.body.classList.contains('lsplit') && SZ / 100 > 1.3) over = true;
-    $('szWarn').hidden = !over; $('szHud').hidden = !over;
+    $('szWarn').style.visibility = over ? 'visible' : 'hidden'; $('szHud').hidden = !over;
     clearTimeout(chkSz.t); if (over) chkSz.t = setTimeout(function () { $('szHud').hidden = true; }, 3500);
   }
   window.addEventListener('resize', function () { setTimeout(chkSz, 100); });
