@@ -1549,7 +1549,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     aiReset();
     centerLeft();
     S.z = 0; S.vx = 0; S.vy = 0; S.vz = 0;
-    S.kx = S.kz = S.kxv = S.kzv = S.spinY = S.stun = S.dropT = S.drx = S.dry = S.drz = S.dive = 0;
+    S.kx = S.kz = S.kxv = S.kzv = S.spinY = S.stun = S.dropT = S.drx = S.dry = S.drz = S.dive = 0; S.flipArm = 0; S.flip = null;
     S.mode = 'landed'; S.bat = 100; S.spin = 0; S.bump = 0;
     S.flightT = 0; S.started = false; S.done = false; S.got = 0;
     if (!keepScores) clearScores();
@@ -1645,17 +1645,30 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     }
   }
   var lastL = 0;
+  var flipTmr = 0, ledTmr = 0;
   function pressLeft() {
     var now = performance.now();
     var quick = now - lastL < 450;
     if (quick) {   // 連按兩下切無頭模式，上鎖、解鎖都可以
-      if (!S.unlocked) S.led = (S.led + 5) % 6;   // 上鎖時第一下已換了腰帶燈顏色，連按兩下要還原
-      S.headless = !S.headless; sfx('key');
+      clearTimeout(ledTmr); ledTmr = 0; clearTimeout(flipTmr); flipTmr = 0; S.flipArm = 0; S.headless = !S.headless; sfx('key');
       setMsg(S.headless ? '<b>無頭模式開啟</b>：右搖桿的方向固定以選手面向的方向為準（朝對方球框），不管機頭轉到哪裡，往前推都是往對方球框飛。再連按兩下燈光鍵關閉。' : '<b>無頭模式關閉</b>：右搖桿的方向跟著機頭走。');
-    } else if (S.unlocked) {
-      setMsg('已解鎖，<b>腰帶燈顏色不能切換</b>（連按兩下可切無頭模式）。要換色請先上鎖。');
-    } else {
-      S.led = (S.led + 1) % 6;
+    } else if (S.unlocked) {   // 解鎖後按一下：準備翻滾，接著推右搖桿的方向
+      if (S.mode === 'flying' || S.mode === 'takeoff') {   // 等 0.45 秒確定沒有第二下才進入翻滾準備
+        clearTimeout(flipTmr);
+        flipTmr = setTimeout(function () {
+          flipTmr = 0;
+          if (!S.unlocked || (S.mode !== 'flying' && S.mode !== 'takeoff')) return;
+          S.flipArm = 4; sfx('key');
+          setMsg('<b>翻滾準備</b>：4 秒內把右搖桿往 <b>前／後／左／右</b> 推，就會翻一圈。（連按兩下是無頭模式）');
+        }, 460);
+      } else setMsg('已解鎖，<b>腰帶燈顏色不能切換</b>。飛起來後按一下左鍵可以翻滾（連按兩下切無頭模式）。');
+    } else {   // 上鎖：等 0.46 秒確定沒有第二下才換腰帶燈顏色
+      clearTimeout(ledTmr);
+      ledTmr = setTimeout(function () {
+        ledTmr = 0;
+        if (S.unlocked) return;
+        S.led = (S.led + 1) % 6; syncRc();
+      }, 460);
     }
     lastL = quick ? 0 : now;   // 連按兩下切換後歸零，第三下不會又被算成連按
     syncRc();
@@ -1900,6 +1913,24 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     var al = clamp(-dz(stickL.y) - GP.ly + (keys.up ? 1 : 0) - (keys.down ? 1 : 0), -1, 1);
     var yw = clamp(dz(stickL.x) + GP.lx + (keys.yawr ? 1 : 0) - (keys.yawl ? 1 : 0), -1, 1);
     if (S.stun > 0) { mx *= 0.25; my *= 0.25; yw *= 0.25; }   // 剛被撞到，操控變遲鈍
+
+    // 翻滾：左鍵按一下後，右搖桿往某方向推就翻一圈
+    if (!(S.flipArm > 0) || !flying || S.mode === 'fall' || !S.unlocked) S.flipArm = 0;
+    else {
+      S.flipArm -= dt;
+      if (!S.flip && Math.hypot(mx, my) > 0.6) {
+        var fAx = Math.abs(my) >= Math.abs(mx) ? 'x' : 'z';
+        var fDir = fAx === 'x' ? (my < 0 ? -1 : 1) : (mx > 0 ? -1 : 1);   // 前翻＝機頭朝下
+        S.flip = { ax: fAx, dir: fDir, t: 0 }; S.flipArm = 0;
+        var fl = fAx === 'x' ? -my : mx, fSgn = fl > 0 ? 1 : -1;
+        var fHx = S.headless ? S.hy : S.yaw;
+        var fvx = fAx === 'x' ? Math.sin(fHx) * fSgn : Math.cos(fHx) * fSgn;
+        var fvy = fAx === 'x' ? -Math.cos(fHx) * fSgn : Math.sin(fHx) * fSgn;
+        S.vx += fvx * 1.6; S.vy += fvy * 1.6; S.vz = Math.max(S.vz || 0, 0);
+        sfx('key'); setMsg('<b>翻滾！</b>');
+      }
+    }
+    if (S.flip) { S.flip.t += dt / 0.55; if (S.flip.t >= 1 || !flying) S.flip = null; }
 
     // 搖桿手勢起飛
     // 定高：左搖桿往上推兩下（1.5 秒內），或往上推住不放 0.7 秒
@@ -2156,7 +2187,10 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     padMat.color.setHex(S.team === 'blue' ? 0x2f6fe0 : 0xd8312b);
     drone.rotation.y = -S.yaw;
     drone.rotation.order = 'YXZ';
-    drone.rotation.x = S.kx; drone.rotation.z = S.kz;   // 撞擊翻晃：整台機器（殼＋機身）一起轉
+    var fa = 0, fe = 0;
+    if (S.flip) { fe = S.flip.t; fa = (fe < 0.5 ? 2 * fe * fe : 1 - 2 * (1 - fe) * (1 - fe)) * Math.PI * 2 * S.flip.dir; }   // 慢進慢出轉一圈
+    drone.rotation.x = S.kx + (S.flip && S.flip.ax === 'x' ? fa : 0);
+    drone.rotation.z = S.kz + (S.flip && S.flip.ax === 'z' ? fa : 0);   // 撞擊翻晃：整台機器（殼＋機身）一起轉
     body.rotation.x = S.tiltX;
     body.rotation.z = S.tiltZ;
     for (var i = 0; i < blades.length; i++) {
