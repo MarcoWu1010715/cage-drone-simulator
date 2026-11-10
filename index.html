@@ -2470,10 +2470,10 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
       this.min = +inp.min || 0; this.max = +inp.max || 100; this.step = +inp.step || 1;
       var th = new Thumb(host, {
         lens: function (p) { return { H: 4 + 2 * p, A: 4 + 3 * p, chroma: false, blur: 0 }; },
-        hl: function (p) { return { a: 0.8 + 0.2 * p, wd: 1.0, amb: true }; },
+        hl: function (p) { return { a: 0.3 + 0.5 * p, wd: 1.0, amb: true }; },
         shadow: function () { return { r: 6, a: 0.14 }; },
         inner: function (p) { return { r: 4 * p, a: p }; },
-        surface: function (p) { return 'rgba(255,255,255,' + (0.12 * (1 - p)).toFixed(3) + ')'; }
+        surface: function (p) { return 'rgba(255,255,255,' + (0.05 * (1 - p)).toFixed(3) + ')'; }
       });
       th.size(40, 24); th.el.style.top = '0px'; this.th = th;
       this.mini = document.createElement('i');   // 滑桿的玻璃泡直接折射底下真正的軌道，不另外疊一層
