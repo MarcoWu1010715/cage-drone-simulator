@@ -16,6 +16,9 @@
   --sky: #dcebf0;
   --orange: #e4572e;
   --orange-ink: #ffffff;
+  --accent: #6fe08a;       /* 統一的強調色（按鈕選中、提示條、檔位） */
+  --accent-ink: #0b2b14;
+  --sel: var(--good);      /* 選項選中的框色，可在「配色」改 */
   --blue: #1e5bd6;
   --good: #1f9d63;
   --warn: #d9480f;
@@ -147,10 +150,10 @@ header .pill { flex: 0 1 auto; min-width: 0; max-width: 62%; overflow: hidden; t
 .msg b { color: var(--fg); font-weight: 700; }
 
 .stagebox { width: min(100%, calc(640px * var(--sz, 1))); margin: 0 auto; position: relative; }
-#flipHud { position: absolute; left: 50%; top: 44px; transform: translateX(-50%); padding: 6px 14px; border-radius: 999px; background: rgba(255,160,0,.92); color: #1a1200; font-weight: 700; font-size: 14px; pointer-events: none; white-space: nowrap; animation: flipPulse 1s ease-in-out infinite; z-index: 5; }
+#flipHud { position: absolute; left: 50%; top: 44px; transform: translateX(-50%); padding: 6px 14px; border-radius: 999px; background: var(--accent); color: var(--accent-ink); font-weight: 700; font-size: 14px; pointer-events: none; white-space: nowrap; animation: flipPulse 1s ease-in-out infinite; z-index: 5; }
 #flipHud[hidden], #szHud[hidden], #backStage[hidden] { display: none; }
-#backStage { position: fixed; right: 14px; bottom: 14px; z-index: 60; padding: 10px 16px; border-radius: 999px; border: 0; background: rgba(40,160,90,.95); color: #fff; font-weight: 700; font-size: 14px; box-shadow: 0 2px 10px rgba(0,0,0,.4); cursor: pointer; }
-#szHud { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); padding: 7px 16px; border-radius: 999px; background: rgba(255,120,0,.95); color: #1a0d00; font-weight: 700; font-size: 14px; pointer-events: none; z-index: 50; white-space: nowrap; }
+#backStage { position: fixed; right: 14px; bottom: 14px; z-index: 60; padding: 10px 16px; border-radius: 999px; border: 0; background: var(--accent); color: var(--accent-ink); font-weight: 700; font-size: 14px; box-shadow: 0 2px 10px rgba(0,0,0,.4); cursor: pointer; }
+#szHud { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); padding: 7px 16px; border-radius: 999px; background: var(--warn); color: var(--bg); font-weight: 700; font-size: 14px; pointer-events: none; z-index: 50; white-space: nowrap; }
 @keyframes flipPulse { 50% { opacity: .55; } }
 .cdov { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; color: #fff; text-align: center; background: rgba(0,0,0,.28); border-radius: 6px; }
 .cdov b { font-size: clamp(84px, 24vw, 170px); line-height: 1; font-weight: 800; text-shadow: 0 4px 18px rgba(0,0,0,.65); font-variant-numeric: tabular-nums; }
@@ -161,21 +164,21 @@ header .pill { flex: 0 1 auto; min-width: 0; max-width: 62%; overflow: hidden; t
 .fsbtn { position: absolute; right: 8px; top: 8px; min-height: 0; padding: 4px 10px; border-radius: 999px; border: 0; background: rgba(0,0,0,.55); color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; }
 .ctlmode { position: absolute; left: 8px; top: 8px; display: flex; gap: 4px; padding: 3px; border-radius: 999px; background: rgba(0,0,0,.55); pointer-events: auto; font-size: 12px; font-weight: 700; z-index: 5; }
 .ctlmode span { cursor: pointer; padding: 3px 9px; border-radius: 999px; color: rgba(255,255,255,.55); }
-.ctlmode span.on { background: #6fe08a; color: #0b2b14; }
+.ctlmode span.on { background: var(--accent); color: var(--accent-ink); }
 .ctlmode span.off { opacity: .35; }
 .chelp { margin: 8px auto; max-width: 560px; padding: 12px 14px; border-radius: 14px; background: rgba(127,127,127,.13); border: 1px solid rgba(127,127,127,.3); font-size: 14px; line-height: 1.5; }
 .chelp button.kbd { min-height: 0; display: inline-block; min-width: 24px; padding: 1px 9px; border-radius: 6px; border: 1px solid rgba(127,127,127,.55); border-bottom-width: 3px; background: rgba(127,127,127,.12); color: inherit; font: 700 13px/1.5 inherit; text-align: center; cursor: pointer; }
-.chelp button.kbd.learn { background: #ffd666; border-color: #c89b1a; color: #3a2a00; }
+.chelp button.kbd.learn { border-color: var(--sel); color: var(--sel); box-shadow: inset 0 0 0 1px var(--sel); }
 .chelp .lay { display: flex; gap: 6px; margin: 0 0 6px; flex-wrap: wrap; }
 .chelp .lay button { min-height: 0; padding: 3px 11px; border-radius: 999px; border: 1px solid rgba(127,127,127,.5); background: transparent; color: inherit; font: 700 12.5px/1.4 inherit; cursor: pointer; }
-.chelp .lay button.on { background: #6fe08a; border-color: #6fe08a; color: #0b2b14; }
+.chelp .lay button.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .chelp h4 { margin: 0 0 8px; font-size: 15px; }
 .chelp .row { display: flex; align-items: center; gap: 8px; padding: 3px 0; }
 .chelp .row > span { margin-left: auto; text-align: right; }
 .chelp kbd { display: inline-block; min-width: 24px; padding: 1px 7px; border-radius: 6px; border: 1px solid rgba(127,127,127,.55); border-bottom-width: 3px; background: rgba(127,127,127,.12); font: 700 13px/1.5 inherit; text-align: center; margin-right: 3px; }
 .gear.pop { transform: scale(1.18); }
 .gear i { display: inline-block; width: 7px; height: 14px; border-radius: 2px; background: rgba(255,255,255,.3); }
-.gear i.on { background: #6fe08a; }
+.gear i.on { background: var(--accent); }
 .cdov span { font-size: 16px; font-weight: 700; margin-top: 6px; text-shadow: 0 2px 8px rgba(0,0,0,.7); }
 canvas#stage {
   display: block;
@@ -374,11 +377,100 @@ button {
   min-height: 44px;
   cursor: pointer;
 }
-button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+button:focus-visible { outline: 2px solid var(--sel); outline-offset: 2px; }
 button.primary { background: var(--orange); border-color: var(--orange); color: var(--orange-ink); font-weight: 700; min-width: 108px; }
-button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0 1px var(--blue); }
+button[aria-pressed="true"] { border-color: var(--sel); color: var(--sel); box-shadow: inset 0 0 0 1px var(--sel); }   /* 一般選項選中＝統一的綠色強調；隊伍／球殼／支架維持各自的顏色 */
 .grow { flex: 1 1 auto; }
+.uibox { padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; }
+.uihead { flex: 1 0 100%; font-size: 14px; letter-spacing: 0.06em; }
+html.sel-fill button[aria-pressed="true"] { background: color-mix(in srgb, currentColor 16%, var(--panel)); }
+html.sel-plain button[aria-pressed="true"] { color: var(--fg); }
+html.sel-plain .opts button[aria-pressed="true"] { color: var(--fg); }
+html.sel-plain .chelp button.kbd.learn { color: var(--fg); }
 .opts { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.actions > .opts { touch-action: pan-y; }   /* 左右滑切換選項，上下滑還是捲頁面 */
+
+/* ---------- 液態玻璃風格（參考 Kyant0/AndroidLiquidGlass 的外觀：半透明、模糊背景、高光邊緣；配色固定，不跟「配色」走）---------- */
+html.glass { --g-fill: rgba(255,255,255,.34); --g-fill2: rgba(255,255,255,.10); --g-edge: rgba(255,255,255,.75); --g-lo: rgba(0,0,0,.10); --g-hi: rgba(255,255,255,.85); --g-shadow: rgba(30,60,60,.18); }
+html.glass[data-theme="dark"] { --g-fill: rgba(255,255,255,.10); --g-fill2: rgba(255,255,255,.03); --g-edge: rgba(255,255,255,.28); --g-lo: rgba(0,0,0,.35); --g-hi: rgba(255,255,255,.35); --g-shadow: rgba(0,0,0,.45); }
+@media (prefers-color-scheme: dark) {
+  html.glass:not([data-theme="light"]) { --g-fill: rgba(255,255,255,.10); --g-fill2: rgba(255,255,255,.03); --g-edge: rgba(255,255,255,.28); --g-lo: rgba(0,0,0,.35); --g-hi: rgba(255,255,255,.35); --g-shadow: rgba(0,0,0,.45); }
+}
+html.glass body {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(55% 32% at 12% 6%, rgba(90, 210, 190, .55), transparent 70%),
+    radial-gradient(45% 30% at 95% 24%, rgba(110, 150, 255, .45), transparent 70%),
+    radial-gradient(60% 34% at 20% 70%, rgba(255, 170, 120, .38), transparent 70%),
+    radial-gradient(55% 30% at 90% 96%, rgba(190, 120, 255, .36), transparent 70%);
+  background-attachment: fixed;
+}
+html.glass body::before { background: transparent; }
+html.glass :is(.board, .hud > div, .pill, .msg, #uiBox, .gear, .lights, #backStage, #flipHud, #szHud, .netbox, .chelp, #ctlMode),
+html.glass button:not(.opts.seg > button):not(#setTabs button) {
+  background: linear-gradient(145deg, var(--g-fill), var(--g-fill2)) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(1.8); backdrop-filter: blur(18px) saturate(1.8);
+  border: 1px solid var(--g-edge) !important;
+  box-shadow: inset 0 1px 0 var(--g-hi), inset 0 -1px 0 var(--g-lo), 0 8px 24px -10px var(--g-shadow) !important;
+  color: var(--fg);
+}
+html.glass :is(.board, .hud > div, #uiBox, .msg, .netbox) { border-radius: 18px; }
+html.glass #playerName, html.glass #roomCode { background: linear-gradient(145deg, var(--g-fill), var(--g-fill2)) !important; border: 1px solid var(--g-edge) !important; border-radius: 999px; padding-left: 14px; padding-right: 14px; color: var(--fg); box-shadow: inset 0 1px 0 var(--g-hi), inset 0 -1px 0 var(--g-lo), 0 6px 18px -10px var(--g-shadow) !important; -webkit-backdrop-filter: blur(14px) saturate(1.6); backdrop-filter: blur(14px) saturate(1.6); }
+html.glass button:not(.opts.seg > button) { border-radius: 999px; }   /* LiquidButton 是 Capsule */
+html.glass .pill { border-radius: 999px; }
+html.glass .board { background: linear-gradient(145deg, var(--g-fill), var(--g-fill2)) !important; }   /* 比分列：玻璃，底色保持淡 */
+html.glass .pill[data-s="fly"], html.glass .pill[data-s="net"] { color: var(--good); }
+html.glass .pill[data-s="low"] { color: var(--warn); }
+html.glass .pill[data-team="blue"] { color: var(--blue); }
+html.glass .pill[data-team="red"] { color: var(--red); }
+html.glass #backStage, html.glass #flipHud, html.glass #szHud { color: var(--fg); font-weight: 700; }
+/* 一排單選：外面是一條玻璃托盤，選中的是一顆會滑動的玻璃泡 */
+html.glass .opts.seg { padding: 4px; border-radius: 18px; background: linear-gradient(145deg, var(--g-fill2), transparent); border: 1px solid var(--g-edge); -webkit-backdrop-filter: blur(14px) saturate(1.6); backdrop-filter: blur(14px) saturate(1.6); box-shadow: inset 0 1px 2px var(--g-lo); }
+html.glass .opts.seg > button { background: transparent !important; border-color: transparent !important; box-shadow: none !important; }
+html.glass .segpill { border: 1px solid var(--g-edge); border-radius: 14px !important; background: linear-gradient(180deg, var(--g-hi), var(--g-fill)) !important; -webkit-backdrop-filter: blur(6px) saturate(2.2); backdrop-filter: blur(6px) saturate(2.2); box-shadow: 0 4px 14px -4px var(--g-shadow), inset 0 1px 1px var(--g-hi), inset 0 -2px 4px var(--g-lo); }
+html.glass .opts.seg > button[aria-pressed="true"] { font-weight: 700; }
+html.glass.sel-fill .segpill { background: linear-gradient(180deg, var(--g-hi), var(--g-fill)) !important; }
+html.glass input[type="range"] { accent-color: var(--fg); }
+
+
+/* ---- LiquidBottomTabs / Toggle / Slider 的外觀 ---- */
+html.glass { --lg-container: rgba(250,250,250,.4); --lg-accent: #0088FF; --lg-track: rgba(120,120,120,.2); }
+html.glass[data-theme="dark"] { --lg-container: rgba(18,18,18,.4); --lg-accent: #0091FF; --lg-track: rgba(120,120,128,.36); }
+@media (prefers-color-scheme: dark) { html.glass:not([data-theme="light"]) { --lg-container: rgba(18,18,18,.4); --lg-accent: #0091FF; --lg-track: rgba(120,120,128,.36); } }
+html.glass .segpill { display: none; }
+html.glass .opts.seg, html.glass .opts.lgtabs { background: none !important; border: 0 !important; box-shadow: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; padding: 0 !important; will-change: transform; }
+html.glass .opts.lgtabs > .lab { flex: 0 0 100%; margin: 0 0 2px 2px; }
+html.glass .opts.lgtabs > button[aria-pressed] { color: transparent !important; }
+html.glass .opts.lgtabs > button[aria-pressed="true"] { color: transparent !important; background: transparent !important; box-shadow: none !important; border-color: transparent !important; }
+html.glass .opts.lgtabs > button { border-radius: 999px; transform: scale(var(--ts, 1)); transition: none; }
+.lgth { position: absolute; left: 0; top: 0; border-radius: 999px; touch-action: none; transform-origin: 50% 50%; will-change: transform; z-index: 3; cursor: grab; }
+.lgth > .lgs { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; }
+.lgth > .lgc { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; pointer-events: none; }
+.lgth::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--lgh, none) center / 100% 100% no-repeat; mix-blend-mode: plus-lighter; pointer-events: none; }
+.lgtl { position: absolute; left: 0; top: 0; font-style: normal; pointer-events: none; z-index: 2; }
+.lgtl > span { position: absolute; display: flex; align-items: center; justify-content: center; color: var(--lg-accent); font-weight: 700; font-size: 14px; white-space: nowrap; transform: scale(var(--ts, 1)); }
+.lgmini { position: absolute; left: 0; top: 0; width: 100%; height: 100%; border-radius: 999px; transform-origin: 50% 50%; transform: scale(.667, 0); }
+.lgtgl-src, .lgsl-src { display: none !important; }
+.lgtgl { display: inline-flex; align-items: center; gap: 10px; padding: 4px 6px; }
+.lgtgl-lab { font-size: 14px; }
+.lgtgl-track { position: relative; width: 64px; height: 28px; border-radius: 999px; flex: 0 0 auto; touch-action: none; }
+.lgtgl-track > .lgth { top: 2px; left: 0; }
+.lgsl { position: relative; display: block; flex: 1 1 140px; min-width: 120px; height: 24px; touch-action: pan-y; }
+.lgsl-track { position: absolute; left: 0; right: 0; top: 9px; height: 6px; border-radius: 999px; background: var(--lg-track); overflow: hidden; }
+.lgsl-fill { display: block; height: 100%; background: var(--lg-accent); width: 0; }
+.lgsl > .lgth { top: 0; }
+
+.opts.seg { position: relative; }
+.opts.seg > button { position: relative; z-index: 1; }
+.lg::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 2; mix-blend-mode: plus-lighter; background: radial-gradient(circle var(--pr, 40px) at var(--px, 50%) var(--py, 50%), rgba(255,255,255,calc(.23 * var(--pp, 0))) 0, rgba(255,255,255,calc(.08 * var(--pp, 0))) 100%); opacity: calc(var(--pp, 0) * 1); }
+.lg::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--lgh) center / 100% 100% no-repeat; pointer-events: none; mix-blend-mode: plus-lighter; z-index: 2; }
+.opts.seg > button[aria-pressed="true"] { border-color: transparent !important; box-shadow: none !important; background: transparent !important; }
+.segpill { position: absolute; z-index: 0; left: 0; top: 0; width: 0; height: 0; box-sizing: border-box; border-radius: 10px; border: 1.5px solid currentColor; pointer-events: none; opacity: 0; transition: left .25s cubic-bezier(.2,.8,.2,1), top .25s cubic-bezier(.2,.8,.2,1), width .25s cubic-bezier(.2,.8,.2,1), height .25s cubic-bezier(.2,.8,.2,1), opacity .15s; }
+.segpill { color: var(--sel); }
+.segpill[data-k="blue"] { color: var(--blue); }
+.segpill[data-k="red"] { color: var(--red); }
+.segpill[data-k="good"] { color: var(--good); }
+html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transparent); }
 .opts .lab { font-size: 12px; color: var(--muted); letter-spacing: 0.06em; margin-right: 2px; }
 .opts button { padding: 6px 12px; min-height: 40px; }
 .opts button[data-team="blue"][aria-pressed="true"] { border-color: var(--blue); color: var(--blue); box-shadow: inset 0 0 0 1px var(--blue); }
@@ -585,7 +677,6 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
       <button type="button" data-rc="2" aria-pressed="false">2 左搖桿上下不回彈</button>
     </div>
   </div>
-
   <div class="actions">
     <div class="opts" role="group" aria-label="隊伍">
       <span class="lab">隊伍</span>
@@ -593,7 +684,6 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
       <button type="button" data-team="red" aria-pressed="false">紅方</button>
     </div>
   </div>
-
   <div class="actions">
     <div class="opts" role="group" aria-label="角色">
       <span class="lab">角色</span>
@@ -601,7 +691,6 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
       <button type="button" data-role="1" aria-pressed="false">防守者</button>
     </div>
   </div>
-
   <div class="actions">
     <div class="opts" role="group" aria-label="AI 對打">
       <span class="lab">AI 對打</span>
@@ -618,7 +707,6 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
       <button type="button" data-fmt="3" aria-pressed="false">3 對 3（1攻2守）</button>
     </div>
   </div>
-
   <div class="actions">
     <div class="opts" role="group" aria-label="視角">
       <span class="lab">視角</span>
@@ -639,7 +727,6 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
       <button type="button" data-stand="rback" aria-pressed="false">球框右後</button>
     </div>
   </div>
-
   <div class="actions">
     <div class="opts" role="group" aria-label="我方球框透明度">
       <span class="lab">我方球框</span>
@@ -647,7 +734,6 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
       <button type="button" data-hoopo="100" aria-pressed="true">不透明</button>
       <button type="button" data-hoopo="70" aria-pressed="false">70%</button>
       <button type="button" data-hoopo="40" aria-pressed="false">40%</button>
-      <button type="button" data-hoopo="15" aria-pressed="false">15%</button>
     </div>
     <div class="opts" role="group" aria-label="對方球框透明度">
       <span class="lab">對方球框</span>
@@ -655,17 +741,47 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
       <button type="button" data-hoopx="100" aria-pressed="true">不透明</button>
       <button type="button" data-hoopx="70" aria-pressed="false">70%</button>
       <button type="button" data-hoopx="40" aria-pressed="false">40%</button>
-      <button type="button" data-hoopx="15" aria-pressed="false">15%</button>
     </div>
   </div>
-
-  <div class="actions">
+  <div class="actions uibox" id="uiBox">
+    <b class="uihead">界面設定</b>
+    <div class="opts" role="group" aria-label="介面風格">
+      <span class="lab">風格</span>
+      <button type="button" data-gl="0" aria-pressed="true">標準</button>
+      <button type="button" data-gl="1" aria-pressed="false">液態玻璃</button>
+    </div>
+    <div class="opts" role="group" aria-label="配色">
+      <span class="lab">配色</span>
+      <button type="button" data-ui="0" aria-pressed="true">綠</button>
+      <button type="button" data-ui="1" aria-pressed="false">藍</button>
+      <button type="button" data-ui="2" aria-pressed="false">橘</button>
+      <button type="button" data-ui="3" aria-pressed="false">紫</button>
+      <button type="button" data-ui="4" aria-pressed="false">粉</button>
+    </div>
+    <div class="opts" role="group" aria-label="背景深淺">
+      <span class="lab">背景</span>
+      <button type="button" data-bg="0" aria-pressed="true">自動</button>
+      <button type="button" data-bg="1" aria-pressed="false">淺</button>
+      <button type="button" data-bg="2" aria-pressed="false">灰</button>
+      <button type="button" data-bg="3" aria-pressed="false">深</button>
+      <button type="button" data-bg="4" aria-pressed="false">黑</button>
+    </div>
+    <div class="opts" role="group" aria-label="選中加底色">
+      <span class="lab">選中底色</span>
+      <button type="button" data-fill="0" aria-pressed="true">不加</button>
+      <button type="button" data-fill="1" aria-pressed="false">加底色</button>
+    </div>
+    <div class="opts" role="group" aria-label="選中字色">
+      <span class="lab">選中字色</span>
+      <button type="button" data-fg="0" aria-pressed="true">跟框同色</button>
+      <button type="button" data-fg="1" aria-pressed="false">一般字色</button>
+    </div>
     <div class="opts" role="group" aria-label="畫面大小">
       <span class="lab">畫面大小</span>
-      <input type="range" id="szRange" min="40" max="200" step="5" value="100" aria-label="3D 畫面大小" style="flex: 1 1 140px; min-width: 120px; accent-color: #6fe08a;">
+      <input type="range" id="szRange" min="40" max="200" step="5" value="100" aria-label="3D 畫面大小" style="flex: 1 1 140px; min-width: 120px; accent-color: var(--accent);">
       <span id="szVal" style="min-width: 3.2em; text-align: right;">100%</span>
       <button type="button" id="szReset">重設</button>
-      <span id="szWarn" style="flex: 1 0 100%; height: 1.4em; line-height: 1.4em; overflow: hidden; visibility: hidden; color: #ffb347; font-weight: 700; font-size: 12px;">⚠ 畫面或遙控器已超出板面，請把畫面大小調小一點</span>
+      <span id="szWarn" style="flex: 1 0 100%; height: 1.4em; line-height: 1.4em; overflow: hidden; visibility: hidden; color: var(--warn); font-weight: 700; font-size: 12px;">⚠ 畫面或遙控器已超出板面，請把畫面大小調小一點</span>
     </div>
     <div class="opts" role="group" aria-label="球殼顏色">
       <span class="lab">球殼</span>
@@ -1768,7 +1884,7 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
   var STAND_ORDER = ['back', 'far', 'right', 'rback', 'left', 'lback'];
   // 球框透明度：我方球框（自己隊色的那個）與對方球框可以分開調，數字是不透明度百分比
   var HA = { o: 100, x: 100 };
-  try { var ha0 = JSON.parse(localStorage.getItem('cd_hoopalpha') || '{}'); if (ha0.o === 0 || (ha0.o >= 5 && ha0.o <= 100)) HA.o = ha0.o; if (ha0.x === 0 || (ha0.x >= 5 && ha0.x <= 100)) HA.x = ha0.x; } catch (e) {}
+  try { var ha0 = JSON.parse(localStorage.getItem('cd_hoopalpha') || '{}'); if (ha0.o === 0 || (ha0.o >= 5 && ha0.o <= 100)) HA.o = ha0.o; if (ha0.x === 0 || (ha0.x >= 5 && ha0.x <= 100)) HA.x = ha0.x; if (HA.o > 0 && HA.o < 40) HA.o = 40; if (HA.x > 0 && HA.x < 40) HA.x = 40; } catch (e) {}
   var haKey = '';
   function applyHoopAlpha() {
     var key = S.team + '|' + HA.o + '|' + HA.x;
@@ -1878,6 +1994,640 @@ button[aria-pressed="true"] { border-color: var(--blue); box-shadow: inset 0 0 0
     });
     function upd() { var r = box.getBoundingClientRect(), H = window.innerHeight; bs.hidden = r.bottom > 40 && r.top < H - 40; }
     window.addEventListener('scroll', upd, { passive: true }); window.addEventListener('resize', upd); upd();
+  })();
+
+  /* ---------- 液態玻璃：把 Kyant0/AndroidLiquidGlass（Apache-2.0）的 AGSL 折射 shader 移植過來 ----------
+     原函式庫的 RoundedRectRefractionShader / DefaultHighlightShader 逐像素算「圓角矩形距離場 → 折射位移」。
+     這裡用同樣的公式在 canvas 算出位移圖，交給 SVG feDisplacementMap 對「元素背後的畫面」做折射（backdrop-filter: url(#…)）；
+     邊緣高光同樣照 DefaultHighlightShader 算成一圈亮邊。 */
+  var LG = (function () {
+    var NS = 'http://www.w3.org/2000/svg', svg = null, defs = null, uid = 0, items = [], on = false, ro = null, cache = {};
+    var okSvg = false;
+    try { okSvg = !!(window.CSS && CSS.supports && (CSS.supports('backdrop-filter', 'url(#a)') || CSS.supports('-webkit-backdrop-filter', 'url(#a)'))); } catch (e) {}
+    function sgn(v) { return v > 0 ? 1 : v < 0 ? -1 : 0; }
+    function sdRR(px, py, hx, hy, r) {   // sdRoundedRect
+      var cx = Math.abs(px) - (hx - r), cy = Math.abs(py) - (hy - r);
+      return Math.hypot(Math.max(cx, 0), Math.max(cy, 0)) - r + Math.min(Math.max(cx, cy), 0);
+    }
+    function gradRR(px, py, hx, hy, r, out) {   // gradSdRoundedRect
+      var cx = Math.abs(px) - (hx - r), cy = Math.abs(py) - (hy - r);
+      if (cx >= 0 || cy >= 0) {
+        var mx = Math.max(cx, 0), my = Math.max(cy, 0), L = Math.hypot(mx, my) || 1;
+        out[0] = sgn(px) * mx / L; out[1] = sgn(py) * my / L;
+      } else { var gx = cy <= cx ? 1 : 0; out[0] = sgn(px) * gx; out[1] = sgn(py) * (1 - gx); }
+    }
+    function circleMap(x) { return 1 - Math.sqrt(1 - x * x); }
+    function mkCanvas(w, h) { var c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+    // 位移圖：回傳三張（G＝一般折射，R／B＝色散時的左右偏移）。編碼：0.5 + 位移 / scale
+    function dispMaps(w, h, r, H, A, chroma) {
+      var S = A * (chroma ? 4 : 2), hx = w / 2, hy = h / 2, gr = Math.min(r * 1.5, Math.min(hx, hy)), g = [0, 0];
+      var cs = [mkCanvas(w, h), chroma ? mkCanvas(w, h) : null, chroma ? mkCanvas(w, h) : null];
+      var im = cs.map(function (c) { return c ? c.getContext('2d').createImageData(w, h) : null; });
+      for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) {
+        var px = x + 0.5 - hx, py = y + 0.5 - hy, i = (y * w + x) * 4, dx = 0, dy = 0, k = 0;
+        var sd = sdRR(px, py, hx, hy, r);
+        if (-sd < H) {
+          sd = Math.min(sd, 0);
+          gradRR(px, py, hx, hy, gr, g);
+          var mag = circleMap(1 - -sd / H) * A;   // AGSL: d = circleMap * (-refractionAmount)，位移 = d * grad
+          dx = -mag * g[0]; dy = -mag * g[1];
+          k = chroma ? (px * py) / (hx * hy) : 0;
+        }
+        var set = function (arr, f) {
+          arr.data[i] = clamp(Math.round(255 * (0.5 + dx * f / S)), 0, 255);
+          arr.data[i + 1] = clamp(Math.round(255 * (0.5 + dy * f / S)), 0, 255);
+          arr.data[i + 2] = 128; arr.data[i + 3] = 255;
+        };
+        set(im[0], 1);
+        if (chroma) { set(im[1], 1 + k * 0.6); set(im[2], 1 - k * 0.6); }
+      }
+      var urls = [];
+      cs.forEach(function (c, n) { if (c) { c.getContext('2d').putImageData(im[n], 0, 0); urls.push(c.toDataURL()); } });
+      return { urls: urls, S: S };
+    }
+    // 邊緣高光：DefaultHighlightShader（angle 45°、falloff 1、白 50%），只畫一圈很細的亮邊
+    function highlight(w, h, r, width, alpha, ambient) {
+      var sc = 2, W = w * sc, Hh = h * sc, c = mkCanvas(W, Hh), cx2 = c.getContext('2d'), im = cx2.createImageData(W, Hh);
+      var hx = w / 2, hy = h / 2, gr = Math.min(r * 1.5, Math.min(hx, hy)), g = [0, 0], nx = Math.cos(Math.PI / 4), ny = Math.sin(Math.PI / 4);
+      for (var y = 0; y < Hh; y++) for (var x = 0; x < W; x++) {
+        var px = (x + 0.5) / sc - hx, py = (y + 0.5) / sc - hy, sd = sdRR(px, py, hx, hy, r);
+        if (sd > 0.5 || sd < -width) continue;
+        gradRR(px, py, hx, hy, gr, g);
+        var dd = g[0] * nx + g[1] * ny, inten = Math.abs(dd);
+        if (ambient && dd < 0) continue;   // AmbientHighlightShader：只有 d >= 0 的那一半（t = step(0, d)）
+        var edge = clamp(1 - Math.abs(sd + width * 0.35) / (width * 0.8), 0, 1);
+        var i = (y * W + x) * 4; im.data[i] = im.data[i + 1] = im.data[i + 2] = 255; im.data[i + 3] = Math.round(255 * alpha * inten * edge);
+      }
+      cx2.putImageData(im, 0, 0); return c.toDataURL();
+    }
+    function ensureSvg() {
+      if (svg) return;
+      svg = document.createElementNS(NS, 'svg'); svg.setAttribute('width', '0'); svg.setAttribute('height', '0'); svg.setAttribute('aria-hidden', 'true');
+      svg.style.cssText = 'position:absolute;width:0;height:0;pointer-events:none';
+      defs = document.createElementNS(NS, 'defs'); svg.appendChild(defs); document.body.appendChild(svg);
+    }
+    function el(n, a) { var e = document.createElementNS(NS, n); for (var k in a) e.setAttribute(k, a[k]); return e; }
+    function build(it) {
+      var e = it.el, w = e.offsetWidth, h = e.offsetHeight, c = it.cfg;
+      if (w < 8 || h < 8) return;
+      var r = Math.min(c.r === 'cap' ? 999 : c.r, Math.min(w, h) / 2), H = Math.min(c.H, Math.min(w, h) / 2 - 0.5), A = c.A;
+      var key = [w, h, r, H, A, c.chroma ? 1 : 0].join('/');
+      if (it.key === key) return; it.key = key;
+      if (okSvg && A > 0 && H > 0) {
+        ensureSvg();
+        var m = cache[key] || (cache[key] = dispMaps(w, h, r, H, A, c.chroma));
+        if (!it.fid) it.fid = 'lg' + (++uid);
+        var old = document.getElementById(it.fid); if (old) old.remove();
+        var f = el('filter', { id: it.fid, x: 0, y: 0, width: w, height: h, filterUnits: 'userSpaceOnUse', primitiveUnits: 'userSpaceOnUse', 'color-interpolation-filters': 'sRGB' });
+        var img = function (u, res) { var fi = el('feImage', { x: 0, y: 0, width: w, height: h, preserveAspectRatio: 'none', result: res }); fi.setAttribute('href', u); fi.setAttributeNS('http://www.w3.org/1999/xlink', 'href', u); return fi; };
+        var dm = function (inp, map, res) { return el('feDisplacementMap', { in: inp, in2: map, scale: m.S, xChannelSelector: 'R', yChannelSelector: 'G', result: res }); };
+        var mat = function (inp, v, res) { return el('feColorMatrix', { in: inp, type: 'matrix', values: v, result: res }); };
+        if (!c.chroma) { f.appendChild(img(m.urls[0], 'm')); f.appendChild(dm('SourceGraphic', 'm', 'o')); }
+        else {
+          f.appendChild(img(m.urls[1], 'mr')); f.appendChild(img(m.urls[0], 'mg')); f.appendChild(img(m.urls[2], 'mb'));
+          f.appendChild(dm('SourceGraphic', 'mr', 'dr')); f.appendChild(dm('SourceGraphic', 'mg', 'dg')); f.appendChild(dm('SourceGraphic', 'mb', 'db'));
+          f.appendChild(mat('dr', '1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0 1', 'cr'));
+          f.appendChild(mat('dg', '0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 0 1', 'cg'));
+          f.appendChild(mat('db', '0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 0 1', 'cb'));
+          f.appendChild(el('feComposite', { in: 'cr', in2: 'cg', operator: 'arithmetic', k1: 0, k2: 1, k3: 1, k4: 0, result: 'crg' }));
+          f.appendChild(el('feComposite', { in: 'crg', in2: 'cb', operator: 'arithmetic', k1: 0, k2: 1, k3: 1, k4: 0, result: 'o' }));
+        }
+        defs.appendChild(f);
+        var bf = (c.blur ? 'blur(' + c.blur + 'px) ' : '') + 'saturate(1.5) url(#' + it.fid + ')';
+        e.style.setProperty('-webkit-backdrop-filter', bf); e.style.setProperty('backdrop-filter', bf);
+      }
+      var hk = 'h' + key + '/' + c.hl;
+      if (c.hl > 0) { cache[hk] = cache[hk] || highlight(w, h, r, 1.6, c.hl); e.style.setProperty('--lgh', 'url(' + cache[hk] + ')'); }
+    }
+    var CFG = [
+      ['html.glass .hud > div', { r: 18, H: 10, A: 16, blur: 4, chroma: false, hl: 0.5 }],
+      ['html.glass .board', { r: 18, H: 12, A: 18, blur: 4, chroma: false, hl: 0.5 }],
+      ['html.glass #playerName, html.glass #roomCode', { r: 'cap', H: 10, A: 18, blur: 3, chroma: false, hl: 0 }],
+      ['html.glass .actions > button, html.glass .actions > .opts > button:not([aria-pressed]), html.glass #backStage', { r: 'cap', H: 12, A: 24, blur: 2, chroma: false, hl: 0.6, inter: true }]
+    ];
+
+    // LiquidButton 的互動（照 LiquidButton.kt／InteractiveHighlight.kt）：按下放大、拖曳時用 tanh 阻尼位移並拉伸、手指位置有一團白色高光；全部用 spring(0.5, 300) 彈回
+    function spring1(st, target, dt) {   // 阻尼比 0.5、剛性 300 的彈簧
+      var k = 300, c = 2 * 0.5 * Math.sqrt(k), steps = Math.max(1, Math.ceil(dt / 0.004)), h = dt / steps;
+      for (var i = 0; i < steps; i++) { st.v += (-k * (st.x - target) - c * st.v) * h; st.x += st.v * h; }
+    }
+    function attachInter(it) {
+      var e = it.el, P = { x: 0, v: 0 }, X = { x: 0, v: 0 }, Y = { x: 0, v: 0 };
+      var down = false, sx0 = 0, sy0 = 0, tx = 0, ty = 0, raf = 0, last = 0;
+      function frame(t) {
+        var dt = Math.min(0.05, (t - last) / 1000 || 0.016); last = t;
+        spring1(P, down ? 1 : 0, dt);
+        if (!down) { spring1(X, sx0, dt); spring1(Y, sy0, dt); } else { X.x = tx; Y.x = ty; X.v = Y.v = 0; }
+        var w = e.offsetWidth, h = e.offsetHeight, p = P.x, ox = X.x - sx0, oy = Y.x - sy0;
+        var mn = Math.min(w, h), mxd = Math.max(w, h), sc = 1 + (4 / h) * p;
+        var th = Math.tanh, mdScale = 4 / h, ang = Math.atan2(oy, ox);
+        var scx = sc + mdScale * Math.abs(Math.cos(ang) * ox / mxd) * Math.min(w / h, 1);
+        var scy = sc + mdScale * Math.abs(Math.sin(ang) * oy / mxd) * Math.min(h / w, 1);
+        e.style.transform = 'translate(' + (mn * th(0.05 * ox / mn)).toFixed(2) + 'px,' + (mn * th(0.05 * oy / mn)).toFixed(2) + 'px) scale(' + scx.toFixed(4) + ',' + scy.toFixed(4) + ')';
+        e.style.setProperty('--pp', Math.max(0, p).toFixed(3)); e.style.setProperty('--px', clamp(X.x, 0, w).toFixed(1) + 'px'); e.style.setProperty('--py', clamp(Y.x, 0, h).toFixed(1) + 'px'); e.style.setProperty('--pr', (mn * 1.5).toFixed(1) + 'px');
+        var still = !down && Math.abs(P.x) < 0.001 && Math.abs(P.v) < 0.01 && Math.abs(X.x - sx0) < 0.05 && Math.abs(Y.x - sy0) < 0.05 && Math.abs(X.v) < 0.05 && Math.abs(Y.v) < 0.05;
+        if (still) { raf = 0; e.style.removeProperty('transform'); e.style.setProperty('--pp', '0'); return; }
+        raf = requestAnimationFrame(frame);
+      }
+      function kick() { if (!raf) { last = performance.now(); raf = requestAnimationFrame(frame); } }
+      function pd(ev) { var r = e.getBoundingClientRect(); down = true; sx0 = tx = ev.clientX - r.left; sy0 = ty = ev.clientY - r.top; X.x = sx0; Y.x = sy0; X.v = Y.v = 0; kick(); }
+      function pm(ev) { if (!down) return; var r = e.getBoundingClientRect(); tx = ev.clientX - r.left; ty = ev.clientY - r.top; }
+      function pu() { if (!down) return; down = false; kick(); }
+      e.addEventListener('pointerdown', pd); window.addEventListener('pointermove', pm); window.addEventListener('pointerup', pu); window.addEventListener('pointercancel', pu);
+      it.detach = function () { e.removeEventListener('pointerdown', pd); window.removeEventListener('pointermove', pm); window.removeEventListener('pointerup', pu); window.removeEventListener('pointercancel', pu); if (raf) cancelAnimationFrame(raf); e.style.removeProperty('transform'); e.style.removeProperty('--pp'); e.style.removeProperty('--px'); e.style.removeProperty('--py'); e.style.removeProperty('--pr'); };
+    }
+    // 共用濾鏡：同樣的尺寸／參數只建一次（玻璃泡的折射強度會隨按壓進度改變，所以要能快速換）
+    var FC = {};
+    function filt(w, h, r, H, A, chroma) {
+      if (!okSvg || w < 8 || h < 8) return '';
+      r = Math.min(r, Math.min(w, h) / 2); H = Math.min(H, Math.min(w, h) / 2 - 0.5);
+      if (H < 0.5 || A <= 0) return '';
+      var key = [w, h, r, H.toFixed(2), A, chroma ? 1 : 0].join('/');
+      if (FC[key]) return 'url(#' + FC[key] + ')';
+      ensureSvg();
+      var m = cache[key] || (cache[key] = dispMaps(w, h, r, H, A, chroma)), id = 'lgf' + (++uid);
+      var f = el('filter', { id: id, x: 0, y: 0, width: w, height: h, filterUnits: 'userSpaceOnUse', primitiveUnits: 'userSpaceOnUse', 'color-interpolation-filters': 'sRGB' });
+      var img = function (u, res) { var fi = el('feImage', { x: 0, y: 0, width: w, height: h, preserveAspectRatio: 'none', result: res }); fi.setAttribute('href', u); fi.setAttributeNS('http://www.w3.org/1999/xlink', 'href', u); return fi; };
+      var dm = function (inp, map, res) { return el('feDisplacementMap', { in: inp, in2: map, scale: m.S, xChannelSelector: 'R', yChannelSelector: 'G', result: res }); };
+      var mat = function (inp, v, res) { return el('feColorMatrix', { in: inp, type: 'matrix', values: v, result: res }); };
+      if (!chroma) { f.appendChild(img(m.urls[0], 'm')); f.appendChild(dm('SourceGraphic', 'm', 'o')); }
+      else {
+        f.appendChild(img(m.urls[1], 'mr')); f.appendChild(img(m.urls[0], 'mg')); f.appendChild(img(m.urls[2], 'mb'));
+        f.appendChild(dm('SourceGraphic', 'mr', 'dr')); f.appendChild(dm('SourceGraphic', 'mg', 'dg')); f.appendChild(dm('SourceGraphic', 'mb', 'db'));
+        f.appendChild(mat('dr', '1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0 1', 'cr'));
+        f.appendChild(mat('dg', '0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 0 1', 'cg'));
+        f.appendChild(mat('db', '0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 0 1', 'cb'));
+        f.appendChild(el('feComposite', { in: 'cr', in2: 'cg', operator: 'arithmetic', k1: 0, k2: 1, k3: 1, k4: 0, result: 'crg' }));
+        f.appendChild(el('feComposite', { in: 'crg', in2: 'cb', operator: 'arithmetic', k1: 0, k2: 1, k3: 1, k4: 0, result: 'o' }));
+      }
+      defs.appendChild(f); FC[key] = id; return 'url(#' + id + ')';
+    }
+    function hlUrl(w, h, r, width, alpha, ambient) {
+      if (alpha < 0.02 || w < 8 || h < 8) return 'none';
+      r = Math.min(r, Math.min(w, h) / 2);
+      var k = 'H' + [w, h, r, width, alpha.toFixed(2), ambient ? 1 : 0].join('/');
+      return 'url(' + (cache[k] || (cache[k] = highlight(w, h, r, width, alpha, ambient))) + ')';
+    }
+    function sched(it) { clearTimeout(it.t); it.t = setTimeout(function () { if (on) build(it); }, it.first ? 0 : 60); it.first = false; }
+    function scan() {
+      if (!on) return;
+      CFG.forEach(function (row) {
+        document.querySelectorAll(row[0]).forEach(function (e) {
+          if (e.__lg) return;
+          var it = { el: e, cfg: row[1], first: true }; e.__lg = it; items.push(it);
+          e.classList.add('lg');
+          if (getComputedStyle(e).position === 'static') { e.style.position = 'relative'; it.pos = true; }
+          if (!ro) ro = new ResizeObserver(function (es) { es.forEach(function (x) { if (x.target.__lg) sched(x.target.__lg); }); });
+          if (row[1].inter) attachInter(it);
+          ro.observe(e); sched(it);
+        });
+      });
+    }
+    function enable() { on = true; scan(); }
+    function disable() {
+      on = false;
+      items.forEach(function (it) {
+        var e = it.el; clearTimeout(it.t); if (ro) ro.unobserve(e);
+        if (it.detach) it.detach();
+        e.classList.remove('lg'); e.style.removeProperty('backdrop-filter'); e.style.removeProperty('-webkit-backdrop-filter'); e.style.removeProperty('--lgh');
+        if (it.pos) e.style.removeProperty('position');
+        e.__lg = null;
+      });
+      items = []; if (defs) while (defs.firstChild) defs.removeChild(defs.firstChild); FC = {};
+    }
+    return { enable: enable, disable: disable, scan: scan, supported: okSvg, filt: filt, hl: hlUrl };
+  })();
+
+  /* ---------- LGUI：把 AndroidLiquidGlass 範例的 DampedDragAnimation、LiquidBottomTabs、LiquidToggle、LiquidSlider 完整移植 ---------- */
+  var LGUI = (function () {
+    var on = false, comps = [], anims = [], raf = 0, lastT = 0;
+    // --- Compose 的 spring(dampingRatio, stiffness)，質量 1 ---
+    function Sp(z, k, th, x0) { this.z = z; this.k = k; this.th = th; this.x = x0 || 0; this.v = 0; this.t = x0 || 0; }
+    Sp.prototype.step = function (dt) {
+      var c = 2 * this.z * Math.sqrt(this.k), n = Math.max(1, Math.ceil(dt / 0.004)), h = dt / n;
+      for (var i = 0; i < n; i++) { this.v += (-this.k * (this.x - this.t) - c * this.v) * h; this.x += this.v * h; }
+      if (Math.abs(this.x - this.t) < this.th && Math.abs(this.v) < this.th * 10) { this.x = this.t; this.v = 0; }
+    };
+    Sp.prototype.busy = function () { return this.x !== this.t || this.v !== 0; };
+    function loop(t) {
+      var dt = Math.min(0.05, (t - lastT) / 1000 || 0.016); lastT = t; var any = false;
+      for (var i = 0; i < anims.length; i++) { if (anims[i].tick(dt)) any = true; }
+      raf = any ? requestAnimationFrame(loop) : 0;
+    }
+    function wake() { if (!raf && on) { lastT = performance.now(); raf = requestAnimationFrame(loop); } }
+    // --- DampedDragAnimation（逐項照原始碼的彈簧參數） ---
+    function Damped(o) {
+      this.min = o.min; this.max = o.max; this.pressedScale = o.pressedScale; this.onFrame = o.onFrame;
+      this.val = new Sp(1, 1000, o.th, o.init); this.vel = new Sp(0.5, 300, o.th * 10, 0);
+      this.prs = new Sp(1, 1000, 0.001, 0); this.sx = new Sp(0.6, 250, 0.001, 1); this.sy = new Sp(0.7, 250, 0.001, 1);
+      this.rel = false; this.hist = []; this.dragging = false;
+      anims.push(this);
+    }
+    Damped.prototype.progress = function () { return (this.val.x - this.min) / (this.max - this.min); };
+    Damped.prototype.press = function () { this.hist = []; this.rel = false; this.prs.t = 1; this.sx.t = this.pressedScale; this.sy.t = this.pressedScale; wake(); };
+    Damped.prototype.release = function () { this.rel = true; wake(); };
+    Damped.prototype.updateValue = function (v) { this.val.t = clamp(v, this.min, this.max); wake(); };
+    Damped.prototype.animateTo = function (v) { this.press(); this.val.t = clamp(v, this.min, this.max); if (this.vel.x !== 0) this.vel.t = 0; this.release(); };
+    Damped.prototype.tick = function (dt) {
+      var now = performance.now(), moving = this.val.busy();
+      this.val.step(dt);
+      if (moving || this.val.busy()) {   // updateVelocity：用最近一小段的位置變化估速度
+        this.hist.push([now, this.val.x]); while (this.hist.length > 2 && now - this.hist[0][0] > 100) this.hist.shift();
+        var a = this.hist[0], b = this.hist[this.hist.length - 1];
+        this.vel.t = b[0] > a[0] ? ((b[1] - a[1]) / ((b[0] - a[0]) / 1000)) / (this.max - this.min) : 0;
+      } else if (!this.dragging) this.vel.t = 0;
+      if (this.rel && !this.dragging && (!this.val.busy() || Math.abs(this.val.x - this.val.t) < (this.max - this.min) * 0.025)) {
+        this.prs.t = 0; this.sx.t = 1; this.sy.t = 1; this.rel = false;
+      }
+      this.vel.step(dt); this.prs.step(dt); this.sx.step(dt); this.sy.step(dt);
+      if (this.onFrame) this.onFrame(this);
+      return this.val.busy() || this.vel.busy() || this.prs.busy() || this.sx.busy() || this.sy.busy() || this.rel;
+    };
+    function easeOut(x) {   // CubicBezier(0, 0, 0.58, 1)
+      var lo = 0, hi = 1, t = 0.5;
+      for (var i = 0; i < 20; i++) { t = (lo + hi) / 2; var bx = 3 * (1 - t) * (1 - t) * t * 0 + 3 * (1 - t) * t * t * 0.58 + t * t * t; if (bx < x) lo = t; else hi = t; }
+      return 3 * (1 - t) * t * t * 1 + t * t * t;
+    }
+    // --- 玻璃泡（thumb）：drawBackdrop 的 lens / highlight / shadow / innerShadow / onDrawSurface ---
+    function Thumb(host, o) {
+      var e = document.createElement('i'); e.className = 'lgth'; this.el = e; this.o = o;
+      e.innerHTML = '<i class="lgs"></i><i class="lgc"></i>';
+      this.surf = e.firstChild; this.clip = e.lastChild; host.appendChild(e);
+      this.w = 0; this.h = 0;
+    }
+    Thumb.prototype.size = function (w, h) { this.w = w; this.h = h; this.el.style.width = w + 'px'; this.el.style.height = h + 'px'; };
+    Thumb.prototype.paint = function (p) {
+      var e = this.el, o = this.o, w = this.w, h = this.h, q = Math.ceil(p * 6) / 6, r = h / 2;
+      var L = o.lens(q), f = L.H > 0.5 ? LG.filt(w, h, r, L.H, L.A, L.chroma) : '';
+      var bl = L.blur ? 'blur(' + L.blur.toFixed(1) + 'px)' : '';
+      var bf = (bl + ' ' + f).trim() || 'none';
+      if (this.lastBf !== bf) { this.lastBf = bf; e.style.setProperty('-webkit-backdrop-filter', bf); e.style.setProperty('backdrop-filter', bf); }
+      var H = o.hl(q), hk = H.a.toFixed(2) + H.wd;
+      if (this.lastHl !== hk) { this.lastHl = hk; e.style.setProperty('--lgh', LG.hl(w, h, r, H.wd, H.a, H.amb)); }
+      var sh = o.shadow(p), ish = o.inner(p), bs = [];
+      if (sh) bs.push('0 ' + (sh.r / 6).toFixed(1) + 'px ' + sh.r.toFixed(1) + 'px rgba(0,0,0,' + sh.a.toFixed(3) + ')');
+      if (ish && ish.a > 0.01) bs.push('inset 0 ' + ish.r.toFixed(1) + 'px ' + ish.r.toFixed(1) + 'px rgba(0,0,0,' + (0.15 * ish.a).toFixed(3) + ')');
+      e.style.boxShadow = bs.join(',') || 'none';
+      this.surf.style.background = o.surface(p);
+    };
+    Thumb.prototype.layer = function (tx, ty, sx, sy) { this.el.style.transform = 'translate(' + tx.toFixed(2) + 'px,' + ty.toFixed(2) + 'px) scale(' + sx.toFixed(4) + ',' + sy.toFixed(4) + ')'; };
+    function drag(target, cb) {   // 共用拖曳：給出每次移動的 dx，並判斷有沒有真的拖過
+      var d = null;
+      target.addEventListener('pointerdown', function (e) {
+        if (e.button > 0) return; d = { id: e.pointerId, x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, on: false };
+        try { target.setPointerCapture(e.pointerId); } catch (x) {}
+        cb.start(e, d);
+      });
+      target.addEventListener('pointermove', function (e) {
+        if (!d || e.pointerId !== d.id) return;
+        var dx = e.clientX - d.lx, dy = e.clientY - d.ly; d.lx = e.clientX; d.ly = e.clientY;
+        if (!d.on && Math.abs(e.clientX - d.x) + Math.abs(e.clientY - d.y) > 3) d.on = true;
+        if (dx || dy) cb.move(e, dx, d, dy);
+      });
+      function end(e) { if (!d || e.pointerId !== d.id) return; var k = d; d = null; cb.end(e, k); }
+      target.addEventListener('pointerup', end); target.addEventListener('pointercancel', end);
+    }
+    var DARKQ = function () { var th = document.documentElement.getAttribute('data-theme'); try { return th === 'dark' || (th !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches); } catch (e) { return false; } };
+
+    // ================= LiquidBottomTabs：每一排單選 =================
+    function Tabs(row) {
+      var self = this; this.row = row; this.thumb = null;
+      row.classList.add('lgtabs');
+      var tb = new Thumb(row, {
+        lens: function (p) { return { H: 10 * p, A: 14 * p, chroma: true, blur: 0 }; },
+        hl: function (p) { return { a: 0.5 * p, wd: 1.2, amb: false }; },
+        shadow: function (p) { return { r: 24, a: 0.1 * p }; },
+        inner: function (p) { return { r: 8 * p, a: p }; },
+        surface: function (p) { var d = DARKQ(); return 'linear-gradient(' + (d ? 'rgba(255,255,255,' + (0.1 * (1 - p)).toFixed(3) + ')' : 'rgba(0,0,0,' + (0.1 * (1 - p)).toFixed(3) + ')') + ',' + 'transparent),linear-gradient(rgba(0,136,255,' + (0.14 * p).toFixed(3) + '),rgba(0,136,255,' + (0.14 * p).toFixed(3) + ')),rgba(0,0,0,' + (0.03 * p).toFixed(3) + ')'; }
+      });
+      this.thumb = tb; tb.el.classList.add('lgth-tab');
+      this.offX = new Sp(1, 300, 0.5, 0); this.fx = new Sp(1, 600, 0.3, 0); this.fy = new Sp(1, 600, 0.3, 0); this.free = false; this.multi = false; this.panel = 0; this.cur = 0; this.L = [];
+      this.D = new Damped({ min: 0, max: 1, th: 0.001, pressedScale: 78 / 56, init: 0, onFrame: function (d) { self.frame(d); } });
+      anims.push({ tick: function (dt) { var a = self.offX.busy() || self.fx.busy() || self.fy.busy(); if (!a) { if (self.free && !self.D.dragging) self.free = false; return false; } self.offX.step(dt); self.fx.step(dt); self.fy.step(dt); self.frame(self.D); return true; } });
+      this.measure(); this.syncSel(false);
+      new MutationObserver(function () { self.measure(); self.syncSel(true); }).observe(row, { attributes: true, subtree: true, attributeFilter: ['aria-pressed', 'hidden', 'disabled'] });
+      if (window.ResizeObserver) new ResizeObserver(function () { self.measure(); self.frame(self.D); }).observe(row);
+      // 拖曳：玻璃泡本身，或在整排上橫向滑
+      var moved = false, pitch = 60, dragging = false;
+      function begin() { self.measure(); pitch = self.pitch(); dragging = true; self.D.dragging = true; self.D.press(); self.beginFree(); }
+      function mv(dx, dy) { if (self.multi) { self.moveFree(dx, dy); return; } self.D.updateValue(self.D.val.t + dx / pitch); self.offX.x += dx; self.offX.t = self.offX.x; wake(); }
+      drag(tb.el, {
+        start: function () { begin(); },
+        move: function (e, dx, d, dy) { mv(dx, dy); moved = true; },
+        end: function () { self.stop(); moved = false; }
+      });
+      var rd = null;
+      row.addEventListener('pointerdown', function (e) { if (e.target === tb.el || (tb.el.contains(e.target))) return; rd = { x: e.clientX, id: e.pointerId, lx: e.clientX, ly: e.clientY, on: false }; });
+      window.addEventListener('pointermove', function (e) {
+        if (!rd || e.pointerId !== rd.id) return;
+        if (!rd.on) { if (Math.abs(e.clientX - rd.x) < 8) return; rd.on = true; self.swipe = true; begin(); }
+        var dx = e.clientX - rd.lx, dy = e.clientY - rd.ly; rd.lx = e.clientX; rd.ly = e.clientY;
+        mv(dx, dy);
+      });
+      function rend() { if (!rd) return; var was = rd.on; rd = null; if (was) self.stop(); }
+      window.addEventListener('pointerup', rend); window.addEventListener('pointercancel', rend);
+      row.addEventListener('click', function (e) { if (self.swipe && e.isTrusted) { e.stopPropagation(); e.preventDefault(); } self.swipe = false; }, true);
+    }
+    Tabs.prototype.btns = function () { return Array.prototype.filter.call(this.row.querySelectorAll('button[aria-pressed]'), function (b) { return !b.hidden && !b.disabled && b.offsetWidth > 0; }); };
+    Tabs.prototype.measure = function () {
+      var bs = this.btns(); this.bs = bs;
+      // 每一塊一樣大：全部撐到這一排最寬那個
+      if (bs.length) {
+        bs.forEach(function (b) { b.style.minWidth = ''; b.style.flex = ''; b.style.whiteSpace = ''; });
+        var t0 = bs[0].offsetTop, one = bs.every(function (b) { return Math.abs(b.offsetTop - t0) < 4; });
+        bs.forEach(function (b) { b.style.flex = '0 0 auto'; });
+        var mw = 0; bs.forEach(function (b) { mw = Math.max(mw, b.getBoundingClientRect().width); });
+        mw = Math.ceil(mw);
+        var avail = this.row.clientWidth - 8;
+                bs.forEach(function (b) { b.style.minWidth = mw + 'px'; b.style.whiteSpace = 'nowrap'; });
+      }
+      this.L = bs.map(function (b) { return { x: b.offsetLeft, y: b.offsetTop, w: b.offsetWidth, h: b.offsetHeight }; });
+      this.D.max = Math.max(1, bs.length - 1);
+      if (bs.length) this.thumb.size(this.L[0].w, this.L[0].h);
+      this.buildLabels();
+    };
+    Tabs.prototype.pitch = function () {
+      var L = this.L; if (L.length < 2) return 60;
+      var one = L.every(function (a) { return Math.abs(a.y - L[0].y) < 4; });
+      return one ? Math.max(20, (L[L.length - 1].x + L[L.length - 1].w / 2 - (L[0].x + L[0].w / 2)) / (L.length - 1)) : Math.max(30, L.reduce(function (s, a) { return s + a.w; }, 0) / L.length);
+    };
+    Tabs.prototype.buildLabels = function () {   // 底層：一般顏色的文字（玻璃泡位置挖空）；上層：accent 文字，只在玻璃泡裡面（被它折射）
+      if (this.lay) this.lay.remove(); if (this.lay0) this.lay0.remove();
+      var lay = document.createElement('div'), lay0 = document.createElement('div'); lay.className = 'lgtl'; lay0.className = 'lgtl lgtl0';
+      this.row.insertBefore(lay0, this.thumb.el); this.row.insertBefore(lay, this.thumb.el); this.lay = lay; this.lay0 = lay0;
+      var ref = this.bs.filter(function (b) { return b.getAttribute('aria-pressed') !== 'true'; })[0] || this.bs[0], cs = ref && getComputedStyle(ref);
+      this.bs.forEach(function (b, i) {
+        var L = this.L[i], pos = 'left:' + L.x + 'px;top:' + L.y + 'px;width:' + L.w + 'px;height:' + L.h + 'px;';
+        var a = document.createElement('span'); a.textContent = b.textContent; a.style.cssText = pos; lay.appendChild(a);
+        var z = document.createElement('span'); z.textContent = b.textContent; z.style.cssText = pos + (cs ? 'font-size:' + cs.fontSize + ';font-family:' + cs.fontFamily + ';font-weight:' + cs.fontWeight + ';color:var(--fg);' : ''); lay0.appendChild(z);
+      }, this);
+      [lay, lay0].forEach(function (l) { l.style.width = this.row.clientWidth + 'px'; l.style.height = this.row.clientHeight + 'px'; }, this);
+    };
+    Tabs.prototype.center = function (i) { var a = this.L[i]; return [a.x + a.w / 2, a.y + a.h / 2]; };
+    Tabs.prototype.beginFree = function () {
+      var L = this.L; this.multi = L.length > 1 && L.some(function (a) { return Math.abs(a.y - L[0].y) > 4; });
+      if (!this.multi) return;
+      var c = this.center(clamp(Math.round(this.D.val.x), 0, L.length - 1));
+      this.fx.x = this.fx.t = c[0]; this.fy.x = this.fy.t = c[1]; this.fx.v = this.fy.v = 0; this.free = true;
+    };
+    Tabs.prototype.moveFree = function (dx, dy) {
+      var L = this.L, lo = L[0], W = this.row.clientWidth, H = this.row.clientHeight;
+      this.fx.x = this.fx.t = clamp(this.fx.x + dx, 0, W); this.fy.x = this.fy.t = clamp(this.fy.x + dy, 0, H); this.fx.v = this.fy.v = 0;
+      var n = this.nearest(); if (n !== this.hov) { this.hov = n; }
+      wake(); this.frame(this.D);
+    };
+    Tabs.prototype.nearest = function () {
+      var best = 0, bd = 1e9, x = this.fx.x, y = this.fy.x;
+      this.L.forEach(function (a, i) { var d = Math.pow(a.x + a.w / 2 - x, 2) + Math.pow(a.y + a.h / 2 - y, 2); if (d < bd) { bd = d; best = i; } });
+      return best;
+    };
+    Tabs.prototype.sel = function () { var i = -1; this.bs.forEach(function (b, n) { if (b.getAttribute('aria-pressed') === 'true') i = n; }); return i; };
+    Tabs.prototype.syncSel = function (anim) {
+      var i = this.sel(); if (i < 0) { this.thumb.el.style.opacity = '0'; return; } this.thumb.el.style.opacity = '1';
+      this.cur = i; if (anim) this.D.animateTo(i); else { this.D.val.x = this.D.val.t = i; this.frame(this.D); }
+    };
+    Tabs.prototype.stop = function () {
+      var self = this, idx = clamp(Math.round(this.D.val.t), 0, this.bs.length - 1);
+      if (this.multi && this.free) { idx = this.nearest(); var c = this.center(idx); this.fx.t = c[0]; this.fy.t = c[1]; this.D.val.x = this.D.val.t = idx; }
+      this.D.dragging = false; this.D.animateTo(idx);
+      this.offX.t = 0; wake();
+      if (idx !== this.cur && this.bs[idx]) { this.cur = idx; this.bs[idx].click(); }
+    };
+    Tabs.prototype.frame = function (d) {
+      var L = this.L; if (!L.length) return;
+      var v = clamp(d.val.x, 0, L.length - 1), i0 = Math.floor(v), i1 = Math.min(L.length - 1, i0 + 1), f = v - i0, a = L[i0], b = L[i1];
+      var near = L[Math.round(v)] || a;
+      if (near.w !== this.thumb.w || near.h !== this.thumb.h) { this.thumb.size(near.w, near.h); this.thumb.lastBf = null; this.thumb.lastHl = null; }
+      var cx = a.x + a.w / 2 + (b.x + b.w / 2 - a.x - a.w / 2) * f, cy = a.y + a.h / 2 + (b.y + b.h / 2 - a.y - a.h / 2) * f;
+      if (this.free) { cx = this.fx.x; cy = this.fy.x; }
+      var x = cx - near.w / 2, y = cy - near.h / 2, p = clamp(d.prs.x, 0, 1);
+      var fr = clamp(this.offX.x / Math.max(1, this.row.clientWidth), -1, 1);
+      this.panel = 4 * Math.sign(fr) * easeOut(Math.abs(fr));
+      var vel = d.vel.x / 10, sx = d.sx.x / clamp(1 - clamp(vel * 0.75, -0.2, 0.2), 0.01, 9), sy = d.sy.x * (1 - clamp(vel * 0.25, -0.2, 0.2));
+      this.thumb.paint(p);
+      this.thumb.el.style.left = x + 'px'; this.thumb.el.style.top = y + 'px';
+      this.thumb.layer(0, 0, sx, sy);
+      if (this.lay) {   // 強調色文字放在玻璃泡「下面」，用玻璃泡的形狀裁切，才會跟著一起被折射
+        var hw = near.w * sx / 2, hh = near.h * sy / 2, RW = this.row.clientWidth, RH = this.row.clientHeight;
+        this.lay.style.clipPath = 'inset(' + (cy - hh).toFixed(1) + 'px ' + (RW - cx - hw).toFixed(1) + 'px ' + (RH - cy - hh).toFixed(1) + 'px ' + (cx - hw).toFixed(1) + 'px round ' + hh.toFixed(1) + 'px)';
+        var x0 = cx - hw, x1 = cx + hw, y0 = cy - hh, y1 = cy + hh, rr = Math.min(hh, hw);
+        if (this.lay0) this.lay0.style.clipPath = 'path(evenodd,"M0 0H' + RW + 'V' + RH + 'H0Z M' + (x0 + rr).toFixed(1) + ' ' + y0.toFixed(1) + 'H' + (x1 - rr).toFixed(1) + 'A' + rr.toFixed(1) + ' ' + rr.toFixed(1) + ' 0 0 1 ' + (x1 - rr).toFixed(1) + ' ' + y1.toFixed(1) + 'H' + (x0 + rr).toFixed(1) + 'A' + rr.toFixed(1) + ' ' + rr.toFixed(1) + ' 0 0 1 ' + (x0 + rr).toFixed(1) + ' ' + y0.toFixed(1) + 'Z")';
+      }
+      // 容器：跟著手指偏一點、按住時放大一點（scale = 1 + 16dp / 寬度 × progress）；分頁文字放大到 1.2
+      var W = this.row.clientWidth || 1;
+      this.row.style.transform = this.panel ? 'translateX(' + this.panel.toFixed(2) + 'px)' : '';
+      this.row.style.setProperty('--ts', '1');
+    };
+    // ================= LiquidToggle =================
+    function Toggle(btn) {
+      var self = this; this.btn = btn; var host = document.createElement('span'); host.className = 'lgtgl';
+      host.innerHTML = '<span class="lgtgl-lab">' + '音效震動' + '</span><span class="lgtgl-track"></span>';
+      btn.parentNode.insertBefore(host, btn.nextSibling); this.host = host; btn.classList.add('lgtgl-src');
+      this.track = host.lastChild;
+      var th = new Thumb(this.track, {
+        lens: function (p) { return { H: 5 * p, A: 10 * p, chroma: true, blur: 8 * (1 - p) }; },
+        hl: function (p) { return { a: p, wd: 1.0, amb: true }; },
+        shadow: function () { return { r: 4, a: 0.05 }; },
+        inner: function (p) { return { r: 4 * p, a: p }; },
+        surface: function (p) { return 'rgba(255,255,255,' + (1 - p).toFixed(3) + ')'; }
+      });
+      th.size(40, 24); th.el.style.left = '0px'; th.el.style.top = '2px'; this.th = th;
+      var mini = document.createElement('i'); mini.className = 'lgmini'; th.clip.appendChild(mini); this.mini = mini;
+      this.frac = btn.getAttribute('aria-pressed') === 'true' ? 1 : 0; this.didDrag = false;
+      this.D = new Damped({ min: 0, max: 1, th: 0.001, pressedScale: 1.5, init: this.frac, onFrame: function (d) { self.frame(d); } });
+      drag(th.el, {
+        start: function () { self.didDrag = false; self.D.dragging = true; self.D.press(); },
+        move: function (e, dx) { self.didDrag = true; self.frac = clamp(self.frac + dx / 20, 0, 1); self.D.updateValue(self.frac); },
+        end: function () {
+          self.D.dragging = false;
+          var want = self.didDrag ? self.D.val.t >= 0.5 : btn.getAttribute('aria-pressed') !== 'true';
+          self.frac = want ? 1 : 0; self.D.animateTo(self.frac);
+          if (want !== (btn.getAttribute('aria-pressed') === 'true')) btn.click();
+        }
+      });
+      // 軌道本身也可以點
+      this.track.addEventListener('click', function (e) { if (e.target === self.track) btn.click(); });
+      new MutationObserver(function () { var w = btn.getAttribute('aria-pressed') === 'true' ? 1 : 0; if (w !== self.frac) { self.frac = w; self.D.animateTo(w); } }).observe(btn, { attributes: true, attributeFilter: ['aria-pressed'] });
+      this.frame(this.D);
+    }
+    Toggle.prototype.frame = function (d) {
+      var f = clamp(d.val.x, 0, 1), p = clamp(d.prs.x, 0, 1), th = this.th, dark = DARKQ();
+      var tc = dark ? [120, 120, 128, 0.36] : [120, 120, 120, 0.2], ac = dark ? [48, 209, 88] : [52, 199, 89];
+      var al = tc[3] + (1 - tc[3]) * f; // 軌道顏色：lerp(trackColor, accent, fraction)（accent 不透明）
+      var rgb = [0, 1, 2].map(function (i) { return Math.round((tc[i] * tc[3] * (1 - f) + ac[i] * f) / Math.max(0.0001, tc[3] * (1 - f) + f)); });
+      this.track.style.background = 'rgba(' + rgb.join(',') + ',' + (tc[3] * (1 - f) + f).toFixed(3) + ')';
+      var vel = d.vel.x / 50, sx = d.sx.x / clamp(1 - clamp(vel * 0.75, -0.2, 0.2), 0.01, 9), sy = d.sy.x * (1 - clamp(vel * 0.25, -0.2, 0.2));
+      th.paint(p); th.layer(2 + 20 * f, 0, sx, sy);
+      this.mini.style.background = 'rgba(' + rgb.join(',') + ',1)';   // 玻璃泡裡面的縮小軌道（scale lerp(2/3→.75, 0→.75)）
+      this.mini.style.transform = 'scale(' + (2 / 3 + (0.75 - 2 / 3) * p).toFixed(3) + ',' + (0.75 * p).toFixed(3) + ')';
+    };
+    // ================= LiquidSlider：畫面大小 =================
+    function Slider(inp) {
+      var self = this; this.inp = inp; var host = document.createElement('span'); host.className = 'lgsl';
+      host.innerHTML = '<span class="lgsl-track"><i class="lgsl-fill"></i></span>';
+      inp.parentNode.insertBefore(host, inp.nextSibling); inp.classList.add('lgsl-src'); this.host = host;
+      this.track = host.firstChild; this.fill = this.track.firstChild;
+      this.min = +inp.min || 0; this.max = +inp.max || 100; this.step = +inp.step || 1;
+      var th = new Thumb(host, {
+        lens: function (p) { return { H: 4 + 2 * p, A: 4 + 3 * p, chroma: false, blur: 0 }; },
+        hl: function (p) { return { a: 0.8 + 0.2 * p, wd: 1.0, amb: true }; },
+        shadow: function () { return { r: 6, a: 0.14 }; },
+        inner: function (p) { return { r: 4 * p, a: p }; },
+        surface: function (p) { return 'rgba(255,255,255,' + (0.12 * (1 - p)).toFixed(3) + ')'; }
+      });
+      th.size(40, 24); th.el.style.top = '0px'; this.th = th;
+      this.mini = document.createElement('i');   // 滑桿的玻璃泡直接折射底下真正的軌道，不另外疊一層
+      this.D = new Damped({ min: this.min, max: this.max, th: 0.5, pressedScale: 1.5, init: +inp.value, onFrame: function (d) { self.frame(d); } });
+      function setVal(v) { v = clamp(Math.round(v / self.step) * self.step, self.min, self.max); if (String(v) !== inp.value) { inp.value = String(v); inp.dispatchEvent(new Event('input', { bubbles: true })); } }
+      this.setVal = setVal;
+      drag(th.el, {
+        start: function () { self.D.dragging = true; self.D.press(); },
+        move: function (e, dx) { var tw = self.host.clientWidth || 1; var t = clamp(self.D.val.t + (self.max - self.min) * dx / tw, self.min, self.max); self.D.updateValue(t); setVal(t); },
+        end: function () { self.D.dragging = false; self.D.release(); }
+      });
+      this.track.addEventListener('pointerdown', function (e) {   // 點軌道：animateToValue
+        var r = self.track.getBoundingClientRect(), v = clamp(self.min + (self.max - self.min) * (e.clientX - r.left) / r.width, self.min, self.max);
+        self.D.animateTo(v); setVal(v);
+      });
+      this.poll = setInterval(function () { if (+inp.value !== self.D.val.t && !self.D.dragging) self.D.animateTo(+inp.value); }, 250);
+      this.frame(this.D);
+    }
+    Slider.prototype.frame = function (d) {
+      var tw = this.host.clientWidth || 1, pr = clamp(d.progress(), 0, 1), p = clamp(d.prs.x, 0, 1), th = this.th;
+      this.fill.style.width = (pr * 100).toFixed(2) + '%';
+      var x = clamp(-th.w / 2 + tw * pr, -th.w / 4, tw - th.w * 3 / 4);
+      var vel = d.vel.x / 10, sx = d.sx.x / clamp(1 - clamp(vel * 0.75, -0.2, 0.2), 0.01, 9), sy = d.sy.x * (1 - clamp(vel * 0.25, -0.2, 0.2));
+      th.paint(p); th.el.style.left = '0px'; th.layer(x, 0, sx, sy);
+      this.mini.style.transform = 'scale(' + (2 / 3 + (1 - 2 / 3) * p).toFixed(3) + ',' + p.toFixed(3) + ')';
+    };
+    function scan() {
+      if (!on) return;
+      document.querySelectorAll('.actions > .opts.seg').forEach(function (r) { if (!r.__lgt) { r.__lgt = new Tabs(r); comps.push(r.__lgt); } });
+      var b = document.getElementById('btnSnd'); if (b && !b.__lgtg) { b.__lgtg = new Toggle(b); comps.push(b.__lgtg); }
+      var s = document.getElementById('szRange'); if (s && !s.__lgsl) { s.__lgsl = new Slider(s); comps.push(s.__lgsl); }
+      wake();
+    }
+    function enable() { on = true; scan(); }
+    function disable() {
+      on = false;
+      comps.forEach(function (c) {
+        if (c.row) { if (c.lay) c.lay.remove(); if (c.lay0) c.lay0.remove(); (c.bs || []).forEach(function (b) { b.style.minWidth = ''; b.style.flex = ''; b.style.whiteSpace = ''; }); c.row.classList.remove('lgtabs'); c.row.style.transform = ''; c.row.style.removeProperty('--ts'); c.thumb.el.remove(); c.row.__lgt = null; }
+        else if (c.btn) { c.host.remove(); c.btn.classList.remove('lgtgl-src'); c.btn.__lgtg = null; }
+        else if (c.inp) { clearInterval(c.poll); c.host.remove(); c.inp.classList.remove('lgsl-src'); c.inp.__lgsl = null; }
+      });
+      comps = []; anims = [];
+    }
+    return { enable: enable, disable: disable, scan: scan };
+  })();
+
+  // 介面配色：改選中框色（--sel）和強調色（--accent）；隊伍、球殼顏色不受影響
+  var UIC = [
+    { l: '#1f9d63', d: '#3ccf8e', a: '#6fe08a', k: '#0b2b14' },
+    { l: '#1e6fd6', d: '#5ba3ff', a: '#7db8ff', k: '#06203f' },
+    { l: '#d9680f', d: '#ff9a4c', a: '#ffb36b', k: '#3a1c00' },
+    { l: '#7b4fd6', d: '#b08cff', a: '#c6a8ff', k: '#1f0f45' },
+    { l: '#d63a8a', d: '#ff7ab8', a: '#ff9ccc', k: '#430a26' }
+  ];
+  var UI_I = 0, UI_BG = 0, UI_FILL = 0, UI_FG = 0, UI_GL = 0;
+  try { UI_I = clamp(parseInt(localStorage.getItem('cd_ui'), 10) || 0, 0, UIC.length - 1); } catch (e) {}
+  try { var u2 = JSON.parse(localStorage.getItem('cd_ui2') || '{}'); UI_BG = clamp(u2.bg | 0, 0, 4); UI_FILL = u2.fill ? 1 : 0; UI_FG = u2.fg ? 1 : 0; UI_GL = u2.gl ? 1 : 0; } catch (e) {}
+  var BGV = {
+    2: { '--bg': '#24312f', '--panel': '#2e3e3b', '--line': '#46605b', '--floor': '#35564f', '--sky': '#1c2829', '--muted': '#a3bfb9' },
+    4: { '--bg': '#000000', '--panel': '#0a1010', '--line': '#1f2c2a', '--floor': '#10201d', '--sky': '#000000', '--muted': '#7a9893' }
+  };
+  var BGK = ['--bg', '--panel', '--line', '--floor', '--sky', '--muted'];
+  function applyUi() {
+    var root = document.documentElement, st = root.style, k;
+    // 背景深淺：0 跟系統、1 淺、2 灰、3 深、4 黑
+    if (UI_BG === 0) root.removeAttribute('data-theme'); else root.setAttribute('data-theme', UI_BG === 1 ? 'light' : 'dark');
+    for (k = 0; k < BGK.length; k++) st.removeProperty(BGK[k]);
+    if (BGV[UI_BG]) for (k in BGV[UI_BG]) st.setProperty(k, BGV[UI_BG][k]);
+    root.classList.toggle('glass', !!UI_GL); if (UI_GL) { LG.enable(); LGUI.enable(); } else { LGUI.disable(); LG.disable(); } root.classList.toggle('sel-fill', !!UI_FILL); root.classList.toggle('sel-plain', !!UI_FG);
+    var c = UIC[UI_I], dark = false, th = root.getAttribute('data-theme');
+    try { dark = th === 'dark' || (th !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches); } catch (e) {}
+    if (UI_I === 0) { st.removeProperty('--sel'); } else { st.setProperty('--sel', dark ? c.d : c.l); }
+    st.setProperty('--accent', c.a); st.setProperty('--accent-ink', c.k);
+    var pr = [['data-ui', UI_I], ['data-bg', UI_BG], ['data-fill', UI_FILL], ['data-fg', UI_FG], ['data-gl', UI_GL]];
+    for (var j = 0; j < pr.length; j++) {
+      var bs = document.querySelectorAll('[' + pr[j][0] + ']');
+      for (var i = 0; i < bs.length; i++) bs[i].setAttribute('aria-pressed', String(+bs[i].getAttribute(pr[j][0]) === pr[j][1]));
+    }
+  }
+  function saveUi() {
+    try { localStorage.setItem('cd_ui', String(UI_I)); localStorage.setItem('cd_ui2', JSON.stringify({ bg: UI_BG, fill: UI_FILL, fg: UI_FG, gl: UI_GL })); } catch (e) {}
+  }
+  (function () {
+    var bs = document.querySelectorAll('[data-ui],[data-bg],[data-fill],[data-fg],[data-gl]');
+    for (var i = 0; i < bs.length; i++) bs[i].addEventListener('click', function () {
+      if (this.hasAttribute('data-ui')) UI_I = +this.getAttribute('data-ui');
+      else if (this.hasAttribute('data-bg')) UI_BG = +this.getAttribute('data-bg');
+      else if (this.hasAttribute('data-fill')) UI_FILL = +this.getAttribute('data-fill');
+      else if (this.hasAttribute('data-gl')) UI_GL = +this.getAttribute('data-gl');
+      else UI_FG = +this.getAttribute('data-fg');
+      applyUi(); saveUi();
+    });
+    try { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyUi); } catch (e) {}
+    applyUi();
+  })();
+  // 單選的一排選項（隊伍、角色…）：選中框是一個會滑動的藥丸，手指／滑鼠在上面左右滑可以切換
+  (function () {
+    var rows = Array.prototype.filter.call(document.querySelectorAll('.actions > .opts'), function (r) {
+      var bs = r.querySelectorAll('button[aria-pressed]'); return bs.length >= 2 && !r.querySelector('input');
+    });
+    rows.forEach(function (r) {
+      r.classList.add('seg');
+      var pill = document.createElement('i'); pill.className = 'segpill'; r.insertBefore(pill, r.firstChild);
+      function btns() { return Array.prototype.filter.call(r.querySelectorAll('button[aria-pressed]'), function (b) { return !b.hidden && !b.disabled && b.offsetWidth > 0; }); }
+      function curBtn() { var a = btns(); for (var i = 0; i < a.length; i++) if (a[i].getAttribute('aria-pressed') === 'true') return a[i]; return null; }
+      function single() { var a = btns(); return a.every(function (b) { return Math.abs(b.offsetTop - a[0].offsetTop) < 4; }); }
+      function place(b, anim) {
+        if (!b) { pill.style.opacity = '0'; return; }
+        pill.style.transition = anim === false ? 'none' : '';
+        pill.style.opacity = '1';
+        pill.style.left = b.offsetLeft + 'px'; pill.style.top = b.offsetTop + 'px';
+        pill.style.width = b.offsetWidth + 'px'; pill.style.height = b.offsetHeight + 'px';
+        var k = b.getAttribute('data-team') || ({ '0': 'good', '1': 'red', '2': 'blue' })[b.getAttribute('data-pal')] || '';
+        pill.setAttribute('data-k', k);   // 框色用 CSS 變數決定，不讀按鈕目前（可能還在漸變）的顏色
+        pill.style.borderRadius = getComputedStyle(b).borderRadius;
+      }
+      var first = true;
+      function sync() { place(curBtn(), !first); first = false; }
+      new MutationObserver(function () { sync(); }).observe(r, { attributes: true, subtree: true, attributeFilter: ['aria-pressed', 'hidden', 'disabled'] });
+      if (window.ResizeObserver) new ResizeObserver(function () { place(curBtn(), false); }).observe(r);
+      window.addEventListener('resize', function () { setTimeout(function () { place(curBtn(), false); }, 60); });
+      setTimeout(sync, 60); setTimeout(function () { place(curBtn(), false); }, 600);
+      // 滑動
+      var d = null, moved = false;
+      r.addEventListener('pointerdown', function (e) {
+        if (document.documentElement.classList.contains('glass')) return;   // 玻璃模式由 LiquidBottomTabs 接手
+        var c = curBtn(); if (!c) return;
+        d = { x: e.clientX, y: e.clientY, id: e.pointerId, on: false, l0: c.offsetLeft, one: single() }; moved = false;
+      });
+      window.addEventListener('pointermove', function (e) {
+        if (!d || e.pointerId !== d.id) return;
+        var dx = e.clientX - d.x, dy = e.clientY - d.y;
+        if (!d.on) { if (Math.abs(dx) < 8 || Math.abs(dx) < Math.abs(dy) * 1.2) return; d.on = true; moved = true; pill.style.transition = 'none'; }
+        if (d.one) {
+          var a = btns(), lo = a[0].offsetLeft, hi = a[a.length - 1].offsetLeft;
+          pill.style.left = clamp(d.l0 + dx, lo, hi) + 'px';
+        }
+      });
+      function up(e) {
+        if (!d || e.pointerId !== d.id) return;
+        var k = d; d = null;
+        if (!k.on) return;
+        var a = btns(), c = curBtn(), i = a.indexOf(c), to = i, dx = e.clientX - k.x;
+        if (k.one) {
+          var mid = k.l0 + dx + (c ? c.offsetWidth / 2 : 0), best = 1e9;
+          a.forEach(function (b, n) { var dd = Math.abs(b.offsetLeft + b.offsetWidth / 2 - mid); if (dd < best) { best = dd; to = n; } });
+        } else to = clamp(i + (dx < 0 ? 1 : -1), 0, a.length - 1);   // 換行的一排：滑一下切前／後一個
+        if (to !== i) a[to].click(); else place(c, true);
+      }
+      window.addEventListener('pointerup', up);
+      window.addEventListener('pointercancel', function () { if (d && d.on) place(curBtn(), true); d = null; });
+      r.addEventListener('click', function (e) { if (moved && e.isTrusted) { e.stopPropagation(); e.preventDefault(); moved = false; } }, true);
+    });
+    LG.scan(); LGUI.scan();
   })();
   function applySz() {
     document.documentElement.style.setProperty('--sz', String(SZ / 100));
