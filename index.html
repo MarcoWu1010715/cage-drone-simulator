@@ -151,9 +151,19 @@ header .pill { flex: 0 1 auto; min-width: 0; max-width: 62%; overflow: hidden; t
 
 html.pair-disp #rc, html.pair-disp #rcstat, html.pair-disp #helpKey, html.pair-disp #helpPad { display: none !important; }
 html.pair-ctl .netbox, html.pair-ctl .match, html.pair-ctl .board, html.pair-ctl .msg, html.pair-ctl .chips, html.pair-ctl .stagebox,
-html.pair-ctl .hud, html.pair-ctl .actions:not(#pairRow), html.pair-ctl .hint, html.pair-ctl #flipHud, html.pair-ctl #szHud { display: none !important; }
+html.pair-ctl .hud, html.pair-ctl .hint, html.pair-ctl #flipHud, html.pair-ctl #szHud { display: none !important; }
 html.pair-ctl #ctlMode { position: relative; left: auto; top: auto; margin: 6px auto; width: max-content; }
 html.pair-ctl #cmLayout { display: none !important; }
+@media (orientation: landscape) and (max-height: 560px) {
+  html.pair-ctl .wrap > header { display: none; }
+  html.pair-ctl .wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  html.pair-ctl .wrap .rc { width: min(100%, calc((100vh - 150px) * 1.54)); margin: 0 auto; }
+  html.pair-ctl .wrap > .rcstat { order: 3; margin: 0; font-size: 12px; }
+  html.pair-ctl #pairRow { order: 4; gap: 6px; }
+  html.pair-ctl #pairRow button { min-height: 32px; padding: 3px 12px; }
+  html.pair-ctl #pairRow input { padding: 4px 8px; }
+  html.pair-ctl #ctlMode { margin: 0 auto; }
+}
 #pairRow { align-items: center; gap: 8px; }
 #pairRow input { font: inherit; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line, #8886); background: transparent; color: var(--fg); width: 9.5em; text-align: center; letter-spacing: .15em; }
 #pairRow [hidden] { display: none !important; }
@@ -2404,6 +2414,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
       return one ? Math.max(20, (L[L.length - 1].x + L[L.length - 1].w / 2 - (L[0].x + L[0].w / 2)) / (L.length - 1)) : Math.max(30, L.reduce(function (s, a) { return s + a.w; }, 0) / L.length);
     };
     Tabs.prototype.buildLabels = function () {   // 底層：一般顏色的文字（玻璃泡位置挖空）；上層：accent 文字，只在玻璃泡裡面（被它折射）
+      if (this.thumb.el.parentNode !== this.row || !this.row.classList.contains('lgtabs')) return;   // 玻璃已關閉（元件已拆掉）就不要再重建
       if (this.lay) this.lay.remove(); if (this.lay0) this.lay0.remove();
       var lay = document.createElement('div'), lay0 = document.createElement('div'); lay.className = 'lgtl'; lay0.className = 'lgtl lgtl0';
       this.row.insertBefore(lay0, this.thumb.el); this.row.insertBefore(lay, this.thumb.el); this.lay = lay; this.lay0 = lay0;
@@ -4407,10 +4418,43 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
 
   /* ---------- PIN 配對：一台當「顯示端」（跑遊戲畫面），一台當「操控端」（只出現遙控器） ---------- */
   var PAIR = (function () {
-    var role = '', peer = null, conn = null, pin = '', sendT = 0, stT = 0, tries = 0, dead = false;
+    var lastSt = 0, snap = null, role = '', peer = null, conn = null, pin = '', sendT = 0, stT = 0, tries = 0, dead = false;
     var elD = $('pairDisp'), elC = $('pairCtl'), inp = $('pairPin'), go = $('pairGo'), off = $('pairOff'), st = $('pairSt');
     var root = document.documentElement;
     function say(t) { st.textContent = t || ''; }
+    // 遙控設定：操控端按「視角、站位、球框透明度、隊伍、角色、AI、賽制、球殼、支架、重新開始」這些，會轉給顯示端執行，顯示端的狀態再傳回來。
+    // 兩邊網頁相同，用按鈕在清單中的順序當編號。界面風格／配色／背景／選中樣式／遙控種類／音效是各自本機的設定，不轉送。
+    var LOCAL = ['data-gl', 'data-ui', 'data-bg', 'data-fill', 'data-fg', 'data-rc'];
+    function fwdList() {
+      return Array.prototype.filter.call(document.querySelectorAll('.opts button, #btnReset'), function (b) {
+        if (b.closest('#pairRow') || b.closest('#cmRow') || b.closest('#rc')) return false;
+        for (var i = 0; i < LOCAL.length; i++) if (b.hasAttribute(LOCAL[i])) return false;
+        return true;
+      });
+    }
+    function optState() {
+      var L = fwdList(), p = '', h = '';
+      L.forEach(function (b) { p += b.getAttribute('aria-pressed') === 'true' ? '1' : '0'; h += (b.hidden || b.disabled) ? '1' : '0'; });
+      var sr = $('standRow');
+      return { p: p, h: h, sr: sr ? sr.hidden : false };
+    }
+    function applyOpts(m) {
+      var L = fwdList(); if (!m.p || m.p.length !== L.length) return;
+      L.forEach(function (b, i) {
+        if (b.hasAttribute('aria-pressed')) { var v = String(m.p.charAt(i) === '1'); if (b.getAttribute('aria-pressed') !== v) b.setAttribute('aria-pressed', v); }
+        var hid = m.h.charAt(i) === '1'; if (b.id === 'btnReset') return;
+        if (b.hidden !== hid) b.hidden = hid;
+      });
+      var sr = $('standRow'); if (sr && sr.hidden !== !!m.sr) sr.hidden = !!m.sr;
+    }
+    var optSnap = null;
+    document.addEventListener('click', function (e) {   // 操控端：點到可轉送的設定按鈕 → 改成傳給顯示端
+      if (role !== 'ctl' || !conn || !conn.open) return;
+      var b = e.target && e.target.closest && e.target.closest('button'); if (!b) return;
+      var i = fwdList().indexOf(b); if (i < 0) return;
+      e.stopImmediatePropagation(); e.preventDefault();
+      try { conn.send({ t: 'o', i: i }); } catch (er) {}
+    }, true);
     function ui() {
       elD.setAttribute('aria-pressed', String(role === 'disp')); elC.setAttribute('aria-pressed', String(role === 'ctl'));
       inp.hidden = role !== 'ctl' || !!(conn && conn.open); go.hidden = inp.hidden; off.hidden = !role;
@@ -4429,7 +4473,14 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
       try { if (peer) peer.destroy(); } catch (e) {}
       conn = peer = null; PI.rx = PI.ry = PI.lx = PI.ly = 0;
     }
-    function leave() { cleanup(); role = ''; say(''); ui(); }
+    function restore() {   // 斷線：操控端把遙控器狀態還原成配對前
+      if (!snap) return;
+      S.unlocked = snap.u; S.hold = snap.h; S.headless = snap.hd; S.speedIdx = snap.sp; S.led = snap.led; S.tail = snap.tl; S.role = snap.role; S.flipArm = 0;
+      try { VMAX = SPEEDS[S.speedIdx]; } catch (e) {}
+      if (optSnap) { applyOpts(optSnap); optSnap = null; }
+      snap = null; syncRc();
+    }
+    function leave(msg) { var was = role === 'ctl'; cleanup(); if (was) restore(); role = ''; say(msg || ''); ui(); }
     function pick(r) {
       if (role === r) return;
       cleanup(); role = r; dead = false; say(''); ui();
@@ -4455,12 +4506,13 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
           stT = setInterval(function () {
             if (!conn || !conn.open) return;
             if (performance.now() - PI.t > 1500) PI.rx = PI.ry = PI.lx = PI.ly = 0;   // 操控端斷訊就放開搖桿
-            try { conn.send({ t: 'st', u: S.unlocked, h: S.hold, hd: S.headless, sp: S.speedIdx, led: S.led, tl: S.tail, role: S.role, f: S.flipArm > 0 }); } catch (e) {}
+            try { conn.send({ t: 'st', u: S.unlocked, h: S.hold, hd: S.headless, sp: S.speedIdx, led: S.led, tl: S.tail, role: S.role, f: S.flipArm > 0, o: optState() }); } catch (e) {}
           }, 200);
         });
         c.on('data', function (m) {
           if (!m) return; PI.t = performance.now();
           if (m.t === 'i') { PI.rx = +m.rx || 0; PI.ry = +m.ry || 0; PI.lx = +m.lx || 0; PI.ly = +m.ly || 0; }
+          else if (m.t === 'o') { var bb = fwdList()[m.i | 0]; if (bb && !bb.disabled) { bb.click(); try { conn.send({ t: 'st', u: S.unlocked, h: S.hold, hd: S.headless, sp: S.speedIdx, led: S.led, tl: S.tail, role: S.role, f: S.flipArm > 0, o: optState() }); } catch (er) {} } }
           else if (m.t === 'b') {
             if (m.k === 'lock') setUnlock(!S.unlocked); else if (m.k === 'hold') setHold(!S.hold);
             else if (m.k === 'fbL') pressLeft(); else if (m.k === 'fbR') pressRight();
@@ -4492,19 +4544,23 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
       peer.on('open', function () {
         var c = peer.connect('cdpair-' + pin, { reliable: false, serialization: 'json' });
         c.on('open', function () {
-          if (done) return; done = true; clearTimeout(to); conn = c; say('已連線，可以操控了'); ui();
+          if (done) return; done = true; clearTimeout(to); conn = c; say('已連線，可以操控了');
+          optSnap = optState(); lastSt = performance.now(); snap = { u: S.unlocked, h: S.hold, hd: S.headless, sp: S.speedIdx, led: S.led, tl: S.tail, role: S.role }; ui();
           clearInterval(sendT); sendT = setInterval(pushInput, 33);
         });
         c.on('data', function (m) {
           if (!m || m.t !== 'st') return;
+          lastSt = performance.now();
           S.unlocked = !!m.u; S.hold = !!m.h; S.headless = !!m.hd; S.speedIdx = m.sp | 0; S.led = m.led | 0; S.tail = m.tl | 0; S.role = m.role | 0; S.flipArm = m.f ? 1e9 : 0;
+          if (m.o) applyOpts(m.o);
           syncRc();
         });
-        c.on('close', function () { clearInterval(sendT); conn = null; say('連線中斷'); ui(); });
+        c.on('close', function () { if (role !== 'ctl' || conn !== c) return; leave('連線中斷，已回到原本的設定'); });
       });
     }
     function pushInput() {
       if (!conn || !conn.open) return;
+      if (performance.now() - lastSt > 3000) { leave('顯示端沒有回應，已回到原本的設定'); return; }   // 偵測不到對方斷線時的保險
       var mx = clamp(dz(stickR.x) + GP.rx + (keys.right ? 1 : 0) - (keys.left ? 1 : 0), -1, 1);
       var my = clamp(dz(stickR.y) + GP.ry + (keys.back ? 1 : 0) - (keys.fwd ? 1 : 0), -1, 1);
       var al = clamp(-dz(stickL.y) - GP.ly + (keys.up ? 1 : 0) - (keys.down ? 1 : 0), -1, 1);
@@ -4515,7 +4571,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
     elC.addEventListener('click', function () { pick('ctl'); });
     go.addEventListener('click', connect);
     inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') connect(); });
-    off.addEventListener('click', leave);
+    off.addEventListener('click', function () { leave(); });
     return {
       isCtl: function () { return role === 'ctl'; },
       fwd: function (k) { if (role === 'ctl' && conn && conn.open) { try { conn.send({ t: 'b', k: k }); } catch (e) {} return true; } return role === 'ctl'; },
