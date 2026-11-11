@@ -149,6 +149,13 @@ header .pill { flex: 0 1 auto; min-width: 0; max-width: 62%; overflow: hidden; t
 .hud strong { overflow: hidden; text-overflow: ellipsis; }
 .msg b { color: var(--fg); font-weight: 700; }
 
+html.pair-disp #rc, html.pair-disp #rcstat, html.pair-disp #helpKey, html.pair-disp #helpPad { display: none !important; }
+html.pair-ctl .netbox, html.pair-ctl .match, html.pair-ctl .board, html.pair-ctl .msg, html.pair-ctl .chips, html.pair-ctl .stagebox,
+html.pair-ctl .hud, html.pair-ctl .actions:not(#pairRow), html.pair-ctl .hint, html.pair-ctl #flipHud, html.pair-ctl #szHud { display: none !important; }
+#pairRow { align-items: center; gap: 8px; }
+#pairRow input { font: inherit; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line, #8886); background: transparent; color: var(--fg); width: 9.5em; text-align: center; letter-spacing: .15em; }
+#pairRow [hidden] { display: none !important; }
+#pairSt { font-size: 13px; }
 .stagebox { width: min(100%, calc(640px * var(--sz, 1))); margin: 0 auto; position: relative; }
 #flipHud { position: absolute; left: 50%; top: 44px; transform: translateX(-50%); padding: 6px 14px; border-radius: 999px; background: var(--accent); color: var(--accent-ink); font-weight: 700; font-size: 14px; pointer-events: none; white-space: nowrap; animation: flipPulse 1s ease-in-out infinite; z-index: 5; }
 #flipHud[hidden], #szHud[hidden], #backStage[hidden] { display: none; }
@@ -166,6 +173,14 @@ header .pill { flex: 0 1 auto; min-width: 0; max-width: 62%; overflow: hidden; t
 .ctlmode span { cursor: pointer; padding: 3px 9px; border-radius: 999px; color: rgba(255,255,255,.55); }
 .ctlmode span.on { background: var(--accent); color: var(--accent-ink); }
 .ctlmode span.off { opacity: .35; }
+.ctlmode { align-items: center; }
+#cmRow { display: flex; gap: 0; position: relative; }
+html:not(.glass) #cmRow { --fg: rgba(255,255,255,.75); }
+#cmRow > button { background: transparent; border: 0 !important; box-shadow: none !important; padding: 3px 9px; min-height: 0; line-height: 1.3; border-radius: 999px; font: inherit; font-weight: 700; cursor: pointer; }
+html:not(.glass) #cmRow > button { color: rgba(255,255,255,.55); }
+html:not(.glass) #cmRow > button[aria-pressed="true"] { color: var(--accent-ink) !important; }
+html:not(.glass) #cmRow .segpill { background: var(--accent) !important; border: 0 !important; border-radius: 999px !important; box-shadow: none !important; }
+html.glass #cmRow { padding: 0 !important; }
 .chelp { margin: 8px auto; max-width: 560px; padding: 12px 14px; border-radius: 14px; background: rgba(127,127,127,.13); border: 1px solid rgba(127,127,127,.3); font-size: 14px; line-height: 1.5; }
 .chelp button.kbd { min-height: 0; display: inline-block; min-width: 24px; padding: 1px 9px; border-radius: 6px; border: 1px solid rgba(127,127,127,.55); border-bottom-width: 3px; background: rgba(127,127,127,.12); color: inherit; font: 700 13px/1.5 inherit; text-align: center; cursor: pointer; }
 .chelp button.kbd.learn { border-color: var(--sel); color: var(--sel); box-shadow: inset 0 0 0 1px var(--sel); }
@@ -415,7 +430,7 @@ html.glass button:not(.opts.seg > button):not(#setTabs button):not(#rc button) {
   color: var(--fg);
 }
 html.glass :is(.board, .hud > div, #uiBox, .msg, .netbox) { border-radius: 18px; }
-html.glass #playerName, html.glass #roomCode { background: linear-gradient(145deg, var(--g-fill), var(--g-fill2)) !important; border: 1px solid var(--g-edge) !important; border-radius: 999px; padding-left: 14px; padding-right: 14px; color: var(--fg); box-shadow: inset 0 1px 0 var(--g-hi), inset 0 -1px 0 var(--g-lo), 0 6px 18px -10px var(--g-shadow) !important; -webkit-backdrop-filter: blur(14px) saturate(1.6); backdrop-filter: blur(14px) saturate(1.6); }
+html.glass #playerName, html.glass #roomCode, html.glass #pairPin { background: linear-gradient(145deg, var(--g-fill), var(--g-fill2)) !important; border: 1px solid var(--g-edge) !important; border-radius: 999px; padding-left: 14px; padding-right: 14px; color: var(--fg); box-shadow: inset 0 1px 0 var(--g-hi), inset 0 -1px 0 var(--g-lo), 0 6px 18px -10px var(--g-shadow) !important; -webkit-backdrop-filter: blur(14px) saturate(1.6); backdrop-filter: blur(14px) saturate(1.6); }
 html.glass button:not(.opts.seg > button):not(#rc button) { border-radius: 999px; }   /* LiquidButton 是 Capsule */
 html.glass .pill { border-radius: 999px; }
 html.glass .board { background: linear-gradient(145deg, var(--g-fill), var(--g-fill2)) !important; }   /* 比分列：玻璃，底色保持淡 */
@@ -449,6 +464,8 @@ html.glass .opts.lgtabs > button { border-radius: 999px; transform: scale(var(--
 .lgth::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--lgh, none) center / 100% 100% no-repeat; mix-blend-mode: plus-lighter; pointer-events: none; }
 .lgtl { position: absolute; left: 0; top: 0; font-style: normal; pointer-events: none; z-index: 2; }
 .lgtl > span { position: absolute; display: flex; align-items: center; justify-content: center; color: var(--lg-accent); font-weight: 700; font-size: 14px; white-space: nowrap; transform: scale(var(--ts, 1)); }
+html.glass.sel-plain .lgtl > span { color: var(--fg); }   /* 選中字色：一般字色 */
+html.glass.sel-fill .opts.lgtabs > .lgth::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: color-mix(in srgb, var(--lg-accent) 26%, transparent); pointer-events: none; }   /* 選中加底色 */
 .lgmini { position: absolute; left: 0; top: 0; width: 100%; height: 100%; border-radius: 999px; transform-origin: 50% 50%; transform: scale(.667, 0); }
 .lgtgl-src, .lgsl-src { display: none !important; }
 .lgtgl { display: inline-flex; align-items: center; gap: 10px; padding: 4px 6px; }
@@ -595,7 +612,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
     <div id="flipHud" hidden>翻滾準備　把右搖桿推向要翻的方向</div>
     <button type="button" class="fsbtn" id="btnFs">全螢幕</button>
     <div class="lights" id="lightBox"><b>燈光 <u id="lgBelt"></u><span id="lgBeltT"></span></b><b>尾燈 <u id="lgTail"></u><span id="lgTailT"></span></b><span id="lgHead" hidden>無頭</span></div>
-    <div class="ctlmode" id="ctlMode"><span id="cmTouch">觸控</span><span id="cmKey">鍵盤</span><span id="cmPad">手把</span><span id="cmLayout">版面：合併</span></div>
+    <div class="ctlmode" id="ctlMode"><div class="opts" id="cmRow" role="group" aria-label="操作模式"><button type="button" id="cmTouch" aria-pressed="false">觸控</button><button type="button" id="cmKey" aria-pressed="false">鍵盤</button><button type="button" id="cmPad" aria-pressed="false">手把</button></div><span id="cmLayout">版面：合併</span></div>
     <div class="gear" id="gearBox"><span id="gearTxt">檔位</span><span id="gearBars"><i></i> <i></i> <i></i></span></div>
     <div class="cdov" id="cdOv" hidden><b id="cdNum">10</b><span>所有球機回到起點，倒數結束開賽</span></div>
   </div>
@@ -668,6 +685,17 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
     <button id="btnReset" type="button">重新開始</button>
     <button id="btnSnd" type="button" aria-pressed="true">音效震動：開</button>
     <button id="btnVibTest" type="button">測試震動</button>
+  </div>
+  <div class="actions" id="pairRow">
+    <span class="lab">PIN 配對</span>
+    <div class="opts seg" role="group" aria-label="配對角色">
+      <button type="button" id="pairDisp" aria-pressed="false">顯示端</button>
+      <button type="button" id="pairCtl" aria-pressed="false">操控端</button>
+    </div>
+    <input id="pairPin" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" placeholder="輸入 6 位 PIN" hidden>
+    <button type="button" id="pairGo" hidden>連線</button>
+    <button type="button" id="pairOff" hidden>中斷</button>
+    <span class="rcstat" id="pairSt"></span>
   </div>
 
   <div class="actions">
@@ -1319,6 +1347,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
 
   /* ---------- 操作輸入 ---------- */
   var stickL = { x: 0, y: 0 }, stickR = { x: 0, y: 0 };
+  var PI = { rx: 0, ry: 0, lx: 0, ly: 0, t: 0 };   // PIN 配對：操控端傳來的搖桿值
   var keys = {};
 
   function makeStick(el, out, holdY) {
@@ -1491,7 +1520,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
     pad: function () { return '<b>手把模式</b>（' + padLay().n + ' 鍵位）：左搖桿＝油門與轉向，右搖桿＝前後平移，' + padName('unlock') + ' 解鎖、' + padName('hold') + ' 定高、' + padName('light') + ' 燈光、' + padName('speed') + ' 速度／尾燈、' + padName('view') + ' 視角、' + padName('stand') + ' 站位。' + (GP.on ? '' : '（目前還沒偵測到手把，接上後按任一鍵即可。）'); } };
   function paintCtl() {
     var a = { touch: $('cmTouch'), key: $('cmKey'), pad: $('cmPad') };
-    for (var k in a) if (a[k]) a[k].className = (k === CTL ? 'on' : '');
+    for (var k in a) if (a[k]) a[k].setAttribute('aria-pressed', String(k === CTL));
     // 選鍵盤或手把時，虛擬遙控器換成對應的操作提示
     document.body.setAttribute('data-ctl', CTL);
     var rcEl = $('rc'), hk = $('helpKey'), hp = $('helpPad');
@@ -1777,10 +1806,12 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
   }
   function setLed(n) { S.led = n; syncRc(); }
   function setHold(v) {
+    if (PAIR.fwd('hold')) return;
     S.hold = v; syncRc(); sfx('key');
     setMsg(v ? '定高模式：左搖桿往上推第一下起槳（馬達開始轉），第二下起飛，放開搖桿會維持高度。' : '無定高模式：左搖桿先往下推，再往上推過中間起飛，沒有自動維持高度。搖桿推到約兩成半高度就能維持，放在中間會往下掉，要一直控制油門。');
   }
   function setUnlock(v) {
+    if (PAIR.fwd('lock')) return;
     S.unlocked = v; syncRc(); sfx(v ? 'unlock' : 'lock');
     if (!v && S.mode !== 'landed' && S.mode !== 'fall') {
       S.mode = 'fall'; S.fallV = 0;
@@ -1792,6 +1823,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
   var lastL = 0;
   var flipTmr = 0, ledTmr = 0;
   function pressLeft() {
+    if (PAIR.fwd('fbL')) return;
     var now = performance.now();
     var quick = now - lastL < 450;
     if (quick) {   // 連按兩下切無頭模式，上鎖、解鎖都可以
@@ -1820,6 +1852,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
     syncRc();
   }
   function pressRight() {
+    if (PAIR.fwd('fbR')) return;
     if (!S.unlocked) {   // 上鎖時：換尾燈顏色（和實體遙控器一樣）
       S.tail = (S.tail + 1) % LED_NAMES.length;
       syncRc(); sfx('key');
@@ -2102,7 +2135,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
     var CFG = [
       ['html.glass .hud > div', { r: 18, H: 10, A: 16, blur: 4, chroma: false, hl: 0.5 }],
       ['html.glass .board', { r: 18, H: 12, A: 18, blur: 4, chroma: false, hl: 0.5 }],
-      ['html.glass #playerName, html.glass #roomCode', { r: 'cap', H: 10, A: 18, blur: 3, chroma: false, hl: 0 }],
+      ['html.glass #playerName, html.glass #roomCode, html.glass #pairPin', { r: 'cap', H: 10, A: 18, blur: 3, chroma: false, hl: 0 }],
       ['html.glass .actions > button, html.glass .actions > .opts > button:not([aria-pressed]), html.glass #backStage', { r: 'cap', H: 12, A: 24, blur: 2, chroma: false, hl: 0.6, inter: true }]
     ];
 
@@ -2302,7 +2335,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
       });
       this.thumb = tb; tb.el.classList.add('lgth-tab');
       this.offX = new Sp(1, 300, 0.5, 0); this.fx = new Sp(1, 600, 0.3, 0); this.fy = new Sp(1, 600, 0.3, 0); this.free = false; this.multi = false; this.panel = 0; this.cur = 0; this.L = [];
-      this.D = new Damped({ min: 0, max: 1, th: 0.001, pressedScale: 78 / 56, init: 0, onFrame: function (d) { self.frame(d); } });
+      this.D = new Damped({ min: 0, max: 1, th: 0.001, pressedScale: row.id === 'cmRow' ? 1 : 78 / 56, init: 0, onFrame: function (d) { self.frame(d); } });
       anims.push({ tick: function (dt) { var a = self.offX.busy() || self.fx.busy() || self.fy.busy(); if (!a) { if (self.free && !self.D.dragging) self.free = false; return false; } self.offX.step(dt); self.fx.step(dt); self.fy.step(dt); self.frame(self.D); return true; } });
       this.measure(); this.syncSel(false);
       new MutationObserver(function () { self.measure(); self.syncSel(true); }).observe(row, { attributes: true, subtree: true, attributeFilter: ['aria-pressed', 'hidden', 'disabled'] });
@@ -2383,7 +2416,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
     };
     Tabs.prototype.sel = function () { var i = -1; this.bs.forEach(function (b, n) { if (b.getAttribute('aria-pressed') === 'true') i = n; }); return i; };
     Tabs.prototype.syncSel = function (anim) {
-      var i = this.sel(); if (i < 0) { this.thumb.el.style.opacity = '0'; return; } this.thumb.el.style.opacity = '1';
+      var i = this.sel(); if (i < 0) { this.cur = -1; this.thumb.el.style.opacity = '0'; return; } this.thumb.el.style.opacity = '1';
       this.cur = i; if (anim) this.D.animateTo(i); else { this.D.val.x = this.D.val.t = i; this.frame(this.D); }
     };
     Tabs.prototype.stop = function () {
@@ -2502,7 +2535,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
     };
     function scan() {
       if (!on) return;
-      document.querySelectorAll('.actions > .opts.seg').forEach(function (r) { if (!r.__lgt) { r.__lgt = new Tabs(r); comps.push(r.__lgt); } });
+      document.querySelectorAll('.actions > .opts.seg, #cmRow.seg').forEach(function (r) { if (!r.__lgt) { r.__lgt = new Tabs(r); comps.push(r.__lgt); } });
       var b = document.getElementById('btnSnd'); if (b && !b.__lgtg) { b.__lgtg = new Toggle(b); comps.push(b.__lgtg); }
       var s = document.getElementById('szRange'); if (s && !s.__lgsl) { s.__lgsl = new Slider(s); comps.push(s.__lgsl); }
       wake();
@@ -2547,6 +2580,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
     try { dark = th === 'dark' || (th !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches); } catch (e) {}
     if (UI_I === 0) { st.removeProperty('--sel'); } else { st.setProperty('--sel', dark ? c.d : c.l); }
     st.setProperty('--accent', c.a); st.setProperty('--accent-ink', c.k);
+    if (UI_GL) st.setProperty('--lg-accent', dark ? c.d : c.l); else st.removeProperty('--lg-accent');   // 液態玻璃的強調色跟著「配色」
     var pr = [['data-ui', UI_I], ['data-bg', UI_BG], ['data-fill', UI_FILL], ['data-fg', UI_FG], ['data-gl', UI_GL]];
     for (var j = 0; j < pr.length; j++) {
       var bs = document.querySelectorAll('[' + pr[j][0] + ']');
@@ -2571,7 +2605,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
   })();
   // 單選的一排選項（隊伍、角色…）：選中框是一個會滑動的藥丸，手指／滑鼠在上面左右滑可以切換
   (function () {
-    var rows = Array.prototype.filter.call(document.querySelectorAll('.actions > .opts'), function (r) {
+    var rows = Array.prototype.filter.call(document.querySelectorAll('.actions > .opts, #cmRow'), function (r) {
       var bs = r.querySelectorAll('button[aria-pressed]'); return bs.length >= 2 && !r.querySelector('input');
     });
     rows.forEach(function (r) {
@@ -2726,10 +2760,10 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
 
     // 實體遙控器：左搖桿＝油門與轉向，右搖桿＝前後與平移
     gpPoll();
-    var mx = clamp(dz(stickR.x) + GP.rx + (keys.right ? 1 : 0) - (keys.left ? 1 : 0), -1, 1);
-    var my = clamp(dz(stickR.y) + GP.ry + (keys.back ? 1 : 0) - (keys.fwd ? 1 : 0), -1, 1);
-    var al = clamp(-dz(stickL.y) - GP.ly + (keys.up ? 1 : 0) - (keys.down ? 1 : 0), -1, 1);
-    var yw = clamp(dz(stickL.x) + GP.lx + (keys.yawr ? 1 : 0) - (keys.yawl ? 1 : 0), -1, 1);
+    var mx = clamp(dz(stickR.x) + GP.rx + PI.rx + (keys.right ? 1 : 0) - (keys.left ? 1 : 0), -1, 1);
+    var my = clamp(dz(stickR.y) + GP.ry + PI.ry + (keys.back ? 1 : 0) - (keys.fwd ? 1 : 0), -1, 1);
+    var al = clamp(-dz(stickL.y) - GP.ly + PI.ly + (keys.up ? 1 : 0) - (keys.down ? 1 : 0), -1, 1);
+    var yw = clamp(dz(stickL.x) + GP.lx + PI.lx + (keys.yawr ? 1 : 0) - (keys.yawl ? 1 : 0), -1, 1);
     if (S.stun > 0) { mx *= 0.25; my *= 0.25; yw *= 0.25; }   // 剛被撞到，操控變遲鈍
 
     // 翻滾：左鍵按一下後，右搖桿往某方向推就翻一圈
@@ -4343,6 +4377,118 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
   ];
   function mkIce(relay) { return { config: { iceServers: ICE_SERVERS, iceCandidatePoolSize: 2, iceTransportPolicy: relay ? 'relay' : 'all' } }; }
   var ICE = mkIce(false);
+
+  /* ---------- PIN 配對：一台當「顯示端」（跑遊戲畫面），一台當「操控端」（只出現遙控器） ---------- */
+  var PAIR = (function () {
+    var role = '', peer = null, conn = null, pin = '', sendT = 0, stT = 0, tries = 0, dead = false;
+    var elD = $('pairDisp'), elC = $('pairCtl'), inp = $('pairPin'), go = $('pairGo'), off = $('pairOff'), st = $('pairSt');
+    var root = document.documentElement;
+    function say(t) { st.textContent = t || ''; }
+    function ui() {
+      elD.setAttribute('aria-pressed', String(role === 'disp')); elC.setAttribute('aria-pressed', String(role === 'ctl'));
+      inp.hidden = role !== 'ctl' || !!(conn && conn.open); go.hidden = inp.hidden; off.hidden = !role;
+      root.classList.toggle('pair-disp', role === 'disp' && !!(conn && conn.open));
+      root.classList.toggle('pair-ctl', role === 'ctl');
+    }
+    function cleanup() {
+      dead = true; clearInterval(sendT); clearInterval(stT); sendT = stT = 0;
+      try { if (conn) conn.close(); } catch (e) {}
+      try { if (peer) peer.destroy(); } catch (e) {}
+      conn = peer = null; PI.rx = PI.ry = PI.lx = PI.ly = 0;
+    }
+    function leave() { cleanup(); role = ''; say(''); ui(); }
+    function pick(r) {
+      if (role === r) return;
+      cleanup(); role = r; dead = false; say(''); ui();
+      loadPeerJs().then(function (P) { if (role !== r) return; r === 'disp' ? startDisp(P) : (inp.focus(), say('輸入顯示端畫面上的 6 位 PIN')); },
+        function () { say('連線工具庫載入失敗（網路被擋住？）'); });
+    }
+    // 顯示端
+    function startDisp(P) {
+      pin = String(Math.floor(100000 + Math.random() * 900000));
+      peer = new P('cdpair-' + pin, mkIce(false));
+      peer.on('open', function () { say('PIN：' + pin + '　（在另一台選「操控端」輸入）'); });
+      peer.on('error', function (e) {
+        if (e && e.type === 'unavailable-id') { try { peer.destroy(); } catch (x) {} startDisp(P); return; }
+        say('配對失敗：' + netReason(e));
+      });
+      peer.on('connection', function (c) {
+        if (conn && conn.open) { c.close(); return; }
+        conn = c;
+        c.on('open', function () {
+          say('已連線（PIN ' + pin + '）'); ui();
+          PI.t = performance.now();
+          clearInterval(stT);
+          stT = setInterval(function () {
+            if (!conn || !conn.open) return;
+            if (performance.now() - PI.t > 1500) PI.rx = PI.ry = PI.lx = PI.ly = 0;   // 操控端斷訊就放開搖桿
+            try { conn.send({ t: 'st', u: S.unlocked, h: S.hold, hd: S.headless, sp: S.speedIdx, led: S.led, tl: S.tail, role: S.role, f: S.flipArm > 0 }); } catch (e) {}
+          }, 200);
+        });
+        c.on('data', function (m) {
+          if (!m) return; PI.t = performance.now();
+          if (m.t === 'i') { PI.rx = +m.rx || 0; PI.ry = +m.ry || 0; PI.lx = +m.lx || 0; PI.ly = +m.ly || 0; }
+          else if (m.t === 'b') {
+            if (m.k === 'lock') setUnlock(!S.unlocked); else if (m.k === 'hold') setHold(!S.hold);
+            else if (m.k === 'fbL') pressLeft(); else if (m.k === 'fbR') pressRight();
+          }
+        });
+        c.on('close', function () { conn = null; PI.rx = PI.ry = PI.lx = PI.ly = 0; clearInterval(stT); say('操控端已離線，PIN：' + pin); ui(); });
+      });
+    }
+    // 操控端
+    function connect() {
+      var v = inp.value.replace(/\D/g, '');
+      if (v.length !== 6) { say('PIN 要 6 位數字'); return; }
+      pin = v; tries = 0; dead = false;
+      loadPeerJs().then(function (P) { try { attempt(P); } catch (e) { say('連線失敗'); } }, function () { say('連線工具庫載入失敗'); });
+    }
+    function attempt(P) {
+      if (dead || role !== 'ctl') return;
+      if (peer) { try { peer.destroy(); } catch (e) {} peer = null; }
+      tries++; say('連線中…（第 ' + tries + ' 次）');
+      var done = false, relay = tries % 2 === 0;
+      var retry = function (why) { if (done) return; done = true; clearTimeout(to); try { peer && peer.destroy(); } catch (e) {} peer = null;
+        if (tries >= 4) say(why || '連線逾時，請確認兩台都有網路'); else setTimeout(function () { attempt(P); }, 300); };
+      var to = setTimeout(function () { retry(); }, 9000);
+      peer = new P(undefined, mkIce(relay));
+      peer.on('error', function (e) {
+        if (e && e.type === 'peer-unavailable') { done = true; clearTimeout(to); say('PIN 不正確，或顯示端還沒開啟'); return; }
+        retry(netReason(e));
+      });
+      peer.on('open', function () {
+        var c = peer.connect('cdpair-' + pin, { reliable: false, serialization: 'json' });
+        c.on('open', function () {
+          if (done) return; done = true; clearTimeout(to); conn = c; say('已連線，可以操控了'); ui();
+          clearInterval(sendT); sendT = setInterval(pushInput, 33);
+        });
+        c.on('data', function (m) {
+          if (!m || m.t !== 'st') return;
+          S.unlocked = !!m.u; S.hold = !!m.h; S.headless = !!m.hd; S.speedIdx = m.sp | 0; S.led = m.led | 0; S.tail = m.tl | 0; S.role = m.role | 0; S.flipArm = m.f ? 1e9 : 0;
+          syncRc();
+        });
+        c.on('close', function () { clearInterval(sendT); conn = null; say('連線中斷'); ui(); });
+      });
+    }
+    function pushInput() {
+      if (!conn || !conn.open) return;
+      var mx = clamp(dz(stickR.x) + GP.rx + (keys.right ? 1 : 0) - (keys.left ? 1 : 0), -1, 1);
+      var my = clamp(dz(stickR.y) + GP.ry + (keys.back ? 1 : 0) - (keys.fwd ? 1 : 0), -1, 1);
+      var al = clamp(-dz(stickL.y) - GP.ly + (keys.up ? 1 : 0) - (keys.down ? 1 : 0), -1, 1);
+      var yw = clamp(dz(stickL.x) + GP.lx + (keys.yawr ? 1 : 0) - (keys.yawl ? 1 : 0), -1, 1);
+      try { gpPoll(); conn.send({ t: 'i', rx: mx, ry: my, ly: al, lx: yw }); } catch (e) {}
+    }
+    elD.addEventListener('click', function () { pick('disp'); });
+    elC.addEventListener('click', function () { pick('ctl'); });
+    go.addEventListener('click', connect);
+    inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') connect(); });
+    off.addEventListener('click', leave);
+    return {
+      isCtl: function () { return role === 'ctl'; },
+      fwd: function (k) { if (role === 'ctl' && conn && conn.open) { try { conn.send({ t: 'b', k: k }); } catch (e) {} return true; } return role === 'ctl'; },
+      _t: { PI: PI }
+    };
+  })();
   function netReason(e) {
     var t = String(e && (e.code === 'upstream_error' ? e.message : (e.type || e.message)) || e || '');
     if (/peerjs/.test(t)) return '連線工具庫載入失敗（可能被網路擋住，換 Wi‑Fi 或關掉 VPN／廣告攔截試試）';
@@ -4578,6 +4724,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
   }
   var last = performance.now(), frame = 0, hudAt = 0, perfN = 0, perfSum = 0, perfLv = 0;
   function loop(now) {
+    if (PAIR.isCtl()) { last = now; requestAnimationFrame(loop); return; }
     var dt = Math.min(0.05, (now - last) / 1000);
     last = now;
     try { update(dt); } catch (e) { loopErr(e); }
