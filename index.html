@@ -152,6 +152,8 @@ header .pill { flex: 0 1 auto; min-width: 0; max-width: 62%; overflow: hidden; t
 html.pair-disp #rc, html.pair-disp #rcstat, html.pair-disp #helpKey, html.pair-disp #helpPad { display: none !important; }
 html.pair-ctl .netbox, html.pair-ctl .match, html.pair-ctl .board, html.pair-ctl .msg, html.pair-ctl .chips, html.pair-ctl .stagebox,
 html.pair-ctl .hud, html.pair-ctl .actions:not(#pairRow), html.pair-ctl .hint, html.pair-ctl #flipHud, html.pair-ctl #szHud { display: none !important; }
+html.pair-ctl #ctlMode { position: relative; left: auto; top: auto; margin: 6px auto; width: max-content; }
+html.pair-ctl #cmLayout { display: none !important; }
 #pairRow { align-items: center; gap: 8px; }
 #pairRow input { font: inherit; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line, #8886); background: transparent; color: var(--fg); width: 9.5em; text-align: center; letter-spacing: .15em; }
 #pairRow [hidden] { display: none !important; }
@@ -392,6 +394,11 @@ button {
   min-height: 44px;
   cursor: pointer;
 }
+/* 按鈕按下動畫：按下去縮一點、放開時彈回來（像彈簧）；遙控器、選項列、鍵位設定不套用 */
+button:not(.opts button):not(#rc button):not(.chelp button) { transition: transform .42s cubic-bezier(.34, 1.7, .5, 1), filter .2s, background-color .2s, border-color .2s, color .2s, box-shadow .2s; will-change: transform; }
+button.prs:not(.opts button):not(#rc button):not(.chelp button) { transform: scale(.91); filter: brightness(.94); transition: transform .12s ease-out, filter .1s; }
+html.glass button.prs:not(.opts button):not(#rc button):not(.chelp button) { transform: scale(1.09); filter: brightness(1.06) saturate(1.2); }   /* 玻璃按鈕：按下放大（同 LiquidButton） */
+@media (prefers-reduced-motion: reduce) { button.prs { transform: none !important; } }
 button:focus-visible { outline: 2px solid var(--sel); outline-offset: 2px; }
 button.primary { background: var(--orange); border-color: var(--orange); color: var(--orange-ink); font-weight: 700; min-width: 108px; }
 button[aria-pressed="true"] { border-color: var(--sel); color: var(--sel); box-shadow: inset 0 0 0 1px var(--sel); }   /* 一般選項選中＝統一的綠色強調；隊伍／球殼／支架維持各自的顏色 */
@@ -1878,6 +1885,18 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
       fn();
     });
   }
+  // 一般按鈕的按下動畫：按住時加上 .prs，放開（或手指移走）就拿掉，由 CSS 做彈簧回彈
+  (function () {
+    var cur = null;
+    function clr() { if (cur) { cur.classList.remove('prs'); cur = null; } }
+    document.addEventListener('pointerdown', function (e) {
+      var b = e.target && e.target.closest && e.target.closest('button');
+      if (!b || b.disabled || b.closest('.opts') || b.closest('#rc') || b.closest('.chelp')) return;
+      clr(); cur = b; b.classList.add('prs');
+    }, true);
+    ['pointerup', 'pointercancel', 'dragend'].forEach(function (n) { window.addEventListener(n, clr, true); });
+    document.addEventListener('pointerleave', clr, true);
+  })();
   pressOn(swLock, function () { setUnlock(!S.unlocked); });
   pressOn(swHold, function () { setHold(!S.hold); });
   pressOn(fbL, pressLeft, true);
@@ -2483,9 +2502,15 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
       new MutationObserver(function () { var w = btn.getAttribute('aria-pressed') === 'true' ? 1 : 0; if (w !== self.frac) { self.frac = w; self.D.animateTo(w); } }).observe(btn, { attributes: true, attributeFilter: ['aria-pressed'] });
       this.frame(this.D);
     }
+    var accKey = '', accVal = null;
+    function accRgb(def) {   // 開關軌道的顏色跟著「配色」（--lg-accent 是 #rrggbb）
+      var v = document.documentElement.style.getPropertyValue('--lg-accent').trim();
+      if (v !== accKey) { accKey = v; var m = /^#([0-9a-f]{6})$/i.exec(v); accVal = m ? [parseInt(m[1].slice(0, 2), 16), parseInt(m[1].slice(2, 4), 16), parseInt(m[1].slice(4, 6), 16)] : null; }
+      return accVal || def;
+    }
     Toggle.prototype.frame = function (d) {
       var f = clamp(d.val.x, 0, 1), p = clamp(d.prs.x, 0, 1), th = this.th, dark = DARKQ();
-      var tc = dark ? [120, 120, 128, 0.36] : [120, 120, 120, 0.2], ac = dark ? [48, 209, 88] : [52, 199, 89];
+      var tc = dark ? [120, 120, 128, 0.36] : [120, 120, 120, 0.2], ac = accRgb(dark ? [48, 209, 88] : [52, 199, 89]);
       var al = tc[3] + (1 - tc[3]) * f; // 軌道顏色：lerp(trackColor, accent, fraction)（accent 不透明）
       var rgb = [0, 1, 2].map(function (i) { return Math.round((tc[i] * tc[3] * (1 - f) + ac[i] * f) / Math.max(0.0001, tc[3] * (1 - f) + f)); });
       this.track.style.background = 'rgba(' + rgb.join(',') + ',' + (tc[3] * (1 - f) + f).toFixed(3) + ')';
@@ -2550,7 +2575,8 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
       });
       comps = []; anims = [];
     }
-    return { enable: enable, disable: disable, scan: scan };
+    function repaint() { comps.forEach(function (c) { try { if (c.D && c.frame) c.frame(c.D); } catch (e) {} }); }
+    return { enable: enable, disable: disable, scan: scan, repaint: repaint };
   })();
 
   // 介面配色：改選中框色（--sel）和強調色（--accent）；隊伍、球殼顏色不受影響
@@ -2580,7 +2606,8 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
     try { dark = th === 'dark' || (th !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches); } catch (e) {}
     if (UI_I === 0) { st.removeProperty('--sel'); } else { st.setProperty('--sel', dark ? c.d : c.l); }
     st.setProperty('--accent', c.a); st.setProperty('--accent-ink', c.k);
-    if (UI_GL) st.setProperty('--lg-accent', dark ? c.d : c.l); else st.removeProperty('--lg-accent');   // 液態玻璃的強調色跟著「配色」
+    if (UI_GL) st.setProperty('--lg-accent', dark ? c.d : c.l); else st.removeProperty('--lg-accent');
+    if (UI_GL) LGUI.repaint();   // 液態玻璃的強調色跟著「配色」
     var pr = [['data-ui', UI_I], ['data-bg', UI_BG], ['data-fill', UI_FILL], ['data-fg', UI_FG], ['data-gl', UI_GL]];
     for (var j = 0; j < pr.length; j++) {
       var bs = document.querySelectorAll('[' + pr[j][0] + ']');
@@ -4389,6 +4416,12 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
       inp.hidden = role !== 'ctl' || !!(conn && conn.open); go.hidden = inp.hidden; off.hidden = !role;
       root.classList.toggle('pair-disp', role === 'disp' && !!(conn && conn.open));
       root.classList.toggle('pair-ctl', role === 'ctl');
+      // 操控端：把「觸控／鍵盤／手把」選單搬到遙控器上方（原本在被隱藏的 3D 畫面裡）
+      var cm = $('ctlMode'), pl = $('play'), rcEl = $('rc');
+      if (cm && pl) {
+        if (role === 'ctl') { if (cm.parentNode !== pl) pl.insertBefore(cm, pl.firstChild); }
+        else { var sb = pl.querySelector('.stagebox'); if (sb && cm.parentNode !== sb) sb.appendChild(cm); }
+      }
     }
     function cleanup() {
       dead = true; clearInterval(sendT); clearInterval(stT); sendT = stT = 0;
