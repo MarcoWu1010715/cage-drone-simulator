@@ -152,12 +152,14 @@ header .pill { flex: 0 1 auto; min-width: 0; max-width: 62%; overflow: hidden; t
 html.pair-disp #rc, html.pair-disp #rcstat, html.pair-disp #helpKey, html.pair-disp #helpPad { display: none !important; }
 html.pair-ctl .netbox, html.pair-ctl .match, html.pair-ctl .board, html.pair-ctl .msg, html.pair-ctl .chips, html.pair-ctl .stagebox,
 html.pair-ctl .hud, html.pair-ctl .hint, html.pair-ctl #flipHud, html.pair-ctl #szHud { display: none !important; }
+html.pair-ctl .wrap .rc { width: min(100%, calc(min(100vw - 32px, 560px) * 0.8 * var(--sz, 1))); margin-left: auto; margin-right: auto; }   /* 操控端：遙控器大小跟「畫面大小」 */
 html.pair-ctl #ctlMode { position: relative; left: auto; top: auto; margin: 6px auto; width: max-content; }
 html.pair-ctl #cmLayout { display: none !important; }
+html.pair-ctl body.lsplit[data-ctl="touch"] .wrap .play > .rc { transform: scale(min(var(--sz, 1), 1)); }   /* 分開版面最大就是整個畫面寬，不再放大以免橫向溢出 */
 @media (orientation: landscape) and (max-height: 560px) {
   html.pair-ctl .wrap > header { display: none; }
   html.pair-ctl .wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-  html.pair-ctl .wrap .rc { width: min(100%, calc((100vh - 150px) * 1.54)); margin: 0 auto; }
+  html.pair-ctl .wrap .rc { width: min(96vw, calc((100vh - 150px) * 1.54 * 0.85 * var(--sz, 1))); margin: 0 auto; }
   html.pair-ctl .wrap > .rcstat { order: 3; margin: 0; font-size: 12px; }
   html.pair-ctl #pairRow { order: 4; gap: 6px; }
   html.pair-ctl #pairRow button { min-height: 32px; padding: 3px 12px; }
