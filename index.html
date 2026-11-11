@@ -155,6 +155,7 @@ html.pair-ctl .hud, html.pair-ctl .hint, html.pair-ctl #flipHud, html.pair-ctl #
 html.pair-ctl .wrap .rc { width: min(100%, calc(min(100vw - 32px, 560px) * 0.8 * var(--sz, 1))); margin-left: auto; margin-right: auto; }   /* 操控端：遙控器大小跟「畫面大小」 */
 html.pair-ctl #ctlMode { position: relative; left: auto; top: auto; margin: 6px auto; width: max-content; }
 html.pair-ctl #cmLayout { display: none !important; }
+html.pair-ctl #ctlMode .fsbtn { position: static; margin: 0 2px 0 6px; padding: 3px 9px; }
 html.pair-ctl body.lsplit[data-ctl="touch"] .wrap .play > .rc { transform: scale(min(var(--sz, 1), 1)); }   /* 分開版面最大就是整個畫面寬，不再放大以免橫向溢出 */
 @media (orientation: landscape) and (max-height: 560px) {
   html.pair-ctl .wrap > header { display: none; }
@@ -4465,8 +4466,9 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
       // 操控端：把「觸控／鍵盤／手把」選單搬到遙控器上方（原本在被隱藏的 3D 畫面裡）
       var cm = $('ctlMode'), pl = $('play'), rcEl = $('rc');
       if (cm && pl) {
-        if (role === 'ctl') { if (cm.parentNode !== pl) pl.insertBefore(cm, pl.firstChild); }
-        else { var sb = pl.querySelector('.stagebox'); if (sb && cm.parentNode !== sb) sb.appendChild(cm); }
+        var fb = $('btnFs'), sb = pl.querySelector('.stagebox');
+        if (role === 'ctl') { if (cm.parentNode !== pl) pl.insertBefore(cm, pl.firstChild); if (fb && fb.parentNode !== cm) cm.appendChild(fb); }
+        else { if (sb && fb && fb.parentNode !== sb) sb.appendChild(fb); if (sb && cm.parentNode !== sb) sb.appendChild(cm); }
       }
     }
     function cleanup() {
