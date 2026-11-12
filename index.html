@@ -64,6 +64,14 @@
 }
 
 * { box-sizing: border-box; }
+/* 手機點按不要出現藍框／反白（Android Chrome 的點按高亮、長按選取、複製選單） */
+* { -webkit-tap-highlight-color: transparent; }
+html, body, .wrap, canvas, button, .pill, .rc, .rc *, .board, .board *, .opts, .opts *, .seg, .seg *, .chips, .chips *, .stagebox, .stagebox *, .chelp, .chelp *, #tut, #tut * {
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+}
+input, textarea { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
+canvas, svg, img { -webkit-user-drag: none; }
+
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
 body {
   background: var(--bg);
@@ -586,8 +594,32 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
 .match .mrow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; }
 .match .mtime { font-family: var(--font-mono); font-size: 22px; font-variant-numeric: tabular-nums; color: var(--fg); }
 .match .minfo { flex: 1 1 200px; min-width: 0; font-size: 13px; color: var(--muted); }
+
+/* 新手教學 */
+#tut { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,.55); }
+#tut[hidden] { display: none; }
+#tut .tcard { width: min(100%, 420px); max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow: auto; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 18px; padding: 18px 18px 14px; box-shadow: 0 14px 44px rgba(0,0,0,.4); }
+#tut .tstep { font-size: 12px; color: var(--muted); margin: 0 0 4px; }
+#tut h3 { margin: 0 0 8px; font-size: 19px; }
+#tut .tbody { font-size: 15px; line-height: 1.65; }
+#tut .tbody p { margin: 0 0 8px; }
+#tut .tbody kbd { font: inherit; font-weight: 700; padding: 0 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); }
+#tut .tdots { display: flex; gap: 6px; justify-content: center; margin: 12px 0 10px; }
+#tut .tdots i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
+#tut .tdots i.on { background: var(--good); }
+#tut .tbtns { display: flex; gap: 8px; }
+#tut .tbtns button { flex: 1; font: inherit; font-size: 15px; padding: 9px 10px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); cursor: pointer; }
+#tut .tbtns button.pri { background: var(--accent); color: var(--accent-ink); border-color: transparent; font-weight: 700; }
+#tut .tbtns button[hidden] { display: none; }
+#tut .tskip { display: block; margin: 8px auto 0; background: none; border: 0; color: var(--muted); font: inherit; font-size: 13px; cursor: pointer; text-decoration: underline; }
 </style>
 
+<div id="tut" hidden role="dialog" aria-modal="true" aria-labelledby="tutT"><div class="tcard">
+  <p class="tstep" id="tutN"></p><h3 id="tutT"></h3><div class="tbody" id="tutB"></div>
+  <div class="tdots" id="tutD"></div>
+  <div class="tbtns"><button type="button" id="tutPrev">上一步</button><button type="button" class="pri" id="tutNext">下一步</button></div>
+  <button type="button" class="tskip" id="tutSkip">跳過教學</button>
+</div></div>
 <div class="wrap">
   <header>
     <h1>護籠無人機模擬器</h1>
@@ -636,6 +668,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
     <span class="pill" id="teamChip" data-team="blue">操作：藍方</span>
     <span class="pill" id="armChip" data-s="fly">可進攻</span>
     <span class="pill" id="headChip" data-s="net" style="visibility:hidden">無頭模式</span>
+    <button type="button" class="pill" id="btnTut" style="cursor:pointer;font:inherit">❓ 新手教學</button>
     <button type="button" class="pill" id="btnToSet" style="cursor:pointer;font:inherit">⚙ 設定 ↓</button>
   </div>
 
@@ -1615,8 +1648,48 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
     paintLayout();
     setMsg(['<b>合併</b>：遙控器放在畫面右側。', '<b>分開</b>：左搖桿和左邊按鍵在畫面左側，右搖桿和右邊按鍵在右側。', '<b>只有畫面</b>：只看 3D 畫面，沒有遙控器（要操作時再按「版面」切回去）。'][LAYI]);
   });
-  window.addEventListener('pointerdown', function (e) { if (e.target && e.target.closest && e.target.closest('#ctlMode')) return; setCtl('touch'); }, { passive: true, capture: true });
-  window.addEventListener('keydown', function (e) { if (e.target && e.target.tagName === 'INPUT') return; setCtl('key'); }, true);
+
+  // 新手教學：第一次開啟自動出現，之後按「❓ 新手教學」重看；內容跟著目前的操作模式（觸控／鍵盤／手把）變
+  var TUT = (function () {
+    var el = $('tut'), idx = 0;
+    function kn(a) { return '<kbd>' + keyName(KB[a]) + '</kbd>'; }
+    function steps() {
+      var m = CTL, st = [];
+      st.push({ t: '歡迎！先認識目標', b: '<p>你操作一台被護籠包住的無人機，<b>穿過對方的球框就得分</b>。</p><p>藍方進攻紅方的球框，紅方進攻藍方的球框。上方的比分板會顯示雙方得分。</p><p>接下來 5 個小步驟，教你起飛、移動和比賽。可以隨時跳過，之後按「❓ 新手教學」再看。</p>' });
+      st.push({ t: '第 1 步：解鎖', b: m === 'touch' ? '<p>先把遙控器中間左邊的<b>「解鎖」滑桿往上撥</b>。沒有解鎖，搖桿推了也不會動。</p>' :
+        m === 'key' ? '<p>先按 ' + kn('unlock') + ' 解鎖。沒有解鎖，按方向鍵也不會動。</p>' :
+        '<p>先按手把的 <kbd>' + padName('unlock') + '</kbd> 解鎖。沒有解鎖，推搖桿也不會動。</p>' });
+      st.push({ t: '第 2 步：起飛與移動', b: m === 'touch' ? '<p><b>左搖桿</b>：往上推＝升高（第一下起槳，第二下起飛），往下推到底＝降落；左右＝轉向。</p><p><b>右搖桿</b>：前後左右平移。</p><p>推的力道越大，飛得越快。</p>' :
+        m === 'key' ? '<p>' + kn('up') + ' ' + kn('down') + ' 升降（第一下起槳，第二下起飛），' + kn('yawl') + ' ' + kn('yawr') + ' 轉向。</p><p>' + kn('fwd') + ' ' + kn('left') + ' ' + kn('back') + ' ' + kn('right') + ' 前、左、後、右平移。</p>' :
+        '<p><b>左搖桿</b>：上下＝升降（第一下起槳，第二下起飛），左右＝轉向。</p><p><b>右搖桿</b>：前後左右平移。</p>' });
+      st.push({ t: '第 3 步：定高、燈光、速度', b: m === 'touch' ? '<p><b>定高</b>滑桿（預設開）：開著時放開搖桿會自動停在原高度，新手建議保持開啟。</p><p><b>燈光</b>、<b>速度</b>按鈕：切換燈光和飛行檔位。</p>' :
+        m === 'key' ? '<p>' + kn('hold') + ' 定高開關（預設開，新手建議保持開啟）。</p><p>' + kn('light') + ' 燈光，' + kn('speed') + ' 速度檔位。</p>' :
+        '<p><kbd>' + padName('hold') + '</kbd> 定高開關（預設開，新手建議保持開啟）。</p><p><kbd>' + padName('light') + '</kbd> 燈光，<kbd>' + padName('speed') + '</kbd> 速度檔位。</p>' });
+      st.push({ t: '第 4 步：視角與站位', b: '<p>在下方「設定」可切換視角：<b>選手</b>（跟著選手看）、<b>平視</b>、<b>斜視</b>、<b>俯視</b>，還能換選手站位。</p>' + (m === 'key' ? '<p>快捷鍵：' + kn('view') + ' 切視角，' + kn('stand') + ' 換站位。</p>' : m === 'pad' ? '<p>手把：<kbd>' + padName('view') + '</kbd> 切視角，<kbd>' + padName('stand') + '</kbd> 換站位。</p>' : '') + '<p>橫向手機可以按「版面」，把畫面放大或只留 3D 畫面。</p>' });
+      st.push({ t: '第 5 步：比賽與多人', b: '<p>一個人可以直接練習。想和朋友玩：在上方輸入<b>姓名</b>和<b>房號</b>按「加入」，朋友輸入同一個房號就會進同一間。</p><p>房主可以按「開始比賽」進行 3 分鐘的比賽。</p><p>準備好了，去飛一圈吧！</p>' });
+      return st;
+    }
+    function paint() {
+      var st = steps(); idx = clamp(idx, 0, st.length - 1);
+      $('tutN').textContent = '新手教學　' + (idx + 1) + ' / ' + st.length;
+      $('tutT').textContent = st[idx].t; $('tutB').innerHTML = st[idx].b;
+      $('tutD').innerHTML = st.map(function (_, i) { return '<i' + (i === idx ? ' class="on"' : '') + '></i>'; }).join('');
+      $('tutPrev').hidden = idx === 0;
+      $('tutNext').textContent = idx === st.length - 1 ? '開始飛行' : '下一步';
+      $('tutSkip').hidden = idx === st.length - 1;
+    }
+    function open(i) { idx = i || 0; paint(); el.hidden = false; try { $('tutNext').focus(); } catch (e) {} }
+    function close() { el.hidden = true; try { localStorage.setItem('cd_tut', '1'); } catch (e) {} }
+    $('tutPrev').addEventListener('click', function () { idx--; paint(); });
+    $('tutNext').addEventListener('click', function () { if (idx >= steps().length - 1) close(); else { idx++; paint(); } });
+    $('tutSkip').addEventListener('click', close);
+    $('btnTut').addEventListener('click', function () { open(0); });
+    return { open: open, close: close, el: el };
+  })();
+  document.addEventListener('contextmenu', function (e) { var t = e.target; if (t && t.closest && t.closest('input, textarea')) return; e.preventDefault(); });
+  document.addEventListener('selectstart', function (e) { var t = e.target; if (t && t.closest && t.closest('input, textarea')) return; if (t && t.nodeType === 3) t = t.parentNode; if (t && t.closest && t.closest('input, textarea')) return; e.preventDefault(); });
+  window.addEventListener('pointerdown', function (e) { if (e.target && e.target.closest && e.target.closest('#ctlMode, #tut')) return; setCtl('touch'); }, { passive: true, capture: true });
+  window.addEventListener('keydown', function (e) { if (e.target && e.target.tagName === 'INPUT') return; if (TUT.el && !TUT.el.hidden) return; setCtl('key'); }, true);
   // 手把鍵位：Xbox／PS／Switch（瀏覽器的標準對應是依「位置」編號：0 下、1 右、2 左、3 上），自動依手把名稱判斷
   var PAD_LAY = {
     xbox: { n: 'Xbox', id: { unlock: 0, hold: 1, light: 2, speed: 3, view: 4, stand: 5, role: 8, team: 9 } },
