@@ -258,6 +258,11 @@ canvas#stage {
   .wrap .bar { height: 3px; margin-top: 2px; }
   .wrap > .msg { height: 3.4em; font-size: 12.5px; line-height: 1.35; }
   .cdov b { font-size: clamp(60px, 22vh, 130px); }
+  /* 橫向觸控「只有畫面」：不顯示遙控器、讀數和訊息，3D 畫面置中放到最大 */
+  body.lscreen[data-ctl="touch"] .wrap .rc, body.lscreen[data-ctl="touch"] .wrap > .chelp, body.lscreen[data-ctl="touch"] .wrap .rcstat,
+  body.lscreen[data-ctl="touch"] .wrap > .hud, body.lscreen[data-ctl="touch"] .wrap > .msg { display: none; }
+  body.lscreen[data-ctl="touch"] .wrap .stagebox { grid-column: 1 / -1; grid-row: auto; justify-self: center; width: min(100%, calc((100vh - 66px) * 1.5 * var(--sz, 1))); }
+  body.lscreen[data-ctl="touch"] .wrap > header { display: none; }
 }
 
 /* 橫向觸控「分開」：把遙控器圖片從中間切成兩半，像 Switch 一樣放在畫面左右兩邊，3D 畫面在中間；整組放在同一個容器裡，跟著畫面一起捲動、縮放 */
@@ -1595,18 +1600,19 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
     });
   });
   // 橫向觸控版面：合併（遙控器在右邊）／分開（左右各一邊，像手把）
+  var LAYS = ['合併', '分開', '只有畫面'], LAYI = 0;
   function paintLayout() {
-    var sp = document.body.classList.contains('lsplit'), el = $('cmLayout');
-    if (el) el.textContent = sp ? '版面：分開' : '版面：合併';
+    document.body.classList.toggle('lsplit', LAYI === 1); document.body.classList.toggle('lscreen', LAYI === 2);
+    var el = $('cmLayout'); if (el) el.textContent = '版面：' + LAYS[LAYI];
   }
-  try { if (localStorage.getItem('cd_split') === '1') document.body.classList.add('lsplit'); } catch (e) {}
+  try { LAYI = clamp(parseInt(localStorage.getItem('cd_split') || '0', 10) || 0, 0, 2); } catch (e) {}
   paintLayout();
   $('cmLayout').addEventListener('click', function (e) {
     e.stopPropagation();
-    var on = document.body.classList.toggle('lsplit');
-    try { localStorage.setItem('cd_split', on ? '1' : '0'); } catch (er) {}
+    LAYI = (LAYI + 1) % 3;
+    try { localStorage.setItem('cd_split', String(LAYI)); } catch (er) {}
     paintLayout();
-    setMsg(on ? '<b>分開</b>：左搖桿和左邊按鍵在畫面左側，右搖桿和右邊按鍵在右側。' : '<b>合併</b>：遙控器放在畫面右側。');
+    setMsg(['<b>合併</b>：遙控器放在畫面右側。', '<b>分開</b>：左搖桿和左邊按鍵在畫面左側，右搖桿和右邊按鍵在右側。', '<b>只有畫面</b>：只看 3D 畫面，沒有遙控器（要操作時再按「版面」切回去）。'][LAYI]);
   });
   window.addEventListener('pointerdown', function (e) { if (e.target && e.target.closest && e.target.closest('#ctlMode')) return; setCtl('touch'); }, { passive: true, capture: true });
   window.addEventListener('keydown', function (e) { if (e.target && e.target.tagName === 'INPUT') return; setCtl('key'); }, true);
