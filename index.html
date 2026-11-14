@@ -462,7 +462,7 @@ html.glass button:not(.opts.seg > button):not(#setTabs button):not(#rc button) {
   box-shadow: inset 0 1px 0 var(--g-hi), inset 0 -1px 0 var(--g-lo), 0 8px 24px -10px var(--g-shadow) !important;
   color: var(--fg);
 }
-html.glass :is(.board, .hud > div, #uiBox, .msg, .netbox) { border-radius: 18px; }
+html.glass :is(.board, .hud > div, #uiBox, .msg, .netbox) { border-radius: 22px; }
 html.glass #playerName, html.glass #roomCode, html.glass #pairPin { background: linear-gradient(145deg, var(--g-fill), var(--g-fill2)) !important; border: 1px solid var(--g-edge) !important; border-radius: 999px; padding-left: 14px; padding-right: 14px; color: var(--fg); box-shadow: inset 0 1px 0 var(--g-hi), inset 0 -1px 0 var(--g-lo), 0 6px 18px -10px var(--g-shadow) !important; -webkit-backdrop-filter: blur(14px) saturate(1.6); backdrop-filter: blur(14px) saturate(1.6); }
 html.glass button:not(.opts.seg > button):not(#rc button) { border-radius: 999px; }   /* LiquidButton 是 Capsule */
 html.glass .pill { border-radius: 999px; }
@@ -473,9 +473,9 @@ html.glass .pill[data-team="blue"] { color: var(--blue); }
 html.glass .pill[data-team="red"] { color: var(--red); }
 html.glass #backStage, html.glass #flipHud, html.glass #szHud { color: var(--fg); font-weight: 700; }
 /* 一排單選：外面是一條玻璃托盤，選中的是一顆會滑動的玻璃泡 */
-html.glass .opts.seg { padding: 4px; border-radius: 18px; background: linear-gradient(145deg, var(--g-fill2), transparent); border: 1px solid var(--g-edge); -webkit-backdrop-filter: blur(14px) saturate(1.6); backdrop-filter: blur(14px) saturate(1.6); box-shadow: inset 0 1px 2px var(--g-lo); }
+html.glass .opts.seg { padding: 4px; border-radius: 22px; background: linear-gradient(145deg, var(--g-fill2), transparent); border: 1px solid var(--g-edge); -webkit-backdrop-filter: blur(14px) saturate(1.6); backdrop-filter: blur(14px) saturate(1.6); box-shadow: inset 0 1px 2px var(--g-lo); }
 html.glass .opts.seg > button { background: transparent !important; border-color: transparent !important; box-shadow: none !important; }
-html.glass .segpill { border: 1px solid var(--g-edge); border-radius: 14px !important; background: linear-gradient(180deg, var(--g-hi), var(--g-fill)) !important; -webkit-backdrop-filter: blur(6px) saturate(2.2); backdrop-filter: blur(6px) saturate(2.2); box-shadow: 0 4px 14px -4px var(--g-shadow), inset 0 1px 1px var(--g-hi), inset 0 -2px 4px var(--g-lo); }
+html.glass .segpill { border: 1px solid var(--g-edge); border-radius: 18px !important; background: linear-gradient(180deg, var(--g-hi), var(--g-fill)) !important; -webkit-backdrop-filter: blur(6px) saturate(2.2); backdrop-filter: blur(6px) saturate(2.2); box-shadow: 0 4px 14px -4px var(--g-shadow), inset 0 1px 1px var(--g-hi), inset 0 -2px 4px var(--g-lo); }
 html.glass .opts.seg > button[aria-pressed="true"] { font-weight: 700; }
 html.glass:not(.sel-plain) .lgtl > span { color: color-mix(in srgb, var(--lg-accent) 62%, var(--fg)); }   /* 選中的字在白色玻璃上要夠深才看得清楚 */
 html.glass.sel-fill .segpill { background: linear-gradient(180deg, var(--g-hi), var(--g-fill)) !important; }
@@ -598,6 +598,47 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
 
 .ver { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: 0.04em; vertical-align: middle; white-space: nowrap; }
 
+
+/* 設定二級選單：第一層分類清單，點進去才看到該分類的選項 */
+#setBody:not([hidden]) { display: block; position: fixed; z-index: 200; top: 12px; left: 0; right: 0; margin: 0 auto; width: min(calc(100% - 24px), 520px); max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px); overflow: auto; overscroll-behavior: contain; box-sizing: border-box; padding: 12px 14px 16px; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 20px; box-shadow: 0 0 0 100vmax rgba(0,0,0,.5), 0 14px 44px rgba(0,0,0,.4); }
+#setBar { display: flex; align-items: center; gap: 10px; margin: 0 0 8px; position: sticky; top: -12px; z-index: 2; padding: 4px 0; background: var(--panel); }
+#setBar { justify-content: center; position: sticky; min-height: 36px; }
+#setBar b { flex: 0 1 auto; font-size: 20px; text-align: center; }
+#setBar #setClose { position: absolute; right: 0; top: 50%; transform: translateY(-50%); }
+#setBar button { min-height: 0; padding: 6px 14px; border-radius: 999px; flex: 0 0 auto; }
+#setBar [hidden] { display: none !important; }
+html.pair-ctl #setBody { display: contents; }
+html.pair-ctl #setTabsBox, html.pair-ctl #setBar { display: none !important; }
+#setTabs { display: flex !important; width: 100% !important; flex-wrap: nowrap !important; gap: 0 !important; }
+#setTabs > button { flex: 1 1 0 !important; min-width: 0 !important; padding-left: 2px !important; padding-right: 2px !important; margin: 0 !important; white-space: nowrap; text-align: center; }
+#setTabsBox { position: sticky; top: 38px; z-index: 2; margin: 0 0 8px; padding: 2px 0 6px; background: var(--panel); }
+/* 設定視窗、登入視窗：玻璃效果（半透明＋模糊背景＋高光邊） */
+html.glass #setBody:not([hidden]), html.glass #acct .acard, html.glass #tut .tcard {
+  background: linear-gradient(145deg, color-mix(in srgb, var(--panel) 62%, transparent), color-mix(in srgb, var(--panel) 38%, transparent)) !important;
+  -webkit-backdrop-filter: blur(26px) saturate(1.8); backdrop-filter: blur(26px) saturate(1.8);
+  border: 1px solid var(--g-edge) !important;
+}
+html.glass #setBody:not([hidden]) { box-shadow: 0 0 0 100vmax rgba(0,0,0,.38), inset 0 1px 0 var(--g-hi), inset 0 -1px 0 var(--g-lo), 0 18px 50px -12px var(--g-shadow); }
+html.glass #acct .acard, html.glass #tut .tcard { box-shadow: inset 0 1px 0 var(--g-hi), inset 0 -1px 0 var(--g-lo), 0 18px 50px -12px var(--g-shadow); }
+html.glass #setBar, html.glass #setTabsBox { border-radius: 22px; background: color-mix(in srgb, var(--panel) 30%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+html.glass #acct .arow button.pri { background: linear-gradient(145deg, rgba(255,255,255,.92), rgba(255,255,255,.7)) !important; color: #202124; }
+html.glass #acct input { background: linear-gradient(145deg, var(--g-fill), var(--g-fill2)); border: 1px solid var(--g-edge); border-radius: 999px; padding-left: 14px; padding-right: 14px; }
+html.glass #setBody #uiBox { background: color-mix(in srgb, var(--panel) 25%, transparent) !important; box-shadow: inset 0 1px 0 var(--g-hi) !important; }
+/* 玻璃風格統一圓角：所有外框（彈出視窗、卡片、選項排、聯機區）都是 22px，按鈕與輸入框是膠囊形 */
+html.glass { --r-pop: 22px; --r-card: 22px; }
+html.glass :is(.msg, .netbox) { padding-left: 14px !important; padding-right: 14px !important; }   /* 圓角變大，內容往內縮一點，不要貼到邊 */
+html.glass #setBody:not([hidden]), html.glass #acct .acard, html.glass #tut .tcard { border-radius: var(--r-pop) !important; }
+html.glass :is(.board, .hud > div, #uiBox, .msg, .netbox, .opts.seg, #setBar, #setTabsBox, #acct .astat div) { border-radius: var(--r-card) !important; }
+html.glass #tut .tbtns button, html.glass #tut .tskip { border-radius: 999px !important; }
+html.glass #tut .tbtns button.pri { background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 92%, #fff), var(--accent)) !important; color: var(--accent-ink); font-weight: 700; }
+html.glass #tut .tskip { background: none !important; border: 0 !important; box-shadow: none !important; -webkit-backdrop-filter: none; backdrop-filter: none; }
+html.glass #tut .tbody kbd { border-radius: 8px; background: linear-gradient(145deg, var(--g-fill), var(--g-fill2)); border-color: var(--g-edge); }
+html.glass #tut .tdots i { background: var(--g-edge); }
+html.glass #tut .tdots i.on { background: var(--good); }
+html.glass #tut { background: rgba(0,0,0,.38); }
+html:not(.pair-ctl) #setBody .catoff { display: none !important; }
+html:not(.pair-ctl) #setBody .catoff + .lgtgl { display: none !important; }
+html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important; }
 /* 登入（Google） */
 #acct { position: fixed; inset: 0; z-index: 210; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,.55); }
 #acct[hidden] { display: none; }
@@ -675,7 +716,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
 </div></div>
 <div class="wrap">
   <header>
-    <h1>無人機足球模擬器 <small class="ver" id="verTag">v207</small></h1>
+    <h1>無人機足球模擬器 <small class="ver" id="verTag">v217</small></h1>
     <span class="pill" id="status" data-s="idle">待機中</span>
   </header>
   <div class="netbox">
@@ -723,7 +764,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
     <span class="pill" id="headChip" data-s="net" style="visibility:hidden">無頭模式</span>
     <button type="button" class="pill" id="btnAcct" style="cursor:pointer;font:inherit">👤 登入</button>
     <button type="button" class="pill" id="btnTut" style="cursor:pointer;font:inherit">❓ 新手教學</button>
-    <button type="button" class="pill" id="btnToSet" style="cursor:pointer;font:inherit">⚙ 設定 ↓</button>
+    <button type="button" class="pill" id="btnToSet" style="cursor:pointer;font:inherit">⚙ 設定</button>
   </div>
 
   <div class="play" id="play">
@@ -803,10 +844,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
     <div><span>電量</span><strong id="hBat">100%</strong><div class="bar"><i id="batBar"></i></div></div>
   </div>
 
-  <div class="actions" id="setTop">
-    <button id="btnReset" type="button">重新開始</button>
-    <button id="btnSnd" type="button" aria-pressed="true">音效震動：開</button>
-  </div>
+  <div class="actions" id="mainRow"><button id="btnReset" type="button">重新開始</button></div>
   <div class="actions" id="pairRow">
     <div class="opts seg" role="group" aria-label="配對角色"><span class="lab">PIN 配對</span>
       <button type="button" id="pairDisp" aria-pressed="false">顯示端</button>
@@ -816,14 +854,6 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
     <button type="button" id="pairGo" hidden>連線</button>
     <button type="button" id="pairOff" hidden>中斷</button>
     <span class="rcstat" id="pairSt"></span>
-  </div>
-
-  <div class="actions">
-    <div class="opts" role="group" aria-label="遙控種類">
-      <span class="lab">遙控種類</span>
-      <button type="button" data-rc="1" aria-pressed="true">1 所有搖桿回彈</button>
-      <button type="button" data-rc="2" aria-pressed="false">2 左搖桿上下不回彈</button>
-    </div>
   </div>
   <div class="actions">
     <div class="opts" role="group" aria-label="隊伍">
@@ -839,8 +869,29 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
       <button type="button" data-role="1" aria-pressed="false">防守者</button>
     </div>
   </div>
-  <div class="actions">
-    <div class="opts" role="group" aria-label="AI 對打">
+<div id="setBody" hidden role="dialog" aria-modal="true" aria-label="設定">
+  <div id="setBar"><b id="setTitle">設定</b><button type="button" id="setClose">關閉</button></div>
+  <div class="actions" id="setTabsBox"><div class="opts seg" id="setTabs" role="group" aria-label="設定分類">
+    <button type="button" data-go="play" aria-pressed="true">比賽</button>
+    <button type="button" data-go="view" aria-pressed="false">視角</button>
+    <button type="button" data-go="look" aria-pressed="false">外觀</button>
+    <button type="button" data-go="ui" aria-pressed="false">界面</button>
+    <button type="button" data-go="snd" aria-pressed="false">聲音</button>
+    <button type="button" data-go="ctl" aria-pressed="false">遙控</button>
+  </div></div>
+
+  <div data-cat="snd" class="actions" id="setTop">
+    <button data-cat="snd" id="btnSnd" type="button" aria-pressed="true">音效震動：開</button>
+  </div>
+  <div data-cat="ctl" class="actions">
+    <div data-cat="ctl" class="opts" role="group" aria-label="遙控種類">
+      <span class="lab">遙控種類</span>
+      <button type="button" data-rc="1" aria-pressed="true">1 所有搖桿回彈</button>
+      <button type="button" data-rc="2" aria-pressed="false">2 左搖桿上下不回彈</button>
+    </div>
+  </div>
+  <div data-cat="play" class="actions">
+    <div data-cat="play" class="opts" role="group" aria-label="AI 對打">
       <span class="lab">AI 對打</span>
       <button type="button" data-ai="0" aria-pressed="true">關</button>
       <button type="button" data-ai="1" aria-pressed="false">簡單</button>
@@ -849,20 +900,20 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
       <button type="button" id="aiGo" hidden>開始比賽（倒數 10 秒）</button>
       <button type="button" id="aiFree" hidden>自由練習</button>
     </div>
-    <div class="opts" role="group" aria-label="賽制">
-      <span class="lab">賽制（3 對 3＝1攻2守，5 對 5＝1攻4守、用大場地）</span>
+    <div data-cat="play" class="opts" role="group" aria-label="賽制">
+      <span class="lab">賽制（3 對 3＝1攻2守，5 對 5＝1攻4守、用 FIDA 場地）</span>
       <button type="button" data-fmt="1" aria-pressed="true">1 對 1</button>
       <button type="button" data-fmt="3" aria-pressed="false">3 對 3</button>
       <button type="button" data-fmt="5" aria-pressed="false">5 對 5</button>
     </div>
-    <div class="opts" role="group" aria-label="場地">
+    <div data-cat="play" class="opts" role="group" aria-label="場地">
       <span class="lab">場地</span>
-      <button type="button" data-field="s" aria-pressed="true">標準 6×3×3 m</button>
-      <button type="button" data-field="b" aria-pressed="false">大場地 8×4×3 m</button>
+      <button type="button" data-field="s" aria-pressed="true">FAI 20cm 6×3×3 m</button>
+      <button type="button" data-field="b" aria-pressed="false">FIDA 20cm 8×4×3 m</button>
     </div>
   </div>
-  <div class="actions">
-    <div class="opts" role="group" aria-label="視角">
+  <div data-cat="view" class="actions">
+    <div data-cat="view" class="opts" role="group" aria-label="視角">
       <span class="lab">視角</span>
       <button type="button" data-view="pilot" aria-pressed="true">選手</button>
       <button type="button" data-view="chase" aria-pressed="false">平視</button>
@@ -870,8 +921,8 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
       <button type="button" data-view="top" aria-pressed="false">俯視</button>
     </div>
   </div>
-  <div class="actions" id="standRow">
-    <div class="opts" role="group" aria-label="選手站位">
+  <div data-cat="view" class="actions" id="standRow">
+    <div data-cat="view" class="opts" role="group" aria-label="選手站位">
       <span class="lab">站位</span>
       <button type="button" data-stand="lback" aria-pressed="false">球框左後</button>
       <button type="button" data-stand="left" aria-pressed="false">球框後左側</button>
@@ -881,15 +932,15 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
       <button type="button" data-stand="rback" aria-pressed="false">球框右後</button>
     </div>
   </div>
-  <div class="actions">
-    <div class="opts" role="group" aria-label="我方球框透明度">
+  <div data-cat="view" class="actions">
+    <div data-cat="view" class="opts" role="group" aria-label="我方球框透明度">
       <span class="lab">我方球框</span>
       <button type="button" data-hoopo="0" aria-pressed="true">自動</button>
       <button type="button" data-hoopo="100" aria-pressed="false">不透明</button>
       <button type="button" data-hoopo="70" aria-pressed="false">70%</button>
       <button type="button" data-hoopo="40" aria-pressed="false">40%</button>
     </div>
-    <div class="opts" role="group" aria-label="對方球框透明度">
+    <div data-cat="view" class="opts" role="group" aria-label="對方球框透明度">
       <span class="lab">對方球框</span>
       <button type="button" data-hoopx="0" aria-pressed="true">自動</button>
       <button type="button" data-hoopx="100" aria-pressed="false">不透明</button>
@@ -897,28 +948,28 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
       <button type="button" data-hoopx="40" aria-pressed="false">40%</button>
     </div>
   </div>
-  <div class="actions">
-    <div class="opts" role="group" aria-label="球殼顏色">
+  <div data-cat="look" class="actions">
+    <div data-cat="look" class="opts" role="group" aria-label="球殼顏色">
       <span class="lab">球殼</span>
       <button type="button" data-shell="0" data-pal="0" aria-pressed="false">綠</button>
       <button type="button" data-shell="1" data-pal="1" aria-pressed="true">紅</button>
       <button type="button" data-shell="2" data-pal="2" aria-pressed="false">藍</button>
     </div>
-    <div class="opts" role="group" aria-label="支架顏色">
+    <div data-cat="look" class="opts" role="group" aria-label="支架顏色">
       <span class="lab">支架</span>
       <button type="button" data-frame="0" data-pal="0" aria-pressed="false">綠</button>
       <button type="button" data-frame="1" data-pal="1" aria-pressed="false">紅</button>
       <button type="button" data-frame="2" data-pal="2" aria-pressed="true">藍</button>
     </div>
   </div>
-  <div class="actions uibox" id="uiBox">
-    <b class="uihead">界面設定</b>
-    <div class="opts" role="group" aria-label="介面風格">
+  <div data-cat="ui snd" class="actions uibox" id="uiBox">
+    <b data-cat="ui" class="uihead">界面設定</b>
+    <div data-cat="ui" class="opts" role="group" aria-label="介面風格">
       <span class="lab">風格</span>
       <button type="button" data-gl="0" aria-pressed="false">標準</button>
       <button type="button" data-gl="1" aria-pressed="true">液態玻璃</button>
     </div>
-    <div class="opts" role="group" aria-label="配色">
+    <div data-cat="ui" class="opts" role="group" aria-label="配色">
       <span class="lab">配色</span>
       <button type="button" data-ui="0" aria-pressed="true">綠</button>
       <button type="button" data-ui="1" aria-pressed="false">藍</button>
@@ -926,7 +977,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
       <button type="button" data-ui="3" aria-pressed="false">紫</button>
       <button type="button" data-ui="4" aria-pressed="false">粉</button>
     </div>
-    <div class="opts" role="group" aria-label="背景深淺">
+    <div data-cat="ui" class="opts" role="group" aria-label="背景深淺">
       <span class="lab">背景</span>
       <button type="button" data-bg="0" aria-pressed="true">自動</button>
       <button type="button" data-bg="1" aria-pressed="false">淺</button>
@@ -934,30 +985,30 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
       <button type="button" data-bg="3" aria-pressed="false">深</button>
       <button type="button" data-bg="4" aria-pressed="false">黑</button>
     </div>
-    <div class="opts" role="group" aria-label="選中加底色">
+    <div data-cat="ui" class="opts" role="group" aria-label="選中加底色">
       <span class="lab">選中底色</span>
       <button type="button" data-fill="0" aria-pressed="true">不加</button>
       <button type="button" data-fill="1" aria-pressed="false">加底色</button>
     </div>
-    <div class="opts" role="group" aria-label="選中字色">
+    <div data-cat="ui" class="opts" role="group" aria-label="選中字色">
       <span class="lab">選中字色</span>
       <button type="button" data-fg="0" aria-pressed="true">跟框同色</button>
       <button type="button" data-fg="1" aria-pressed="false">一般字色</button>
     </div>
-    <div class="opts" role="group" aria-label="畫面大小">
+    <div data-cat="ui" class="opts" role="group" aria-label="畫面大小">
       <span class="lab">畫面大小</span>
       <input type="range" id="szRange" min="40" max="200" step="5" value="100" aria-label="3D 畫面大小" style="flex: 1 1 140px; min-width: 120px; accent-color: var(--accent);">
       <span id="szVal" style="min-width: 3.2em; text-align: right;">100%</span>
       <button type="button" id="szReset">重設</button>
       <span id="szWarn" style="flex: 1 0 100%; height: 1.4em; line-height: 1.4em; overflow: hidden; visibility: hidden; color: var(--warn); font-weight: 700; font-size: 12px;">⚠ 畫面或遙控器已超出板面，請把畫面大小調小一點</span>
     </div>
-    <div class="opts" role="group" aria-label="馬達聲大小" id="sndOpts">
+    <div data-cat="snd" class="opts" role="group" aria-label="馬達聲大小" id="sndOpts">
       <span class="lab">馬達聲</span>
       <input type="range" id="volM" min="0" max="200" step="10" value="100" aria-label="馬達聲大小" style="flex: 1 1 140px; min-width: 120px; accent-color: var(--accent);">
       <span id="volMV" style="min-width: 3.2em; text-align: right;">100%</span>
       <button type="button" id="tstMot">測試馬達聲</button>
     </div>
-    <div class="opts" role="group" aria-label="嗶聲大小" id="sndOpts2">
+    <div data-cat="snd" class="opts" role="group" aria-label="嗶聲大小" id="sndOpts2">
       <span class="lab">嗶聲</span>
       <input type="range" id="volB" min="0" max="200" step="10" value="100" aria-label="嗶聲大小" style="flex: 1 1 140px; min-width: 120px; accent-color: var(--accent);">
       <span id="volBV" style="min-width: 3.2em; text-align: right;">100%</span>
@@ -965,6 +1016,8 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
       <button type="button" id="tstVib">測試震動</button>
     </div>
   </div>
+
+</div><!-- /setBody -->
 
   <p class="hint">和實體遙控器相同：左搖桿控制升降與轉向，右搖桿控制前後左右。定高模式起飛：左搖桿往上推第一下起槳（馬達轉動），第二下起飛；無定高模式起飛：左搖桿往上推過中間，沒有自動爬升，推多高升多快，推到約四成位置才能維持高度，放在中間會慢慢往下掉；降落：把左搖桿往下推到底，一直推到落地。選藍方或紅方，無人機會放在己方球框後面；預設的選手視角站在場外己方球框後方，眼睛離地 1.6 公尺，看著無人機；站位可以改成球框後的左側、右側，或斜後方的左後、右後。穿過對方球框得分，得分後要回到中線才能再次進攻，穿過自己的球框不算分，從球框後面往場內穿過也不算分。只有攻擊手能得分，防守者不能；攻擊手的尾燈是對方隊伍的顏色，防守者的尾燈是自己隊伍的顏色。球機之間有碰撞，撞到會被彈開。<br>AI 對打（單機）：選簡單、普通或困難。1 對 1 時電腦扮演另一隊的攻擊手；選 3 對 3 時，每隊 1 個攻擊手加 2 個防守員，你佔一個位置（看你選攻擊手或防守者），其他由電腦補滿。電腦有反應延遲、會恍神、手會抖，攻擊手會等空檔和做假動作，防守員會守在己方球框前面，跟著對方攻擊手左右上下移動擋路。你第一次起飛時開始 3 分鐘比賽，兩邊都穿過對方球框得分，時間到比多少；電腦也有碰撞，會撞到球框和你。進多人房間時 AI 會自動關閉。<br>多人房間裡，最先加入的人是裁判，由裁判開始 3 分鐘的比賽，只有比賽中才算分。比賽中防守者從球框後面往前穿過算犯規；裁判可以在玩家列表按「踢出」把人請出房間（要按兩下確認）；賽後裁判可以選擇罰球（每球限時 1 分鐘）或搶分，兩種都分「耗犯規」和「不耗犯規」：罰球是每次犯規讓對方罰一球，搶分是每次犯規讓對方直接搶走 1 分（犯規方 -1、對方 +1）；耗犯規會把用掉的犯規次數扣掉（搶分後歸零），不耗犯規則保留犯規次數。球框顏色跟那一端的場地一樣，發亮並有綠光的是目前可以進攻的對方球框；解鎖滑桿往下撥會立即停槳；定高滑桿往下撥則不會自動維持高度；燈光鍵（上鎖時單按換腰帶燈顏色）連按兩下切換無頭模式，上鎖、解鎖都可以（地上或飛行中都可以，方向固定以選手面向的方向（朝對方球框）為準，開啟時上方會亮「無頭模式」）；右功能鍵在解鎖後循環切換慢、中、快，上鎖時（按鍵上的字會變成「尾燈」）是換尾燈顏色。遙控種類 2 的左搖桿上下不會回彈，放開後油門停在原位，要自己推回中間才會停止升降。<br>電腦操作：W A S D 移動，↑ ↓ 升降，← → 轉向，U 解鎖，M 定高，Z 燈光，X 速度，V 切換選手、平視、斜視、俯視，T 換隊伍，R 換攻擊手或防守者，C 輪流換選手站位。<br>自訂按鍵：點上面的「鍵盤」或「手把」，再點提示表裡的按鍵標籤（會變黃色），按下想要的新按鍵或手把按鈕就設好了，Esc 取消，「還原預設」可以重來。<br>手把：接上手把後按任一鍵即可，左搖桿＝油門與轉向，右搖桿＝前後平移，A 解鎖／上鎖，B 定高開關，X 燈光鍵，Y 右功能鍵（速度／尾燈），LB 切視角，RB 切站位，Back 換攻擊手／防守者，Start 換隊伍。</p>
   <p class="hint" id="netHint">聯機載入中…（在 Claude 裡用已登入的帳號開啟，或在一般網站上用點對點連線）。</p>
@@ -981,8 +1034,8 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
   var clamp = function (v, a, b) { return Math.max(a, Math.min(b, v)); };
   // 場地：標準 6×3×3 m；大場地 8×4×3 m（球框內徑 30 cm、外徑 50 cm、厚 10 cm）。球框離地都是 2 m
   var FIELDS = {
-    s: { name: '標準', AX: 6, AY: 3, AH: 3, R: 0.195, W: 0.14, T: 0.04, GX: 0.65 },
-    b: { name: '大場地', AX: 8, AY: 4, AH: 3, R: 0.15, W: 0.10, T: 0.10, GX: 0.65 }
+    s: { name: 'FAI 20cm', AX: 6, AY: 3, AH: 3, R: 0.195, W: 0.14, T: 0.04, GX: 0.65 },
+    b: { name: 'FIDA 20cm', AX: 8, AY: 4, AH: 3, R: 0.15, W: 0.10, T: 0.10, GX: 0.65 }
   };
   var FIELD = 's';
   var AX = 6, AY = 3, AH = 3;
@@ -1767,7 +1820,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
     function kn(a) { return '<kbd>' + keyName(KB[a]) + '</kbd>'; }
     function steps() {
       var m = CTL, st = [];
-      st.push({ t: '歡迎！先認識目標', b: '<p>你操作一台被護籠包住的無人機，<b>穿過對方的球框就得分</b>。</p><p>藍方進攻紅方的球框，紅方進攻藍方的球框。上方的比分板會顯示雙方得分。</p><p>接下來 5 個小步驟，教你起飛、移動和比賽。可以隨時跳過，之後按「❓ 新手教學」再看。</p>' });
+      st.push({ t: '歡迎！先認識目標', b: '<p>你操作一台被護籠包住的無人機，<b>穿過對方的球框就得分</b>。</p><p>藍方進攻紅方的球框，紅方進攻藍方的球框。上方的比分板會顯示雙方得分。</p><p>接下來幾個小步驟，教你起飛、移動、設定和比賽。可以隨時跳過，之後按「❓ 新手教學」再看。</p>' });
       st.push({ t: '第 1 步：解鎖', b: m === 'touch' ? '<p>先把遙控器中間左邊的<b>「解鎖」滑桿往上撥</b>。沒有解鎖，搖桿推了也不會動。</p>' :
         m === 'key' ? '<p>先按 ' + kn('unlock') + ' 解鎖。沒有解鎖，按方向鍵也不會動。</p>' :
         '<p>先按手把的 <kbd>' + padName('unlock') + '</kbd> 解鎖。沒有解鎖，推搖桿也不會動。</p>' });
@@ -1777,8 +1830,11 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
       st.push({ t: '第 3 步：定高、燈光、速度', b: m === 'touch' ? '<p><b>定高</b>滑桿（預設開）：開著時放開搖桿會自動停在原高度，新手建議保持開啟。</p><p><b>燈光</b>、<b>速度</b>按鈕：切換燈光和飛行檔位。</p>' :
         m === 'key' ? '<p>' + kn('hold') + ' 定高開關（預設開，新手建議保持開啟）。</p><p>' + kn('light') + ' 燈光，' + kn('speed') + ' 速度檔位。</p>' :
         '<p><kbd>' + padName('hold') + '</kbd> 定高開關（預設開，新手建議保持開啟）。</p><p><kbd>' + padName('light') + '</kbd> 燈光，<kbd>' + padName('speed') + '</kbd> 速度檔位。</p>' });
-      st.push({ t: '第 4 步：視角與站位', b: '<p>在下方「設定」可切換視角：<b>選手</b>（跟著選手看）、<b>平視</b>、<b>斜視</b>、<b>俯視</b>，還能換選手站位。</p>' + (m === 'key' ? '<p>快捷鍵：' + kn('view') + ' 切視角，' + kn('stand') + ' 換站位。</p>' : m === 'pad' ? '<p>手把：<kbd>' + padName('view') + '</kbd> 切視角，<kbd>' + padName('stand') + '</kbd> 換站位。</p>' : '') + '<p>橫向手機可以按「版面」，把畫面放大或只留 3D 畫面。</p>' });
-      st.push({ t: '第 5 步：比賽與多人', b: '<p>一個人可以直接練習。想和朋友玩：在上方輸入<b>姓名</b>和<b>房號</b>按「加入」，朋友輸入同一個房號就會進同一間。</p><p>房主可以按「開始比賽」進行 3 分鐘的比賽。</p><p>準備好了，去飛一圈吧！</p>' });
+      st.push({ t: '第 4 步：視角與站位', b: '<p>按畫面上的<b>「⚙ 設定」</b>會跳出設定視窗，上面一排分頁可以左右滑動或點選。在<b>「視角」</b>分頁可切換視角：<b>選手</b>（跟著選手看）、<b>平視</b>、<b>斜視</b>、<b>俯視</b>，還能換選手站位和球框透明度。</p>' + (m === 'key' ? '<p>快捷鍵：' + kn('view') + ' 切視角，' + kn('stand') + ' 換站位。</p>' : m === 'pad' ? '<p>手把：<kbd>' + padName('view') + '</kbd> 切視角，<kbd>' + padName('stand') + '</kbd> 換站位。</p>' : '') + '<p>橫向手機可以按「版面」，把畫面放大或只留 3D 畫面。</p>' });
+      st.push({ t: '第 5 步：隊伍、場地與賽制', b: '<p><b>隊伍</b>（藍／紅）、<b>角色</b>（攻擊手／防守者）和<b>重新開始</b>直接在主畫面上選。</p><p>按「⚙ 設定」→<b>「比賽」</b>分頁：可以開<b>AI 對打</b>（簡單／普通／困難）、選<b>賽制</b>（1 對 1、3 對 3、5 對 5）和<b>場地</b>：<b>FAI 20cm</b>（6×3×3 m）或較大的 <b>FIDA 20cm</b>（8×4×3 m）。</p><p>「外觀」分頁換球殼和支架顏色，「界面」分頁換風格、配色和畫面大小，「聲音」分頁調馬達聲、嗶聲和測試震動。</p>' });
+      st.push({ t: '第 6 步：比賽與多人', b: '<p>一個人可以直接練習。想和朋友玩：在上方輸入<b>姓名</b>和<b>房號</b>按「加入」，朋友輸入同一個房號就會進同一間。</p><p>房主可以按「開始比賽」進行 3 分鐘的比賽。</p><p>兩支手機也可以<b>PIN 配對</b>：一支當顯示端、一支當操控端（在主畫面的「顯示端／操控端」）。</p>' });
+      if (typeof ACCT !== 'undefined' && ACCT && ACCT.on) st.push({ t: '第 7 步：帳號與好友', b: '<p>按「👤 登入」用 <b>Google 帳號</b>登入：會記住暱稱和所有設定、記錄聯機比賽的<b>戰績</b>（含最近 20 場歷史）、上<b>排行榜</b>。</p><p>每個人有一組<b>好友碼</b>，輸入朋友的好友碼就能加好友；朋友在房間裡時，好友清單會出現「加入」。</p><p>進聯機房間前需要先登入。</p>' });
+      st.push({ t: '準備好了！', b: '<p>去飛一圈吧，祝你玩得開心！</p>' });
       return st;
     }
     function paint() {
@@ -1831,7 +1887,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
       clearTimeout($('volB').__t); $('volB').__t = setTimeout(function () { if (SND.on) beep(1, 1800, 0.16, 0, 'square', 0.2); }, 120);
     });
   })();
-  window.addEventListener('pointerdown', function (e) { if (e.target && e.target.closest && e.target.closest('#ctlMode, #tut, #acct')) return; setCtl('touch'); }, { passive: true, capture: true });
+  window.addEventListener('pointerdown', function (e) { if (e.target && e.target.closest && e.target.closest('#ctlMode, #tut, #acct, #setBody')) return; setCtl('touch'); }, { passive: true, capture: true });
   window.addEventListener('keydown', function (e) { if (e.target && e.target.tagName === 'INPUT') return; if (TUT.el && !TUT.el.hidden) return; setCtl('key'); }, true);
   // 手把鍵位：Xbox／PS／Switch（瀏覽器的標準對應是依「位置」編號：0 下、1 右、2 左、3 上），自動依手把名稱判斷
   var PAD_LAY = {
@@ -2299,15 +2355,32 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
   // 畫面大小：拖拉滑桿自由縮放 3D 畫面（最小 40%，放大到版面寬度為止），設定會記住
   var SZ = 100;
   try { var sz0 = parseInt(localStorage.getItem('cd_sz'), 10); if (sz0 >= 40 && sz0 <= 200) SZ = sz0; } catch (e) {}
-  $('btnToSet').addEventListener('click', function () {
-    var bd = document.querySelector('.board'), off = 8;
-    if (bd) off += (parseFloat(getComputedStyle(bd).top) || 0) + bd.offsetHeight;   // 比分列黏在最上方時的底邊（不是它現在的位置）
-    if (false) {}   // 上方黏住的比分列高度算進去
-    var pad = $('pgPad'); pad.style.height = '0px';
-    var st = $('setTop').getBoundingClientRect().top + window.scrollY, docH = document.documentElement.scrollHeight;
-    pad.style.height = Math.max(0, Math.round(window.innerHeight - off - (docH - st))) + 'px';   // 頁面太短捲不到時，補一段空白讓設定能停在比分列下面
-    window.scrollTo({ top: st - off, behavior: 'smooth' });
+  var setBody = $('setBody'), setCatNm = { play: '比賽', view: '視角與球框', look: '外觀', ui: '界面', snd: '聲音與震動', ctl: '遙控與連線' };
+  function setLevel(k) {   // k 為空＝第一層（分類清單）
+    setBody.setAttribute('data-lv', k ? '1' : '0');
+    var els = setBody.querySelectorAll('[data-cat]'), i;
+    for (i = 0; i < els.length; i++) els[i].classList.toggle('catoff', !k || els[i].getAttribute('data-cat').split(' ').indexOf(k) < 0);
+    Array.prototype.forEach.call(document.querySelectorAll('#setTabs [data-go]'), function (t) { t.setAttribute('aria-pressed', String(t.getAttribute('data-go') === k)); });
+    setBody.scrollTop = 0; 
+    function fixTb() {   // 剛顯示出來的選項排：重新量一次寬度，選中框和選中字的遮罩才會對準
+      Array.prototype.forEach.call(setBody.querySelectorAll('.opts.seg'), function (r) { var t = r.__lgt; if (t && r.getClientRects().length) { try { t.measure(); t.syncSel(false); t.frame(t.D); } catch (er) {} } });
+    }
+    function fixSl() { ['szRange', 'volM', 'volB'].forEach(function (id) { var e = $(id); if (e && e.__lgsl) { try { e.__lgsl.frame(e.__lgsl.D); } catch (er) {} } }); }
+    requestAnimationFrame(function () { fixSl(); fixTb(); window.dispatchEvent(new Event('resize')); setTimeout(function () { fixSl(); fixTb(); window.dispatchEvent(new Event('resize')); setTimeout(fixTb, 250); }, 120); });   // 讓選項框依新的寬度重新量位置
+  }
+  var setLast = 'play';
+  setLevel(setLast);
+  Array.prototype.forEach.call(document.querySelectorAll('#setTabs [data-go]'), function (b) {
+    b.addEventListener('click', function () { setLast = b.getAttribute('data-go'); setLevel(setLast); });
   });
+  function setShut() { setBody.hidden = true; $('btnToSet').textContent = '⚙ 設定'; }
+  function setOpen() { setBody.hidden = false; setLevel(setLast); $('btnToSet').textContent = '⚙ 設定'; }
+  $('btnToSet').addEventListener('click', function () { if (setBody.hidden) setOpen(); else setShut(); });
+  $('setClose').addEventListener('click', setShut);
+  document.addEventListener('pointerdown', function (e) {   // 點到視窗外面：關掉
+    if (!setBody.hidden && !document.documentElement.classList.contains('pair-ctl') && !e.target.closest('#setBody, #btnToSet')) setShut();
+  }, true);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !setBody.hidden) setShut(); });
   (function () {
     var bs = $('backStage'), box = document.querySelector('.stagebox');
     bs.addEventListener('click', function () {
@@ -2428,8 +2501,8 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
       if (c.hl > 0) { cache[hk] = cache[hk] || highlight(w, h, r, 1.6, c.hl); e.style.setProperty('--lgh', 'url(' + cache[hk] + ')'); }
     }
     var CFG = [
-      ['html.glass .hud > div', { r: 18, H: 10, A: 16, blur: 4, chroma: false, hl: 0.5 }],
-      ['html.glass .board', { r: 18, H: 12, A: 18, blur: 4, chroma: false, hl: 0.5 }],
+      ['html.glass .hud > div', { r: 22, H: 10, A: 16, blur: 4, chroma: false, hl: 0.5 }],
+      ['html.glass .board', { r: 22, H: 12, A: 18, blur: 4, chroma: false, hl: 0.5 }],
       ['html.glass #playerName, html.glass #roomCode, html.glass #pairPin', { r: 'cap', H: 10, A: 18, blur: 3, chroma: false, hl: 0 }],
       ['html.glass .actions > button, html.glass .actions > .opts > button:not([aria-pressed]), html.glass #backStage', { r: 'cap', H: 12, A: 24, blur: 2, chroma: false, hl: 0.6, inter: true }]
     ];
@@ -4056,7 +4129,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
     if (!AI.on) { AI.on = true; AI.lvl = 1; }
     aiReset();
     syncOpts();
-    setMsg('<b>' + aiDesc() + '</b>（AI ' + AI_LV[AI.lvl].name + '）。' + (n === 3 ? '你是' + (S.role === 0 ? '攻擊手，隊友是 2 個防守員' : '防守員，隊友是 1 個攻擊手和 1 個防守員') + '，對面是 1 個攻擊手和 2 個防守員。' : (n === 5 ? '已切到大場地。你是' + (S.role === 0 ? '攻擊手，隊友是 4 個防守員' : '防守員，隊友是 1 個攻擊手和 3 個防守員') + '，對面是 1 個攻擊手和 4 個防守員。' : '')));
+    setMsg('<b>' + aiDesc() + '</b>（AI ' + AI_LV[AI.lvl].name + '）。' + (n === 3 ? '你是' + (S.role === 0 ? '攻擊手，隊友是 2 個防守員' : '防守員，隊友是 1 個攻擊手和 1 個防守員') + '，對面是 1 個攻擊手和 2 個防守員。' : (n === 5 ? '已切到FIDA 場地。你是' + (S.role === 0 ? '攻擊手，隊友是 4 個防守員' : '防守員，隊友是 1 個攻擊手和 3 個防守員') + '，對面是 1 個攻擊手和 4 個防守員。' : '')));
   }
   function aiPublish(q) {
     var rm = remotes[q.id];
@@ -4766,7 +4839,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
     var LOCAL = ['data-gl', 'data-ui', 'data-bg', 'data-fill', 'data-fg', 'data-rc'];
     function fwdList() {
       return Array.prototype.filter.call(document.querySelectorAll('.opts button, #btnReset'), function (b) {
-        if (b.closest('#pairRow') || b.closest('#cmRow') || b.closest('#rc') || b.closest('#sndOpts') || b.closest('#sndOpts2')) return false;
+        if (b.closest('#pairRow') || b.closest('#setTabs') || b.closest('#cmRow') || b.closest('#rc') || b.closest('#sndOpts') || b.closest('#sndOpts2')) return false;
         for (var i = 0; i < LOCAL.length; i++) if (b.hasAttribute(LOCAL[i])) return false;
         return true;
       });
