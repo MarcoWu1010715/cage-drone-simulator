@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>護籠無人機模擬器</title>
+<title>無人機足球模擬器</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -619,6 +619,11 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
 #acct ol li.me { font-weight: 700; color: var(--good); }
 #acct .aguide { font-size: 13.5px; line-height: 1.6; }
 #acct .aguide code { font-family: var(--font-mono); background: var(--bg); padding: 0 4px; border-radius: 4px; }
+#acct .afr { display: flex; align-items: center; gap: 6px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+#acct .afr .nm { flex: 1 1 auto; min-width: 0; }
+#acct .afr .nm small { display: block; color: var(--muted); font-size: 11.5px; }
+#acct .afr button { flex: 0 0 auto; min-height: 0; padding: 4px 10px; font-size: 13px; border-radius: 999px; }
+#acct .acode { font-family: var(--font-mono); font-size: 18px; letter-spacing: 2px; font-weight: 700; }
 #acct [hidden] { display: none !important; }
 /* 新手教學 */
 #tut { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,.55); }
@@ -651,6 +656,13 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
     <div class="astat" id="acStat"></div>
     <label for="acNick2">暱稱（最多 12 字，聯機時當姓名）</label><input id="acNick2" maxlength="12">
     <div class="arow"><button type="button" id="acSaveNick">儲存暱稱</button><button type="button" id="acSync">立即同步設定</button><button type="button" id="acOutBtn">登出</button></div>
+    <label style="margin-top:12px">好友</label>
+    <div style="font-size:13px">我的好友碼：<span class="acode" id="acCode">…</span> <button type="button" id="acCopy" style="min-height:0;padding:3px 10px;font-size:13px;border-radius:999px">複製</button></div>
+    <div class="arow" style="margin-top:8px"><input id="acAdd" maxlength="8" placeholder="輸入對方的好友碼" autocomplete="off" autocapitalize="characters" style="flex:2 1 120px"><button type="button" id="acAddBtn" style="flex:1 1 70px">加好友</button></div>
+    <div id="acReq"></div>
+    <div id="acFl"><div style="color:var(--muted);font-size:13px;padding:6px 0">還沒有好友</div></div>
+    <label style="margin-top:12px">歷史戰績（最近 20 場）</label>
+    <div id="acHist"></div>
     <label style="margin-top:12px">排行榜（勝場）</label><ol id="acBoard"></ol>
   </div>
   <p class="amsg" id="acMsg"></p>
@@ -663,7 +675,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
 </div></div>
 <div class="wrap">
   <header>
-    <h1>護籠無人機模擬器 <small class="ver" id="verTag">v204</small></h1>
+    <h1>無人機足球模擬器 <small class="ver" id="verTag">v207</small></h1>
     <span class="pill" id="status" data-s="idle">待機中</span>
   </header>
   <div class="netbox">
@@ -4606,6 +4618,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
       if (NET.room !== NET.api) { try { NET.room.leave().catch(noop); } catch (err) {} }
     }
     NET.room = null;
+    if (typeof ACCT !== 'undefined' && ACCT) ACCT.setRoom('');
     for (var k in remotes) removeRemote(k);
     NET.amRef = false; NET.refPeer = null; msFresh(); recomputeScores();
   }
@@ -4638,6 +4651,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
     req.then(function (room) {
       if (tok !== NET.tok) { if (room !== NET.api) { try { room.leave().catch(noop); } catch (err) {} } return; }
       NET.room = room;
+      if (typeof ACCT !== 'undefined' && ACCT) ACCT.setRoom(code);
       NET.lastKey = ''; NET.listKey = ''; NET.laneDone = false;
       ledger = {}; fouls = {}; epoch = 0;
       NET.jt = Date.now(); NET.amRef = false; NET.refPeer = null; NET.kicks = {}; msFresh();
@@ -5167,7 +5181,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
         return A.fb;
       });
     }
-    function chip() { $('btnAcct').textContent = A.user ? '👤 ' + (A.nick || '玩家') : (A.on ? '👤 登入' : '👤 登入（未設定）'); }
+    function chip() { $('btnAcct').textContent = A.user ? '👤 ' + (A.nick || '玩家') + ((typeof FR !== 'undefined' && FR.inc && FR.inc.length) ? '（' + FR.inc.length + '）' : '') : (A.on ? '👤 登入' : '👤 登入（未設定）'); }
     function settingsNow() { var o = {}; SYNC_KEYS.forEach(function (k) { try { var v = localStorage.getItem(k); if (v !== null) o[k] = v; } catch (e) {} }); return o; }
     function useName() { if (!A.user || !A.nick) return; try { nameIn.value = A.nick; localStorage.setItem('drone-name', A.nick); } catch (e) {} }
     function ref() { return A.db.collection('users').doc(A.user.uid); }
@@ -5179,6 +5193,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
         return ref().set(d).then(function () { return d; });
       }).then(function (p) {
         A.prof = p; A.nick = p.nickname || '玩家'; chip(); useName();
+        setTimeout(function () { if (!p.friendCode) A.claimCode(0); else A.frSync(); }, 50);
         var remote = p.settings && typeof p.settings === 'object' ? p.settings : {};
         var keys = Object.keys(remote).filter(function (k) { return SYNC_KEYS.indexOf(k) >= 0 && typeof remote[k] === 'string'; });
         var local = settingsNow(), diff = keys.some(function (k) { return local[k] !== remote[k]; });
@@ -5220,7 +5235,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
         var p = A.prof || {};
         $('acWho').innerHTML = '<b>' + esc(A.nick || '玩家') + '</b><br><span style="color:var(--muted);font-size:13px">' + esc(A.user.email || '') + '</span>';
         $('acStat').innerHTML = [['場次', p.matches], ['勝', p.wins], ['負', p.losses], ['平', p.draws], ['隊伍進球', p.goals]].map(function (x) { return '<div><b>' + (x[1] || 0) + '</b>' + x[0] + '</div>'; }).join('');
-        $('acNick2').value = A.nick || '';
+        $('acNick2').value = A.nick || ''; $('acCode').textContent = p.friendCode || '產生中…';
       }
     }
     function loadBoard() {
@@ -5231,9 +5246,26 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
         qs.forEach(function (d) { var p = d.data(), li = document.createElement('li'); if (d.id === (A.user && A.user.uid)) li.className = 'me'; li.textContent = (p.nickname || '玩家') + '　' + (p.wins || 0) + ' 勝 ' + (p.losses || 0) + ' 負 ' + (p.draws || 0) + ' 平'; ol.appendChild(li); });
       }).catch(function () { $('acBoard').innerHTML = '<li style="list-style:none;color:var(--muted)">讀不到排行榜</li>'; });
     }
+    function loadHist() {
+      if (!A.user || !A.db) return;
+      ref().collection('history').orderBy('at', 'desc').limit(20).get().then(function (qs) {
+        var box = $('acHist'); box.innerHTML = '';
+        if (qs.empty) { var e = document.createElement('div'); e.textContent = '還沒有比賽紀錄。聯機比賽結束後會自動記錄。'; e.style.cssText = 'color:var(--muted);font-size:13px;padding:4px 0'; box.appendChild(e); return; }
+        qs.forEach(function (d) {
+          var x = d.data(), r = document.createElement('div'), t = new Date(x.at || 0);
+          r.className = 'afr';
+          var nm = document.createElement('div'); nm.className = 'nm';
+          var a = document.createElement('span'); a.textContent = (x.result === 'win' ? '勝' : (x.result === 'loss' ? '負' : '平')) + '　' + (x.mine | 0) + ' : ' + (x.opp | 0);
+          a.style.color = x.result === 'win' ? 'var(--good)' : (x.result === 'loss' ? 'var(--warn)' : 'var(--fg)'); a.style.fontWeight = '700';
+          var b = document.createElement('small'); b.textContent = (t.getMonth() + 1) + '/' + t.getDate() + ' ' + ('0' + t.getHours()).slice(-2) + ':' + ('0' + t.getMinutes()).slice(-2) + (x.room ? '・房間 ' + x.room : '');
+          nm.appendChild(a); nm.appendChild(b); r.appendChild(nm); box.appendChild(r);
+        });
+      }).catch(function () { $('acHist').textContent = '讀不到歷史戰績'; });
+    }
+    A.loadHist = loadHist;
     A.open = function () {
       el.hidden = false; say(''); paint();
-      if (A.on) ready().then(function () { if (A.user) { pullProfile().then(function () { paint(); }).catch(function () {}); loadBoard(); } }).catch(function (e) { say(errText(e), true); });
+      if (A.on) ready().then(function () { if (A.user) { pullProfile().then(function () { paint(); A.frSync(); loadHist(); }).catch(function () {}); loadBoard(); } }).catch(function (e) { say(errText(e), true); });
     };
     A.close = function () { el.hidden = true; };
     function afterLogin(u) { return setUser(u).then(function () { say('登入成功，歡迎 ' + (A.nick || '') + '！'); loadBoard(); }); }
@@ -5267,6 +5299,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
       var res = mine > opp ? 'win' : (mine < opp ? 'loss' : 'draw'), inc = A.fb.firestore.FieldValue.increment;
       var up = { matches: inc(1), goals: inc(Math.min(mine, 50)), updatedAt: Date.now() };
       up[res === 'win' ? 'wins' : (res === 'loss' ? 'losses' : 'draws')] = inc(1);
+      ref().collection('history').add({ at: Date.now(), result: res, mine: Math.min(mine, 99), opp: Math.min(opp, 99), room: String(NET.code || '').slice(0, 24) }).then(function () { if (!el.hidden) loadHist(); }).catch(function () {});
       ref().update(up).then(function () {
         setMsg('戰績已記錄：' + (res === 'win' ? '勝' : (res === 'loss' ? '負' : '平')) + '（' + mine + '：' + opp + '）。'); pullProfile().catch(function () {});
       }).catch(function () {});
@@ -5276,6 +5309,119 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
       if (!A.on || !NEED_LOGIN_FOR_ROOM || A.user) return true;
       setMsg('進聯機房間要先<b>登入</b>帳號。按上面的「👤 登入」。'); A.open(); return false;
     };
+
+    /* ----- 好友 ----- */
+    var FR = { list: [], busyAdd: false };
+    function genCode() { var c = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789', o = '', i; for (i = 0; i < 6; i++) o += c.charAt(Math.floor(Math.random() * c.length)); return o; }
+    function claimCode(n) {
+      if (!A.user || !A.db || (A.prof && A.prof.friendCode) || n > 6) return;
+      var code = genCode();
+      A.db.collection('codes').doc(code).set({ uid: A.user.uid }).then(function () {
+        return ref().update({ friendCode: code, updatedAt: Date.now() }).then(function () { if (A.prof) A.prof.friendCode = code; paint(); frSync(); });
+      }).catch(function () { setTimeout(function () { claimCode(n + 1); }, 300); });
+    }
+    A.claimCode = claimCode;
+    function mk(tag, txt, cls) { var e = document.createElement(tag); if (txt != null) e.textContent = txt; if (cls) e.className = cls; return e; }
+    function btn(txt, fn) { var b = mk('button', txt); b.type = 'button'; b.addEventListener('click', fn); return b; }
+    function roomFresh(p) { return p && p.room && p.roomAt && Date.now() - p.roomAt < 2 * 3600 * 1000; }
+    A.setRoom = function (code) {
+      if (!A.user || !A.db) return;
+      code = code || '';
+      if (code === (A.room || '')) return;
+      A.room = code;
+      ref().update({ room: code, roomAt: Date.now(), updatedAt: Date.now() }).catch(function () {});
+    };
+    function frSync() {
+      if (!A.user || !A.db) return Promise.resolve();
+      var uid = A.user.uid, col = A.db.collection('requests'), me = ref();
+      var inc = col.where('to', '==', uid).get().then(function (qs) { var r = []; qs.forEach(function (d) { var x = d.data(); if (x.status === 'pending') r.push({ id: d.id, from: x.from, nick: x.fromNick || '玩家' }); }); return r; });
+      var out = col.where('from', '==', uid).get().then(function (qs) {
+        var pend = [], jobs = [];
+        qs.forEach(function (d) {
+          var x = d.data();
+          if (x.status === 'accepted') {   // 對方同意了：把對方加進我這邊的好友，再刪掉邀請
+            jobs.push(A.db.collection('users').doc(x.to).get().then(function (u) {
+              var nk = (u.exists && u.data().nickname) || '玩家';
+              return me.collection('friends').doc(x.to).set({ nickname: nk, since: Date.now() });
+            }).then(function () { return d.ref ? d.ref.delete() : col.doc(d.id).delete(); }));
+          } else pend.push(x.to);
+        });
+        return Promise.all(jobs).then(function () { return pend.length; });
+      });
+      return Promise.all([inc, out]).then(function (r) {
+        FR.inc = r[0]; FR.out = r[1];
+        return me.collection('friends').get();
+      }).then(function (qs) {
+        var ids = []; qs.forEach(function (d) { ids.push(d.id); });
+        return Promise.all(ids.map(function (id) { return A.db.collection('users').doc(id).get().then(function (u) { var p = u.exists ? u.data() : {}; p.id = id; return p; }); }));
+      }).then(function (list) { FR.list = list; frPaint(); chip(); }).catch(function (e) { say(errText(e), true); });
+    }
+    A.frSync = frSync;
+    function frPaint() {
+      var box = $('acFl'), rq = $('acReq'), i;
+      rq.innerHTML = '';
+      (FR.inc || []).forEach(function (r) {
+        var row = mk('div', null, 'afr'), nm = mk('div', null, 'nm');
+        nm.appendChild(mk('span', r.nick)); nm.appendChild(mk('small', '想加你為好友'));
+        row.appendChild(nm);
+        row.appendChild(btn('接受', function () { frAccept(r); }));
+        row.appendChild(btn('拒絕', function () { A.db.collection('requests').doc(r.id).delete().then(frSync).catch(function (e) { say(errText(e), true); }); }));
+        rq.appendChild(row);
+      });
+      if (FR.out) rq.appendChild(mk('div', '已送出邀請 ' + FR.out + ' 筆，等待對方同意。', 'amsg'));
+      box.innerHTML = '';
+      if (!FR.list.length) { var e = mk('div', '還沒有好友。把你的好友碼給朋友，或輸入朋友的好友碼。'); e.style.cssText = 'color:var(--muted);font-size:13px;padding:6px 0'; box.appendChild(e); return; }
+      FR.list.sort(function (a, b) { return (roomFresh(b) ? 1 : 0) - (roomFresh(a) ? 1 : 0); });
+      for (i = 0; i < FR.list.length; i++) (function (p) {
+        var row = mk('div', null, 'afr'), nm = mk('div', null, 'nm');
+        nm.appendChild(mk('span', p.nickname || '玩家'));
+        nm.appendChild(mk('small', (p.wins || 0) + ' 勝 ' + (p.losses || 0) + ' 負 ' + (p.draws || 0) + ' 平' + (roomFresh(p) ? '・在房間 ' + p.room : '')));
+        row.appendChild(nm);
+        if (roomFresh(p)) row.appendChild(btn('加入', function () { A.close(); roomIn.value = p.room; joinFromInput(); }));
+        row.appendChild(btn('刪除', function () {
+          if (!confirm('把 ' + (p.nickname || '這位好友') + ' 從好友刪除？')) return;
+          ref().collection('friends').doc(p.id).delete().then(frSync).catch(function (e) { say(errText(e), true); });
+        }));
+        box.appendChild(row);
+      })(FR.list[i]);
+    }
+    function frAccept(r) {
+      var uid = A.user.uid;
+      A.db.collection('requests').doc(r.id).update({ status: 'accepted' }).then(function () {
+        return ref().collection('friends').doc(r.from).set({ nickname: r.nick, since: Date.now() });
+      }).then(function () { say('已加 ' + r.nick + ' 為好友。'); return frSync(); }).catch(function (e) { say(errText(e), true); });
+    }
+    function frAdd() {
+      if (FR.busyAdd || !A.user) return;
+      var code = String($('acAdd').value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+      if (code.length < 4) { say('請輸入對方的好友碼。', true); return; }
+      if (A.prof && code === A.prof.friendCode) { say('這是你自己的好友碼。', true); return; }
+      FR.busyAdd = true; var uid = A.user.uid, other;
+      A.db.collection('codes').doc(code).get().then(function (c) {
+        if (!c.exists) throw { code: 'nocode' };
+        other = c.data().uid;
+        if (FR.list.some(function (p) { return p.id === other; })) throw { code: 'already' };
+        return A.db.collection('requests').doc(other + '_' + uid).get();
+      }).then(function (rev) {
+        if (rev.exists && rev.data().status === 'pending') {   // 對方早就邀請我了：直接同意
+          return frAccept({ id: rev.id, from: other, nick: rev.data().fromNick || '玩家' });
+        }
+        return A.db.collection('requests').doc(uid + '_' + other).get().then(function (mine) {
+          if (mine.exists) throw { code: 'sent' };
+          return A.db.collection('requests').doc(uid + '_' + other).set({ from: uid, to: other, fromNick: A.nick || '玩家', status: 'pending', at: Date.now() });
+        }).then(function () { $('acAdd').value = ''; say('已送出邀請，等對方同意。'); return frSync(); });
+      }).catch(function (e) {
+        var c = e && e.code;
+        say(c === 'nocode' ? '找不到這個好友碼。' : c === 'already' ? '你們已經是好友了。' : c === 'sent' ? '邀請已經送出過了，等對方同意。' : errText(e), true);
+      }).then(function () { FR.busyAdd = false; });
+    }
+    $('acAddBtn').addEventListener('click', frAdd);
+    $('acAdd').addEventListener('keydown', function (e) { if (e.key === 'Enter') frAdd(); });
+    $('acCopy').addEventListener('click', function () {
+      var c = A.prof && A.prof.friendCode; if (!c) return;
+      try { navigator.clipboard.writeText(c).then(function () { say('已複製好友碼。'); }, function () { say('好友碼：' + c); }); } catch (e) { say('好友碼：' + c); }
+    });
+    setInterval(function () { if (A.user && !document.hidden && (!el.hidden || !FR.t || Date.now() - FR.t > 60000)) { FR.t = Date.now(); frSync(); } }, 15000);
     chip(); paint();
     if (A.on) ready().then(function () {
       A.auth.onAuthStateChanged(function (u) { if (u && !A.user) afterLoginQuiet(u); else if (!u && A.user) setUser(null); });
