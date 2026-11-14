@@ -596,6 +596,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
 .match .mtime { font-family: var(--font-mono); font-size: 22px; font-variant-numeric: tabular-nums; color: var(--fg); }
 .match .minfo { flex: 1 1 200px; min-width: 0; font-size: 13px; color: var(--muted); }
 
+.ver { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: 0.04em; vertical-align: middle; white-space: nowrap; }
 /* 新手教學 */
 #tut { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,.55); }
 #tut[hidden] { display: none; }
@@ -623,7 +624,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
 </div></div>
 <div class="wrap">
   <header>
-    <h1>護籠無人機模擬器</h1>
+    <h1>護籠無人機模擬器 <small class="ver" id="verTag">v201</small></h1>
     <span class="pill" id="status" data-s="idle">待機中</span>
   </header>
   <div class="netbox">
@@ -797,10 +798,10 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
       <button type="button" id="aiFree" hidden>自由練習</button>
     </div>
     <div class="opts" role="group" aria-label="賽制">
-      <span class="lab">賽制</span>
+      <span class="lab">賽制（3 對 3＝1攻2守，5 對 5＝1攻4守、用大場地）</span>
       <button type="button" data-fmt="1" aria-pressed="true">1 對 1</button>
-      <button type="button" data-fmt="3" aria-pressed="false">3 對 3（1攻2守）</button>
-      <button type="button" data-fmt="5" aria-pressed="false">5 對 5（1攻4守・大場地）</button>
+      <button type="button" data-fmt="3" aria-pressed="false">3 對 3</button>
+      <button type="button" data-fmt="5" aria-pressed="false">5 對 5</button>
     </div>
     <div class="opts" role="group" aria-label="場地">
       <span class="lab">場地</span>
