@@ -597,6 +597,29 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
 .match .minfo { flex: 1 1 200px; min-width: 0; font-size: 13px; color: var(--muted); }
 
 .ver { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: 0.04em; vertical-align: middle; white-space: nowrap; }
+
+/* 登入（Google） */
+#acct { position: fixed; inset: 0; z-index: 210; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,.55); }
+#acct[hidden] { display: none; }
+#acct .acard { width: min(100%, 440px); max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow: auto; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 18px; padding: 16px 16px 14px; box-shadow: 0 14px 44px rgba(0,0,0,.4); }
+#acct h3 { margin: 0 0 10px; font-size: 19px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+#acct h3 button { min-height: 0; padding: 2px 10px; font-size: 14px; border-radius: 999px; }
+#acct label { display: block; font-size: 12px; color: var(--muted); margin: 8px 0 3px; }
+#acct input { width: 100%; font: inherit; padding: 9px 11px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); -webkit-user-select: text; user-select: text; }
+#acct .arow { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+#acct .arow button { flex: 1 1 auto; border-radius: 12px; }
+#acct .arow button.pri { background: #fff; color: #202124; border: 1px solid #dadce0; font-weight: 700; }
+#acct .amsg { margin: 10px 0 0; font-size: 13px; min-height: 1.4em; color: var(--muted); }
+#acct .amsg.err { color: var(--warn); }
+#acct .astat { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 8px 0; text-align: center; }
+#acct .astat div { padding: 6px 2px; border: 1px solid var(--line); border-radius: 10px; font-size: 11px; color: var(--muted); }
+#acct .astat b { display: block; font-size: 18px; color: var(--fg); font-family: var(--font-mono); }
+#acct ol { margin: 6px 0 0; padding: 0 0 0 1.4em; font-size: 14px; }
+#acct ol li { padding: 2px 0; }
+#acct ol li.me { font-weight: 700; color: var(--good); }
+#acct .aguide { font-size: 13.5px; line-height: 1.6; }
+#acct .aguide code { font-family: var(--font-mono); background: var(--bg); padding: 0 4px; border-radius: 4px; }
+#acct [hidden] { display: none !important; }
 /* 新手教學 */
 #tut { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,.55); }
 #tut[hidden] { display: none; }
@@ -616,6 +639,22 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
 #tut .tskip { display: block; margin: 8px auto 0; background: none; border: 0; color: var(--muted); font: inherit; font-size: 13px; cursor: pointer; text-decoration: underline; }
 </style>
 
+<div id="acct" hidden role="dialog" aria-modal="true" aria-labelledby="acctT"><div class="acard">
+  <h3><span id="acctT">帳號</span><button type="button" id="acClose">關閉</button></h3>
+  <div id="acGuide" class="aguide" hidden></div>
+  <div id="acOut" hidden>
+    <p style="margin:0 0 4px;font-size:14px">用 Google 帳號登入，就能記住暱稱和所有設定、記錄戰績、上排行榜，也能進聯機房間。</p>
+    <div class="arow"><button type="button" class="pri" id="acGoogle">使用 Google 登入</button></div>
+  </div>
+  <div id="acIn" hidden>
+    <div id="acWho" style="font-size:15px"></div>
+    <div class="astat" id="acStat"></div>
+    <label for="acNick2">暱稱（最多 12 字，聯機時當姓名）</label><input id="acNick2" maxlength="12">
+    <div class="arow"><button type="button" id="acSaveNick">儲存暱稱</button><button type="button" id="acSync">立即同步設定</button><button type="button" id="acOutBtn">登出</button></div>
+    <label style="margin-top:12px">排行榜（勝場）</label><ol id="acBoard"></ol>
+  </div>
+  <p class="amsg" id="acMsg"></p>
+</div></div>
 <div id="tut" hidden role="dialog" aria-modal="true" aria-labelledby="tutT"><div class="tcard">
   <p class="tstep" id="tutN"></p><h3 id="tutT"></h3><div class="tbody" id="tutB"></div>
   <div class="tdots" id="tutD"></div>
@@ -624,7 +663,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
 </div></div>
 <div class="wrap">
   <header>
-    <h1>護籠無人機模擬器 <small class="ver" id="verTag">v201</small></h1>
+    <h1>護籠無人機模擬器 <small class="ver" id="verTag">v203</small></h1>
     <span class="pill" id="status" data-s="idle">待機中</span>
   </header>
   <div class="netbox">
@@ -670,6 +709,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
     <span class="pill" id="teamChip" data-team="blue">操作：藍方</span>
     <span class="pill" id="armChip" data-s="fly">可進攻</span>
     <span class="pill" id="headChip" data-s="net" style="visibility:hidden">無頭模式</span>
+    <button type="button" class="pill" id="btnAcct" style="cursor:pointer;font:inherit">👤 登入</button>
     <button type="button" class="pill" id="btnTut" style="cursor:pointer;font:inherit">❓ 新手教學</button>
     <button type="button" class="pill" id="btnToSet" style="cursor:pointer;font:inherit">⚙ 設定 ↓</button>
   </div>
@@ -923,6 +963,9 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
 <script>
 (function () {
   var TAU = Math.PI * 2;
+  // ===== 線上帳號（Google 登入，用 Firebase）設定：照 firebase-setup.md 建好專案後，把 Firebase 給你的設定貼在這裡 =====
+  var CLOUD = { apiKey: '', authDomain: '', projectId: '', appId: '' };   // 例：{ apiKey: 'AIza...', authDomain: 'xxx.firebaseapp.com', projectId: 'xxx', appId: '1:123:web:abc' }（這些本來就是公開的，可以放在網頁裡）
+  var NEED_LOGIN_FOR_ROOM = true;        // 設好線上帳號後，進聯機房間必須先登入
   var clamp = function (v, a, b) { return Math.max(a, Math.min(b, v)); };
   // 場地：標準 6×3×3 m；大場地 8×4×3 m（球框內徑 30 cm、外徑 50 cm、厚 10 cm）。球框離地都是 2 m
   var FIELDS = {
@@ -1776,7 +1819,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
       clearTimeout($('volB').__t); $('volB').__t = setTimeout(function () { if (SND.on) beep(1, 1800, 0.16, 0, 'square', 0.2); }, 120);
     });
   })();
-  window.addEventListener('pointerdown', function (e) { if (e.target && e.target.closest && e.target.closest('#ctlMode, #tut')) return; setCtl('touch'); }, { passive: true, capture: true });
+  window.addEventListener('pointerdown', function (e) { if (e.target && e.target.closest && e.target.closest('#ctlMode, #tut, #acct')) return; setCtl('touch'); }, { passive: true, capture: true });
   window.addEventListener('keydown', function (e) { if (e.target && e.target.tagName === 'INPUT') return; if (TUT.el && !TUT.el.hidden) return; setCtl('key'); }, true);
   // 手把鍵位：Xbox／PS／Switch（瀏覽器的標準對應是依「位置」編號：0 下、1 右、2 左、3 上），自動依手把名稱判斷
   var PAD_LAY = {
@@ -2580,6 +2623,10 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
       this.measure(); this.syncSel(false);
       new MutationObserver(function () { self.measure(); self.syncSel(true); }).observe(row, { attributes: true, subtree: true, attributeFilter: ['aria-pressed', 'hidden', 'disabled'] });
       if (window.ResizeObserver) new ResizeObserver(function () { self.measure(); self.frame(self.D); }).observe(row);
+      // 字型晚到（網頁字型載入後文字變寬）、或單顆按鈕寬度變了：重新量一次，不然玻璃泡和選中字會和旁邊的選項重疊
+      var reMeasure = function () { self.measure(); self.syncSel(false); self.frame(self.D); };
+      if (window.ResizeObserver) { var rob = new ResizeObserver(reMeasure); [].forEach.call(row.children, function (c) { if (c.tagName === 'BUTTON') rob.observe(c); }); }
+      try { if (document.fonts) { if (document.fonts.ready) document.fonts.ready.then(reMeasure); if (document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', reMeasure); } } catch (e) {}
       // 拖曳：玻璃泡本身，或在整排上橫向滑
       var moved = false, pitch = 60, dragging = false;
       function begin() { self.measure(); pitch = self.pitch(); dragging = true; self.D.dragging = true; self.D.press(); self.beginFree(); }
@@ -2886,6 +2933,8 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
       function sync() { place(curBtn(), !first); first = false; }
       new MutationObserver(function () { sync(); }).observe(r, { attributes: true, subtree: true, attributeFilter: ['aria-pressed', 'hidden', 'disabled'] });
       if (window.ResizeObserver) new ResizeObserver(function () { place(curBtn(), false); }).observe(r);
+      if (window.ResizeObserver) { var rob2 = new ResizeObserver(function () { place(curBtn(), false); }); [].forEach.call(r.children, function (c) { if (c.tagName === 'BUTTON') rob2.observe(c); }); }
+      try { if (document.fonts) { if (document.fonts.ready) document.fonts.ready.then(function () { place(curBtn(), false); }); if (document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', function () { place(curBtn(), false); }); } } catch (e) {}
       window.addEventListener('resize', function () { setTimeout(function () { place(curBtn(), false); }, 60); });
       setTimeout(sync, 60); setTimeout(function () { place(curBtn(), false); }, 600);
       // 滑動
@@ -3724,6 +3773,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
       NET.listKey = '';
       if (ph === 'play') sfx('start');
       if (ph === 'review' || ph === 'done') sfx('end');
+      if (typeof ACCT !== 'undefined' && ACCT) ACCT.onPhase(ph);
       if (MS.pz) setMsg('<b>裁判暫停</b>：計時停止，暫停中不計分。');
       else if (ph === 'idle') setMsg('裁判開放<b>自由練習</b>，可以起飛練習，不計分。');
       else if (ph === 'ready') setMsg('<b>賽前倒數 10 秒</b>：所有球機回到起點，倒數結束才能起飛、開始比賽。');
@@ -4622,6 +4672,8 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
   function normName(v) { return String(v || '').replace(/[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u2028-\u202f\u2060-\u206f\ufeff<>]/g, '').trim().slice(0, 12); }
   function normCode(v) { return String(v || '').trim().toLowerCase().replace(/[^a-z0-9_.-]/g, '').slice(0, 24); }
   function takeName() {
+    if (typeof ACCT !== 'undefined' && ACCT && !ACCT.gate()) return false;
+    if (typeof ACCT !== 'undefined' && ACCT && ACCT.user && ACCT.nick) nameIn.value = ACCT.nick;
     var n = normName(nameIn.value);
     nameIn.value = n;
     if (!n) {
@@ -5079,6 +5131,158 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
       try { nameIn.value = normName(localStorage.getItem('drone-name')); } catch (err) {}
       $('netHint').textContent = '輸入姓名後按「加入」，房號留空就進大廳。比分歸零由裁判在畫面上方按。同一個房號的人在同一個場地，同隊的進球會加在一起。只有受邀或同組織的人能連進來。';
     });
+  })();
+
+
+  /* ---------- 線上帳號：Google 登入、暱稱與設定同步、戰績、排行（Firebase） ---------- */
+  var ACCT = (function () {
+    var A = { user: null, nick: '', prof: null, fb: null, db: null, ph: '', pushed: '', busy: false };
+    var SYNC_KEYS = ['cd_volm', 'cd_volb', 'cd_ui', 'cd_ui2', 'cd_sz', 'cd_split', 'cd_padlay', 'cd_padcus', 'cd_kb', 'cd_hoopalpha', 'cd_field'];
+    var el = $('acct'), msg = $('acMsg'), V = '10.12.2';
+    A.on = !!(CLOUD && CLOUD.apiKey && CLOUD.projectId && CLOUD.authDomain);
+    function say(t, err) { msg.textContent = t || ''; msg.className = 'amsg' + (err ? ' err' : ''); }
+    function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+    function errText(e) {
+      var c = String((e && e.code) || ''), m = String((e && e.message) || e || '');
+      if (/popup-closed|cancelled-popup|user-cancelled/.test(c)) return '你關掉了登入視窗。';
+      if (/popup-blocked/.test(c)) return '瀏覽器擋掉了登入視窗，請允許彈出視窗後再按一次。';
+      if (/unauthorized-domain/.test(c)) return '這個網址還沒加進 Firebase 的「授權網域」，請照說明加上你的 github.io 網址。';
+      if (/operation-not-allowed/.test(c)) return 'Firebase 還沒開啟 Google 登入。';
+      if (/network/.test(c) || /network|fetch|Failed to load/i.test(m)) return '連不上線上服務，請檢查網路。';
+      if (/permission-denied|insufficient permissions/i.test(c + m)) return '沒有權限：請確認 Firestore 規則已經貼上並發布。';
+      if (/operation-not-supported|web-storage|storage-unsupported/.test(c)) return '這個瀏覽器環境不支援登入（例如嵌在別的網頁裡）。請直接用網址開啟。';
+      return '失敗：' + (c || m).slice(0, 80);
+    }
+    function loadLib() {
+      function one(url) { return new Promise(function (res, rej) { var sc = document.createElement('script'); sc.src = url; sc.onload = res; sc.onerror = function () { try { sc.remove(); } catch (e) {} rej(new Error('Failed to load firebase')); }; document.head.appendChild(sc); }); }
+      if (window.firebase && window.firebase.auth && window.firebase.firestore) return Promise.resolve();
+      var b = 'https://www.gstatic.com/firebasejs/' + V + '/';
+      return one(b + 'firebase-app-compat.js').then(function () { return Promise.all([one(b + 'firebase-auth-compat.js'), one(b + 'firebase-firestore-compat.js')]); });
+    }
+    function ready() {
+      if (A.fb) return Promise.resolve(A.fb);
+      return loadLib().then(function () {
+        var app = window.firebase.apps && window.firebase.apps.length ? window.firebase.app() : window.firebase.initializeApp(CLOUD);
+        A.fb = window.firebase; A.auth = A.fb.auth(app); A.db = A.fb.firestore(app);
+        return A.fb;
+      });
+    }
+    function chip() { $('btnAcct').textContent = A.user ? '👤 ' + (A.nick || '玩家') : (A.on ? '👤 登入' : '👤 登入（未設定）'); }
+    function settingsNow() { var o = {}; SYNC_KEYS.forEach(function (k) { try { var v = localStorage.getItem(k); if (v !== null) o[k] = v; } catch (e) {} }); return o; }
+    function useName() { if (!A.user || !A.nick) return; try { nameIn.value = A.nick; localStorage.setItem('drone-name', A.nick); } catch (e) {} }
+    function ref() { return A.db.collection('users').doc(A.user.uid); }
+    function pullProfile() {
+      return ref().get().then(function (snap) {
+        if (snap.exists) return snap.data();
+        var nk = normName(A.user.displayName || (A.user.email || '').split('@')[0] || '玩家') || '玩家';
+        var d = { nickname: nk, settings: {}, matches: 0, wins: 0, losses: 0, draws: 0, goals: 0, updatedAt: Date.now() };
+        return ref().set(d).then(function () { return d; });
+      }).then(function (p) {
+        A.prof = p; A.nick = p.nickname || '玩家'; chip(); useName();
+        var remote = p.settings && typeof p.settings === 'object' ? p.settings : {};
+        var keys = Object.keys(remote).filter(function (k) { return SYNC_KEYS.indexOf(k) >= 0 && typeof remote[k] === 'string'; });
+        var local = settingsNow(), diff = keys.some(function (k) { return local[k] !== remote[k]; });
+        if (keys.length && diff) {   // 雲端有存過設定：套用到這支手機並重新載入一次
+          var guard = ''; try { guard = sessionStorage.getItem('cd_acct_applied') || ''; } catch (e) {}
+          if (guard !== A.user.uid) {
+            try { sessionStorage.setItem('cd_acct_applied', A.user.uid); keys.forEach(function (k) { localStorage.setItem(k, remote[k]); }); } catch (e) {}
+            location.reload(); return p;
+          }
+        }
+        A.pushed = JSON.stringify(keys.length ? remote : {});
+        if (!keys.length) pushSettings(true);   // 第一次登入：把這支手機的設定存上去
+        return p;
+      });
+    }
+    function pushSettings(force) {
+      if (!A.user || !A.db) return Promise.resolve();
+      var now = settingsNow(), j = JSON.stringify(now);
+      if (!force && j === A.pushed) return Promise.resolve();
+      return ref().update({ settings: now, updatedAt: Date.now() }).then(function () { A.pushed = j; say('設定已同步到雲端。'); }).catch(function (e) { say('同步設定失敗：' + errText(e), true); });
+    }
+    setInterval(function () { if (A.user && !document.hidden) pushSettings(false); }, 5000);
+    function setUser(u) {
+      A.user = u || null;
+      if (!u) { A.nick = ''; A.prof = null; A.pushed = ''; chip(); paint(); return Promise.resolve(); }
+      return pullProfile().catch(function (e) { A.nick = normName(u.displayName || '玩家') || '玩家'; say(errText(e), true); }).then(function () { chip(); paint(); });
+    }
+    function paint() {
+      $('acGuide').hidden = A.on; $('acOut').hidden = !A.on || !!A.user; $('acIn').hidden = !A.on || !A.user;
+      $('acctT').textContent = A.user ? '我的帳號' : (A.on ? '登入' : '線上帳號尚未設定');
+      if (!A.on) {
+        $('acGuide').innerHTML = '<p>要用 Google 登入，需要先建立一個免費的 <b>Firebase</b> 專案（約 10 分鐘），做法寫在 <code>firebase-setup.md</code>。重點：</p><ol style="padding-left:1.3em;margin:6px 0">' +
+          '<li>Firebase 主控台新增專案，加一個「網頁應用程式」，複製它給你的設定。</li>' +
+          '<li>Authentication → 登入方式 → 開啟 <b>Google</b>；設定 → 授權網域 → 加上你的 <code>帳號.github.io</code>。</li>' +
+          '<li>Firestore Database → 建立資料庫，把 <code>firestore.rules</code> 貼到「規則」按發布。</li>' +
+          '<li>把設定貼進網頁程式最上面的 <code>var CLOUD = {…}</code>，再重新上傳 index.html。</li></ol>';
+      }
+      if (A.user) {
+        var p = A.prof || {};
+        $('acWho').innerHTML = '<b>' + esc(A.nick || '玩家') + '</b><br><span style="color:var(--muted);font-size:13px">' + esc(A.user.email || '') + '</span>';
+        $('acStat').innerHTML = [['場次', p.matches], ['勝', p.wins], ['負', p.losses], ['平', p.draws], ['隊伍進球', p.goals]].map(function (x) { return '<div><b>' + (x[1] || 0) + '</b>' + x[0] + '</div>'; }).join('');
+        $('acNick2').value = A.nick || '';
+      }
+    }
+    function loadBoard() {
+      if (!A.db) return;
+      A.db.collection('users').orderBy('wins', 'desc').limit(10).get().then(function (qs) {
+        var ol = $('acBoard'); ol.innerHTML = '';
+        if (qs.empty) { ol.innerHTML = '<li style="list-style:none;color:var(--muted)">還沒有戰績</li>'; return; }
+        qs.forEach(function (d) { var p = d.data(), li = document.createElement('li'); if (d.id === (A.user && A.user.uid)) li.className = 'me'; li.textContent = (p.nickname || '玩家') + '　' + (p.wins || 0) + ' 勝 ' + (p.losses || 0) + ' 負 ' + (p.draws || 0) + ' 平'; ol.appendChild(li); });
+      }).catch(function () { $('acBoard').innerHTML = '<li style="list-style:none;color:var(--muted)">讀不到排行榜</li>'; });
+    }
+    A.open = function () {
+      el.hidden = false; say(''); paint();
+      if (A.on) ready().then(function () { if (A.user) { pullProfile().then(function () { paint(); }).catch(function () {}); loadBoard(); } }).catch(function (e) { say(errText(e), true); });
+    };
+    A.close = function () { el.hidden = true; };
+    function afterLogin(u) { return setUser(u).then(function () { say('登入成功，歡迎 ' + (A.nick || '') + '！'); loadBoard(); }); }
+    $('acGoogle').addEventListener('click', function () {
+      if (A.busy) return; A.busy = true; $('acGoogle').disabled = true; say('開啟 Google 登入…');
+      ready().then(function (fb) {
+        var prov = new fb.auth.GoogleAuthProvider(); prov.setCustomParameters({ prompt: 'select_account' });
+        return A.auth.signInWithPopup(prov).catch(function (e) {
+          if (e && e.code === 'auth/popup-blocked') { return A.auth.signInWithRedirect(prov).then(function () { return null; }); }
+          throw e;
+        });
+      }).then(function (r) { if (r && r.user) return afterLogin(r.user); }).catch(function (e) { say(errText(e), true); }).then(function () { A.busy = false; $('acGoogle').disabled = false; });
+    });
+    $('btnAcct').addEventListener('click', A.open);
+    $('acClose').addEventListener('click', A.close);
+    el.addEventListener('pointerdown', function (e) { if (e.target === el) A.close(); });
+    ['keydown', 'keyup', 'keypress'].forEach(function (t) { el.addEventListener(t, function (e) { e.stopPropagation(); }); });
+    $('acOutBtn').addEventListener('click', function () {
+      pushSettings(false).then(function () { return A.auth.signOut(); }).then(function () { return setUser(null); }).then(function () { say('已登出。'); }).catch(function (e) { say(errText(e), true); });
+    });
+    $('acSync').addEventListener('click', function () { say('同步中…'); pushSettings(true); });
+    $('acSaveNick').addEventListener('click', function () {
+      var n = normName($('acNick2').value); if (!n) { say('暱稱不能是空的。', true); return; }
+      ref().update({ nickname: n, updatedAt: Date.now() }).then(function () { A.nick = n; if (A.prof) A.prof.nickname = n; chip(); useName(); paint(); loadBoard(); say('暱稱已更新。'); }).catch(function (e) { say(errText(e), true); });
+    });
+    // 比賽結束：記錄戰績（只在聯機比賽，從「比賽中」進到「結束」的那一次）
+    A.onPhase = function (ph) {
+      var prev = A.ph; A.ph = ph;
+      if (!A.user || !A.db || prev !== 'play' || (ph !== 'review' && ph !== 'done')) return;
+      var mine = S.scores[S.team] | 0, opp = S.scores[S.team === 'blue' ? 'red' : 'blue'] | 0;
+      var res = mine > opp ? 'win' : (mine < opp ? 'loss' : 'draw'), inc = A.fb.firestore.FieldValue.increment;
+      var up = { matches: inc(1), goals: inc(Math.min(mine, 50)), updatedAt: Date.now() };
+      up[res === 'win' ? 'wins' : (res === 'loss' ? 'losses' : 'draws')] = inc(1);
+      ref().update(up).then(function () {
+        setMsg('戰績已記錄：' + (res === 'win' ? '勝' : (res === 'loss' ? '負' : '平')) + '（' + mine + '：' + opp + '）。'); pullProfile().catch(function () {});
+      }).catch(function () {});
+    };
+    // 進聯機房間要先登入
+    A.gate = function () {
+      if (!A.on || !NEED_LOGIN_FOR_ROOM || A.user) return true;
+      setMsg('進聯機房間要先<b>登入</b>帳號。按上面的「👤 登入」。'); A.open(); return false;
+    };
+    chip(); paint();
+    if (A.on) ready().then(function () {
+      A.auth.onAuthStateChanged(function (u) { if (u && !A.user) afterLoginQuiet(u); else if (!u && A.user) setUser(null); });
+      return A.auth.getRedirectResult().then(function (r) { if (r && r.user) return afterLogin(r.user); });
+    }).catch(function () {});
+    function afterLoginQuiet(u) { return setUser(u); }
+    return A;
   })();
 
   var errAt = 0;
