@@ -663,7 +663,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
 </div></div>
 <div class="wrap">
   <header>
-    <h1>護籠無人機模擬器 <small class="ver" id="verTag">v203</small></h1>
+    <h1>護籠無人機模擬器 <small class="ver" id="verTag">v204</small></h1>
     <span class="pill" id="status" data-s="idle">待機中</span>
   </header>
   <div class="netbox">
@@ -964,7 +964,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
 (function () {
   var TAU = Math.PI * 2;
   // ===== 線上帳號（Google 登入，用 Firebase）設定：照 firebase-setup.md 建好專案後，把 Firebase 給你的設定貼在這裡 =====
-  var CLOUD = { apiKey: '', authDomain: '', projectId: '', appId: '' };   // 例：{ apiKey: 'AIza...', authDomain: 'xxx.firebaseapp.com', projectId: 'xxx', appId: '1:123:web:abc' }（這些本來就是公開的，可以放在網頁裡）
+  var CLOUD = { apiKey: 'AIzaSyDcgRhB08p2HE5aAmE4iNmkUgI7vApjU7E', authDomain: 'drone-soccer-marco.firebaseapp.com', projectId: 'drone-soccer-marco', appId: '1:944903220590:web:94dbb6678f9f4c4251257f' };   // 例：{ apiKey: 'AIza...', authDomain: 'xxx.firebaseapp.com', projectId: 'xxx', appId: '1:123:web:abc' }（這些本來就是公開的，可以放在網頁裡）
   var NEED_LOGIN_FOR_ROOM = true;        // 設好線上帳號後，進聯機房間必須先登入
   var clamp = function (v, a, b) { return Math.max(a, Math.min(b, v)); };
   // 場地：標準 6×3×3 m；大場地 8×4×3 m（球框內徑 30 cm、外徑 50 cm、厚 10 cm）。球框離地都是 2 m
