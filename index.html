@@ -800,6 +800,12 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
       <span class="lab">賽制</span>
       <button type="button" data-fmt="1" aria-pressed="true">1 對 1</button>
       <button type="button" data-fmt="3" aria-pressed="false">3 對 3（1攻2守）</button>
+      <button type="button" data-fmt="5" aria-pressed="false">5 對 5（1攻4守・大場地）</button>
+    </div>
+    <div class="opts" role="group" aria-label="場地">
+      <span class="lab">場地</span>
+      <button type="button" data-field="s" aria-pressed="true">標準 6×3×3 m</button>
+      <button type="button" data-field="b" aria-pressed="false">大場地 8×4×3 m</button>
     </div>
   </div>
   <div class="actions">
@@ -917,19 +923,31 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
 (function () {
   var TAU = Math.PI * 2;
   var clamp = function (v, a, b) { return Math.max(a, Math.min(b, v)); };
-  var AX = 6, AY = 3, AH = 3;   // 場地：長 6 m × 寬 3 m × 高 3 m（充氣式足球場）
+  // 場地：標準 6×3×3 m；大場地 8×4×3 m（球框內徑 30 cm、外徑 50 cm、厚 10 cm）。球框離地都是 2 m
+  var FIELDS = {
+    s: { name: '標準', AX: 6, AY: 3, AH: 3, R: 0.195, W: 0.14, T: 0.04, GX: 0.65 },
+    b: { name: '大場地', AX: 8, AY: 4, AH: 3, R: 0.15, W: 0.10, T: 0.10, GX: 0.65 }
+  };
+  var FIELD = 's';
+  var AX = 6, AY = 3, AH = 3;
   var TUBE = 0.125;       // 氣柱半徑（直徑 25 cm）
   var RM = 0.10;          // 無人機半徑（直徑 20 cm）
   var MR = 0.26;          // 模型原始護籠半徑（縮放用）
   var EDGE = TUBE + RM;   // 無人機中心離牆最小距離
-  var ZMAX = AH - TUBE - 2 * RM;  // 護籠底部最高高度
+  var ZMAX, GOAL_R, GOAL_W, GOAL_OUT, GOAL_X, GOAL_T, START_D;
   var GOAL_H = 2.0;       // 球門圈中心離地高度（公尺）
-  var GOAL_R = 0.195;     // 球框洞口半徑（直徑 39 cm）
-  var GOAL_W = 0.14;      // 球框外圍框寬 14 cm
-  var GOAL_OUT = GOAL_R + GOAL_W;  // 球框外半徑
-  var GOAL_X = 0.65;      // 球門圈離端牆距離
   var GOAL = 5;
-  var START_D = (EDGE + GOAL_X - RM - 0.03) / 2;   // 出生位置：己方球框後方，離端牆的距離
+  function setFieldConsts(k) {
+    var f = FIELDS[k] || FIELDS.s; FIELD = FIELDS[k] ? k : 's';
+    AX = f.AX; AY = f.AY; AH = f.AH;
+    ZMAX = AH - TUBE - 2 * RM;                 // 護籠底部最高高度
+    GOAL_R = f.R; GOAL_W = f.W; GOAL_T = f.T;  // 球框洞口半徑、框寬、厚度
+    GOAL_OUT = GOAL_R + GOAL_W;                // 球框外半徑
+    GOAL_X = f.GX;                             // 球門圈離端牆距離
+    START_D = (EDGE + GOAL_X - RM - 0.03) / 2; // 出生位置：己方球框後方，離端牆的距離
+  }
+  try { var fk0 = localStorage.getItem('cd_field'); if (FIELDS[fk0]) FIELD = fk0; } catch (e) {}
+  setFieldConsts(FIELD);
   var SPEEDS = [1.8, 2.3, 2.8], SPEED_NAMES = ['慢速', '中速', '快速'];
   var VMAX = SPEEDS[0];
   var LED_NAMES = ['綠', '紅', '藍', '黃', '淺藍', '白'];
@@ -972,8 +990,8 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
   sun.castShadow = true;
   sun.shadow.mapSize.set(1024, 1024);
   var sc = sun.shadow.camera;
-  sc.left = -AX / 2 - 0.5; sc.right = AX / 2 + 0.5; sc.top = AY / 2 + 0.5; sc.bottom = -AY / 2 - 0.5;
-  sc.near = 0.5; sc.far = 16;
+  function fitSun() { sc.left = -AX / 2 - 0.5; sc.right = AX / 2 + 0.5; sc.top = AY / 2 + 0.5; sc.bottom = -AY / 2 - 0.5; sc.near = 0.5; sc.far = 20; sc.updateProjectionMatrix(); }
+  fitSun();
   sun.shadow.bias = -0.0008;
   scene.add(sun);
 
@@ -1002,32 +1020,48 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
     g.beginPath(); g.arc(W - 18, H / 2, 150, Math.PI / 2, Math.PI * 1.5); g.stroke();
   })();
   var floorMat = new THREE.MeshStandardMaterial({ map: new THREE.CanvasTexture(turfCv), roughness: 0.85, metalness: 0 });
-  var floor = new THREE.Mesh(new THREE.PlaneGeometry(AX, AY), floorMat);
-  floor.rotation.x = -Math.PI / 2;
-  floor.receiveShadow = true;
-  scene.add(floor);
-
-
-  // 充氣氣柱（左半藍、右半紅、中間白）
+  var arena = new THREE.Group(); scene.add(arena);
+  var fx0, fx1, fz0, fz1, fy0, fy1, jointGeo, padMat, padRing, goals = [];
+  var upV = new THREE.Vector3(0, 1, 0);
   function tubeMat(col) { return new THREE.MeshStandardMaterial({ color: col, roughness: 0.45, emissive: 0xffffff, emissiveIntensity: 0 }); }
   var blueTube = tubeMat(0x2f6fe0), redTube = tubeMat(0xd8312b), whiteTube = tubeMat(0xf2f4f5);
   var tubeMats = [blueTube, redTube, whiteTube];
-  var fx0 = -AX / 2 + TUBE, fx1 = AX / 2 - TUBE, fz0 = -AY / 2 + TUBE, fz1 = AY / 2 - TUBE, fy0 = TUBE, fy1 = AH - TUBE;
-  var jointGeo = new THREE.SphereGeometry(TUBE, 16, 12);
-  var upV = new THREE.Vector3(0, 1, 0);
+  var netCv = document.createElement('canvas');
+  netCv.width = 32; netCv.height = 32;
+  (function () {
+    var g = netCv.getContext('2d');
+    g.strokeStyle = 'rgba(20,28,30,0.8)'; g.lineWidth = 2;
+    g.strokeRect(0, 0, 32, 32);
+  })();
+  function buildArena() {
+    // 拆掉舊場地（共用的材質和貼圖保留）
+    for (var ci = arena.children.length - 1; ci >= 0; ci--) {
+      var o = arena.children[ci]; arena.remove(o);
+      o.traverse(function (n) { if (n.geometry) n.geometry.dispose(); if (n.material && n.material.map && n.material.map !== floorMat.map) { n.material.map.dispose(); n.material.dispose(); } });
+    }
+    if (jointGeo) jointGeo.dispose();
+    var floor = new THREE.Mesh(new THREE.PlaneGeometry(AX, AY), floorMat);
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    arena.add(floor);
+
+
+  // 充氣氣柱（左半藍、右半紅、中間白）
+  fx0 = -AX / 2 + TUBE, fx1 = AX / 2 - TUBE, fz0 = -AY / 2 + TUBE, fz1 = AY / 2 - TUBE, fy0 = TUBE, fy1 = AH - TUBE;
+  jointGeo = new THREE.SphereGeometry(TUBE, 16, 12);
   function rod(a, b, r, mat, shadow) {
     var len = a.distanceTo(b);
     var m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, r > 0.05 ? 16 : 5), mat);
     m.position.copy(a).add(b).multiplyScalar(0.5);
     m.quaternion.setFromUnitVectors(upV, b.clone().sub(a).normalize());
     m.castShadow = !!shadow;
-    scene.add(m);
+    arena.add(m);
     return m;
   }
   function tube(ax, ay, az, bx, by, bz, mat) {
     var a = new THREE.Vector3(ax, ay, az), b = new THREE.Vector3(bx, by, bz);
     rod(a, b, TUBE, mat, true);
-    [a, b].forEach(function (p) { var j = new THREE.Mesh(jointGeo, mat); j.position.copy(p); scene.add(j); });
+    [a, b].forEach(function (p) { var j = new THREE.Mesh(jointGeo, mat); j.position.copy(p); arena.add(j); });
   }
   [fy0, fy1].forEach(function (y) {
     [fz0, fz1].forEach(function (z) {
@@ -1044,17 +1078,10 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
     var wpost = new THREE.Mesh(new THREE.BoxGeometry(0.4, AH, TUBE * 2), whiteTube);
     wpost.position.set(0, AH / 2, z);
     wpost.castShadow = true;
-    scene.add(wpost);
+    arena.add(wpost);
   });
 
   // 網子
-  var netCv = document.createElement('canvas');
-  netCv.width = 32; netCv.height = 32;
-  (function () {
-    var g = netCv.getContext('2d');
-    g.strokeStyle = 'rgba(20,28,30,0.8)'; g.lineWidth = 2;
-    g.strokeRect(0, 0, 32, 32);
-  })();
   function net(w, h, x, y, z, ry, rx) {
     var t = new THREE.CanvasTexture(netCv);
     t.wrapS = t.wrapT = THREE.RepeatWrapping;
@@ -1063,7 +1090,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
     m.position.set(x, y, z);
     m.rotation.y = ry || 0;
     m.rotation.x = rx || 0;
-    scene.add(m);
+    arena.add(m);
   }
   var nw = fx1 - fx0, nd = fz1 - fz0, nh = fy1 - fy0, nmid = (fy0 + fy1) / 2;
   net(nw, nh, 0, nmid, fz0, 0);
@@ -1073,13 +1100,13 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
   net(nw, nd, 0, fy1, 0, 0, Math.PI / 2);
 
   // 起降點（場地中央）
-  var padMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.75, side: THREE.DoubleSide });
-  var padRing = new THREE.Mesh(new THREE.RingGeometry(0.14, 0.16, 48), padMat);
+  padMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.75, side: THREE.DoubleSide });
+  padRing = new THREE.Mesh(new THREE.RingGeometry(0.14, 0.16, 48), padMat);
   padRing.rotation.x = -Math.PI / 2; padRing.position.y = 0.004;
-  scene.add(padRing);
+  arena.add(padRing);
 
   // 球門圈：兩端各一個，圈心離地 2 公尺
-  var goals = [];
+  goals.length = 0;
   [-1, 1].forEach(function (side) {
     var gx = side * (AX / 2 - GOAL_X);
     var mat = new THREE.MeshBasicMaterial({ color: side < 0 ? 0x2f6fe0 : 0xd8312b });
@@ -1088,17 +1115,17 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
     var hole = new THREE.Path();
     hole.absarc(0, 0, GOAL_R, 0, TAU, true);
     shp.holes.push(hole);
-    var rg = new THREE.ExtrudeGeometry(shp, { depth: 0.04, bevelEnabled: false, curveSegments: 48 });
-    rg.translate(0, 0, -0.02);
+    var rg = new THREE.ExtrudeGeometry(shp, { depth: GOAL_T, bevelEnabled: false, curveSegments: 48 });
+    rg.translate(0, 0, -GOAL_T / 2);
     var ring = new THREE.Mesh(rg, mat);
     ring.rotation.y = Math.PI / 2;
     ring.position.set(gx, GOAL_H, 0);
-    scene.add(ring);
+    arena.add(ring);
     var glowMat = new THREE.MeshBasicMaterial({ color: 0x3ccf8e, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false });
     var glow = new THREE.Mesh(new THREE.CircleGeometry(GOAL_R, 40), glowMat);
     glow.rotation.y = Math.PI / 2;
     glow.position.copy(ring.position);
-    scene.add(glow);
+    arena.add(glow);
     var ropeMat = new THREE.MeshBasicMaterial({ color: 0xdfe5e7 });
     [-1, 1].forEach(function (s) {
       var zz = s * GOAL_OUT * 0.72;
@@ -1106,6 +1133,9 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
     });
     goals.push({ sx: AX / 2 + gx, mat: mat, glowMat: glowMat, ring: ring, fs: -side, name: side < 0 ? '藍色' : '紅色', base: new THREE.Color(side < 0 ? 0x2f6fe0 : 0xd8312b) });
   });
+  fitSun();
+  }
+  buildArena();
 
   /* ---------- 無人機模型 ---------- */
   var PAL = [0x22b573, 0xe4572e, 0x1e5bd6];   // 球殼與支架可選：綠、紅、藍
@@ -2119,6 +2149,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
   var frameBtns = document.querySelectorAll('[data-frame]');
   var aiBtns = document.querySelectorAll('[data-ai]');
   var fmtBtns = document.querySelectorAll('[data-fmt]');
+  var fieldBtns = document.querySelectorAll('[data-field]');
   var STAND_NAMES = { lback: '球框左後（斜後方）', left: '球框後左側', back: '球框正後方', right: '球框後右側', rback: '球框右後（斜後方）', far: '球框正後方（遠）' };
   var STAND_POS = { lback: [1.7, -1.7], left: [0.9, -0.9], back: [0.5, 0], right: [0.9, 0.9], rback: [1.7, 1.7], far: [0.9, 0] };   // [離端牆距離, 左右偏移]，面向場內時左負右正
   var STAND_ORDER = ['back', 'far', 'right', 'rback', 'left', 'lback'];
@@ -2181,13 +2212,14 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
     for (i = 0; i < shellBtns.length; i++) shellBtns[i].setAttribute('aria-pressed', String(parseInt(shellBtns[i].getAttribute('data-shell'), 10) === S.shell));
     for (i = 0; i < aiBtns.length; i++) aiBtns[i].setAttribute('aria-pressed', String(parseInt(aiBtns[i].getAttribute('data-ai'), 10) === (AI.on ? AI.lvl + 1 : 0)));
     for (i = 0; i < fmtBtns.length; i++) fmtBtns[i].setAttribute('aria-pressed', String(parseInt(fmtBtns[i].getAttribute('data-fmt'), 10) === AI.fmt));
+    for (i = 0; i < fieldBtns.length; i++) fieldBtns[i].setAttribute('aria-pressed', String(fieldBtns[i].getAttribute('data-field') === FIELD));
     for (i = 0; i < frameBtns.length; i++) frameBtns[i].setAttribute('aria-pressed', String(parseInt(frameBtns[i].getAttribute('data-frame'), 10) === S.frame));
   }
   function setRole(n) {
     if (S.mode !== 'landed') { setMsg('請先降落，再切換攻擊手或防守者。'); return; }
     S.role = n;
     applyRole();
-    if (AI.on && AI.fmt === 3) aiAssign();
+    if (AI.on && AI.fmt >= 3) aiAssign();
     syncOpts();
     syncRc();
     goalMsg();
@@ -2932,6 +2964,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
   $('aiFree').addEventListener('click', function () { AI.over = false; AI.run = false; setMsg('<b>自由練習</b>：可以起飛練習。要比賽時按「開始比賽」。'); });
   bindOpt(aiBtns, 'data-ai', function (n) { setAi(n); }, true);
   bindOpt(fmtBtns, 'data-fmt', function (n) { setFmt(n); }, true);
+  bindOpt(fieldBtns, 'data-field', function (k) { setField(k); }, false);
   bindOpt(frameBtns, 'data-frame', function (i) { S.frame = i; syncOpts(); netSend(true); }, true);
 
   var LED_COLORS = [
@@ -3568,7 +3601,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
 
   /* ----- 裁判的操作 ----- */
   function msPublish() {
-    return { v: MS.v, ph: MS.ph, rem: Math.ceil(msRemMs() / 1000), q: MS.q, cur: MS.cur, fm: MS.fm, cs: MS.cs ? 1 : 0, pz: MS.pz ? 1 : 0 };
+    return { v: MS.v, fd: FIELD, ph: MS.ph, rem: Math.ceil(msRemMs() / 1000), q: MS.q, cur: MS.cur, fm: MS.fm, cs: MS.cs ? 1 : 0, pz: MS.pz ? 1 : 0 };
   }
   function msSet(ph, extra) {
     MS.v++;
@@ -3669,6 +3702,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
   /* ----- 其他人跟著裁判 ----- */
   function msAdopt(mx) {
     if (!mx || typeof mx !== 'object' || !isNum(mx.v)) return;
+    if (typeof mx.fd === 'string' && FIELDS[mx.fd] && mx.fd !== FIELD && !NET.amRef) applyField(mx.fd, true);   // 場地跟著裁判
     var ph = mx.ph;
     if (ph !== 'idle' && ph !== 'ready' && ph !== 'play' && ph !== 'review' && ph !== 'pen' && ph !== 'done') return;
     var run = ph === 'play' || ph === 'pen' || ph === 'ready';
@@ -3845,11 +3879,16 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
     { name: '普通', v: 0.9, react: 0.38, miss: 0.2, jit: 0.045, pause: 4, lapse: 0.15 },
     { name: '困難', v: 1.25, react: 0.25, miss: 0.08, jit: 0.03, pause: 2.5, lapse: 0.07 }
   ];
-  var AI_ZH = GOAL_H - RM, LANE_Y = 0.55;
+  var AI_ZH = GOAL_H - RM, LANE_Y = 0.55, AI_PY = FIELD === "b" ? 0.8 : 0.55;
   function rnd(a, b) { return a + Math.random() * (b - a); }
   function aiRoster() {
     var pt = S.team, ot = pt === 'blue' ? 'red' : 'blue';
     if (AI.fmt === 1) return [{ team: ot, role: 0, lane: 0 }];
+    if (AI.fmt === 5) {   // 5 對 5：每隊 1 個攻擊手加 4 個防守員，橫向分散站開
+      var L5 = 0.5, r5 = [{ team: ot, role: 0, lane: 0 }, { team: ot, role: 1, lane: -L5 }, { team: ot, role: 1, lane: L5 }, { team: ot, role: 1, lane: -2 * L5 }, { team: ot, role: 1, lane: 2 * L5 }];
+      [-L5, L5, -2 * L5, 2 * L5].forEach(function (ln, ix) { r5.push({ team: pt, role: ix === 0 && S.role !== 0 ? 0 : 1, lane: ln }); });
+      return r5;
+    }
     return [
       { team: ot, role: 0, lane: 0 }, { team: ot, role: 1, lane: -LANE_Y }, { team: ot, role: 1, lane: LANE_Y },
       { team: pt, role: S.role === 0 ? 1 : 0, lane: -LANE_Y }, { team: pt, role: 1, lane: LANE_Y }
@@ -3858,10 +3897,10 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
   function aiAssign() {
     var cnt = { blue: 0, red: 0 }, tm = [], i, q;
     for (i = 0; i < AI.bots.length; i++) if (AI.bots[i].team === S.team) tm.push(AI.bots[i]);
-    if (AI.fmt === 3 && tm.length === 2) { tm[0].role = S.role === 0 ? 1 : 0; tm[1].role = 1; }
+    if (AI.fmt >= 3 && tm.length === AI.fmt - 1) { for (i = 0; i < tm.length; i++) tm[i].role = (i === 0 && S.role !== 0) ? 0 : 1; }
     for (i = 0; i < AI.bots.length; i++) {
       q = AI.bots[i];
-      if (q.role === 1) { q.dd = cnt[q.team] === 0 ? 0.55 : 0.95; cnt[q.team]++; }
+      if (q.role === 1) { q.dd = AI.fmt === 5 ? 0.5 + 0.38 * cnt[q.team] : (cnt[q.team] === 0 ? 0.55 : 0.95); cnt[q.team]++; }
     }
   }
   function aiMake(r, i) {
@@ -3902,7 +3941,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
     recomputeScores();
   }
   function aiDesc() {
-    return AI.fmt === 3 ? '3 對 3（每隊 1 個攻擊手、2 個防守員）' : '1 對 1';
+    return AI.fmt === 5 ? '5 對 5（每隊 1 個攻擊手、4 個防守員）' : (AI.fmt === 3 ? '3 對 3（每隊 1 個攻擊手、2 個防守員）' : '1 對 1');
   }
   function aiHomeAll() {
     for (var i = 0; i < AI.bots.length; i++) {
@@ -3927,13 +3966,34 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
     syncOpts();
     setMsg('<b>AI 對打（' + AI_LV[AI.lvl].name + '・' + aiDesc() + '）</b>。按「開始比賽」先倒數 10 秒，所有球機回起點，倒數結束才能起飛、開始 3 分鐘比賽。攻擊手穿過對方球框得分，防守員不能得分，要擋住對方攻擊手。');
   }
+  // 換場地：重建場地（地板、氣柱、網子、球框），所有人回到起點。聯機時由裁判決定，其他人跟著換。
+  function applyField(k, quiet) {
+    if (!FIELDS[k] || k === FIELD) { syncOpts(); return; }
+    setFieldConsts(k);
+    AI_PY = FIELD === 'b' ? 0.8 : 0.55;
+    buildArena();
+    if (AI.on && AI.fmt === 5 && FIELD !== 'b') AI.fmt = 3;
+    for (var gi = 0; gi < goals.length; gi++) { goals[gi].side = 0; goals[gi].thru = false; }
+    if (S.mode !== 'landed') { S.mode = 'landed'; S.z = 0; }
+    goHome();
+    try { if (!netOn()) localStorage.setItem('cd_field', FIELD); } catch (e) {}
+    if (!quiet) setMsg('場地：<b>' + FIELDS[FIELD].name + ' ' + FIELDS[FIELD].AX + '×' + FIELDS[FIELD].AY + '×' + FIELDS[FIELD].AH + ' m</b>，球框內徑 ' + Math.round(GOAL_R * 200) + ' cm、外徑 ' + Math.round(GOAL_OUT * 200) + ' cm、厚 ' + Math.round(GOAL_T * 100) + ' cm，離地 2 m。');
+    syncOpts(); syncRc();
+  }
+  function setField(k) {
+    if (netOn() && !NET.amRef) { setMsg('聯機房間的場地由<b>裁判</b>決定。'); return; }
+    if (netOn() && MS.ph !== 'idle') { setMsg('比賽進行中不能換場地，先回自由練習。'); return; }
+    applyField(k);
+    if (netOn()) msSet('idle', {});
+  }
   function setFmt(n) {
     if (netOn()) { setMsg('聯機房間裡不能開 AI 對打，要先回單機。'); return; }
+    if (n === 5 && FIELD !== 'b') applyField('b', true);
     AI.fmt = n;
     if (!AI.on) { AI.on = true; AI.lvl = 1; }
     aiReset();
     syncOpts();
-    setMsg('<b>' + aiDesc() + '</b>（AI ' + AI_LV[AI.lvl].name + '）。' + (n === 3 ? '你是' + (S.role === 0 ? '攻擊手，隊友是 2 個防守員' : '防守員，隊友是 1 個攻擊手和 1 個防守員') + '，對面是 1 個攻擊手和 2 個防守員。' : ''));
+    setMsg('<b>' + aiDesc() + '</b>（AI ' + AI_LV[AI.lvl].name + '）。' + (n === 3 ? '你是' + (S.role === 0 ? '攻擊手，隊友是 2 個防守員' : '防守員，隊友是 1 個攻擊手和 1 個防守員') + '，對面是 1 個攻擊手和 2 個防守員。' : (n === 5 ? '已切到大場地。你是' + (S.role === 0 ? '攻擊手，隊友是 4 個防守員' : '防守員，隊友是 1 個攻擊手和 3 個防守員') + '，對面是 1 個攻擊手和 4 個防守員。' : '')));
   }
   function aiPublish(q) {
     var rm = remotes[q.id];
@@ -3990,7 +4050,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
     if (len < dd + 0.2) dd = Math.max(0.5, len - 0.25);
     var P = { x: og.sx + dx / len * dd, y: AY / 2 + dy / len * dd, z: AI_ZH + dz / len * dd };
     if ((P.x - og.sx) * fs < 0.5) P.x = og.sx + fs * 0.5;
-    P.y = AY / 2 + clamp(P.y - AY / 2, -0.55, 0.55);   // 守在球框旁，不離開太遠
+    P.y = AY / 2 + clamp(P.y - AY / 2, -AI_PY, AI_PY);   // 守在球框旁，不離開太遠
     P.z = AI_ZH + clamp(P.z - AI_ZH, -0.45, 0.45);
     P.y += Math.sin(q.ph + q.t * 1.3) * 0.04;
     P.z += Math.sin(q.ph * 2 + q.t * 0.9) * 0.03;
