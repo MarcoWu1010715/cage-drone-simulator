@@ -165,6 +165,7 @@ html.pair-ctl .wrap .chips > :not(#btnReset):not(#btnToSet) { display: none !imp
 html.pair-ctl .wrap .rc { width: min(100%, calc(min(100vw - 32px, 560px) * 0.8 * var(--sz, 1))); margin-left: auto; margin-right: auto; flex: none; }   /* 操控端：遙控器大小跟「畫面大小」 */
 html.pair-ctl #ctlMode { position: relative; left: auto; top: auto; margin: 6px auto; width: max-content; }
 html.pair-ctl #cmLayout { display: none !important; }
+html.pair-ctl body.lscreen .wrap .rc { display: block !important; }   /* 操控端沒有版面按鈕：就算本機存過「只有畫面」也一定要顯示遙控器 */
 html.pair-ctl #ctlMode .fsbtn { position: static; margin: 0 2px 0 6px; padding: 3px 9px; }
 html.pair-ctl body.lsplit[data-ctl="touch"] .wrap .play > .rc { transform: scale(min(var(--sz, 1), 1)); }   /* 分開版面最大就是整個畫面寬，不再放大以免橫向溢出 */
 @media (orientation: landscape) and (max-height: 560px) {
@@ -891,7 +892,7 @@ html.glass #tut { background: rgba(0,0,0,.38); }
 </div></div>
 <div class="wrap">
   <header>
-    <h1>無人機足球模擬器 <small class="ver" id="verTag">v233</small></h1>
+    <h1>無人機足球模擬器 <small class="ver" id="verTag">v234</small></h1>
     <span class="pill" id="status" data-s="idle">待機中</span>
   </header>
   <div class="netbox">
