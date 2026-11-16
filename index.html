@@ -162,7 +162,7 @@ html.pair-ctl .netbox, html.pair-ctl .match, html.pair-ctl .board, html.pair-ctl
 html.pair-ctl .hud, html.pair-ctl .hint, html.pair-ctl #flipHud, html.pair-ctl #szHud { display: none !important; }
 html.pair-ctl .wrap .chips { display: flex !important; }   /* 操控端：只留「重新開始」 */
 html.pair-ctl .wrap .chips > :not(#btnReset):not(#btnToSet) { display: none !important; }
-html.pair-ctl .wrap .rc { width: min(100%, calc(min(100vw - 32px, 560px) * 0.8 * var(--sz, 1))); margin-left: auto; margin-right: auto; }   /* 操控端：遙控器大小跟「畫面大小」 */
+html.pair-ctl .wrap .rc { width: min(100%, calc(min(100vw - 32px, 560px) * 0.8 * var(--sz, 1))); margin-left: auto; margin-right: auto; flex: none; }   /* 操控端：遙控器大小跟「畫面大小」 */
 html.pair-ctl #ctlMode { position: relative; left: auto; top: auto; margin: 6px auto; width: max-content; }
 html.pair-ctl #cmLayout { display: none !important; }
 html.pair-ctl #ctlMode .fsbtn { position: static; margin: 0 2px 0 6px; padding: 3px 9px; }
@@ -170,7 +170,8 @@ html.pair-ctl body.lsplit[data-ctl="touch"] .wrap .play > .rc { transform: scale
 @media (orientation: landscape) and (max-height: 560px) {
   html.pair-ctl .wrap > header { display: none; }
   html.pair-ctl .wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-  html.pair-ctl .wrap .rc { width: min(96vw, calc((100vh - 150px) * 1.54 * 0.85 * var(--sz, 1))); margin: 0 auto; }
+  html.pair-ctl .wrap .rc { width: min(96vw, max(260px, calc((100vh - 150px) * 1.54 * 0.85 * var(--sz, 1)))); margin: 0 auto; flex: none; min-height: 169px; }
+  html.pair-ctl, html.pair-ctl body { overflow-x: hidden; }
   html.pair-ctl .wrap > .rcstat { order: 3; margin: 0; font-size: 12px; }
   html.pair-ctl #pairRow { order: 4; gap: 6px; }
   html.pair-ctl #pairRow button { min-height: 32px; padding: 3px 12px; }
@@ -890,7 +891,7 @@ html.glass #tut { background: rgba(0,0,0,.38); }
 </div></div>
 <div class="wrap">
   <header>
-    <h1>無人機足球模擬器 <small class="ver" id="verTag">v232</small></h1>
+    <h1>無人機足球模擬器 <small class="ver" id="verTag">v233</small></h1>
     <span class="pill" id="status" data-s="idle">待機中</span>
   </header>
   <div class="netbox">
