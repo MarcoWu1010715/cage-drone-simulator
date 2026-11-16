@@ -5115,8 +5115,12 @@ html.glass #tut { background: rgba(0,0,0,.38); }
     detachRoom();
     NET.dead = false;
     NET.code = code;
+    var hintEl = $('netHint'), joinTxt = btnJoin.textContent;
+    function netBusy(on, t) { try { btnJoin.textContent = on ? '連線中…' : '加入'; btnJoin.setAttribute('aria-busy', on ? 'true' : 'false'); if (t != null && hintEl) hintEl.textContent = t; } catch (e) {} }
+    if (NET.api.p2p) { netBusy(true, '連線中…最久約 50 秒，請稍候。'); if (!quiet) setMsg('<b>連線中…</b>正在連到房間' + (code ? ' <b>' + code + '</b>' : '（大廳）') + '，最久約 50 秒。'); }
     var req = NET.api.p2p ? NET.api.join(code || 'lobby', NET.retry || 0) : (code ? NET.api.join(code) : Promise.resolve(NET.api));
     req.then(function (room) {
+      netBusy(false, NET.api.p2p ? '已連線。同一個房號的人會在同一個場地。' : null);
       if (tok !== NET.tok) { if (room !== NET.api) { try { room.leave().catch(noop); } catch (err) {} } return; }
       NET.room = room;
       if (typeof ACCT !== 'undefined' && ACCT) ACCT.setRoom(code);
@@ -5138,6 +5142,7 @@ html.glass #tut { background: rgba(0,0,0,.38); }
     }).catch(function (err) {
       if (tok !== NET.tok) return;
       NET.why = NET.api && NET.api.p2p ? netReason(err) : '';
+      if (!(NET.api && NET.api.p2p && NET.retry < 3)) netBusy(false, '無法加入房間' + (NET.why ? '：' + NET.why : '') + '。可以再按一次「加入」重試。');
       if (NET.api && NET.api.p2p && NET.retry < 3) {   // 偶爾連不上（主機剛離開、網路抖動）：自動再試，不用重按
         NET.retry++;
         setMsg('連線不穩，自動重試中（' + NET.retry + '/3）…<br>' + NET.why);
