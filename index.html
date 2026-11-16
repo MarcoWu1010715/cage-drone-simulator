@@ -160,6 +160,8 @@ header .pill { flex: 0 1 auto; min-width: 0; max-width: 62%; overflow: hidden; t
 html.pair-disp #rc, html.pair-disp #rcstat, html.pair-disp #helpKey, html.pair-disp #helpPad { display: none !important; }
 html.pair-ctl .netbox, html.pair-ctl .match, html.pair-ctl .board, html.pair-ctl .msg, html.pair-ctl .chips, html.pair-ctl .stagebox,
 html.pair-ctl .hud, html.pair-ctl .hint, html.pair-ctl #flipHud, html.pair-ctl #szHud { display: none !important; }
+html.pair-ctl .wrap .chips { display: flex !important; }   /* 操控端：只留「重新開始」 */
+html.pair-ctl .wrap .chips > :not(#btnReset):not(#btnToSet) { display: none !important; }
 html.pair-ctl .wrap .rc { width: min(100%, calc(min(100vw - 32px, 560px) * 0.8 * var(--sz, 1))); margin-left: auto; margin-right: auto; }   /* 操控端：遙控器大小跟「畫面大小」 */
 html.pair-ctl #ctlMode { position: relative; left: auto; top: auto; margin: 6px auto; width: max-content; }
 html.pair-ctl #cmLayout { display: none !important; }
@@ -251,14 +253,11 @@ canvas#stage {
   .wrap > .board .side .fl { flex: 0 0 auto; font-size: 10px; }
   .wrap > .board .mid b { font-size: 18px; }
   .wrap > .board .mid small { font-size: 10px; }
-  .wrap .stagebox { grid-column: 1; grid-row: span 6; order: 0; width: min(100%, calc((100vh - 104px) * 1.5 * var(--sz, 1))); margin: 0; }
+  .wrap .stagebox { grid-column: 1; grid-row: span 6; order: 1; width: min(100%, calc((100vh - 104px) * 1.5 * var(--sz, 1))); margin: 0; }
   .wrap .rc, .wrap > .chelp, .wrap .rcstat, .wrap > .msg { grid-column: 2; order: 2; }
-  .wrap > .msg { order: 1; }            /* 右欄由上到下：提示訊息、說明、狀態列、遙控器（遙控器移到最下面，靠近拇指） */
-  .wrap > .chelp { order: 2; }
-  .wrap .rcstat { order: 3; }
-  .wrap .rc { order: 4; }
+  .wrap > .msg { order: 3; }
   canvas#stage { aspect-ratio: 3 / 2; }
-  .wrap .rc { width: min(100%, calc(360px * var(--sz, 1)), calc((100vh - 222px) * 1.54 * var(--sz, 1))); margin-left: auto; margin-right: auto; }
+  .wrap .rc { width: min(100%, calc(360px * var(--sz, 1)), calc((100vh - 190px) * 1.54 * var(--sz, 1))); margin-left: auto; margin-right: auto; }
   .wrap > .chelp { margin: 0; padding: 8px 10px; font-size: 12.5px; line-height: 1.35; max-width: none; max-height: calc(100vh - 150px); overflow-y: auto; }
   .chelp h4 { margin-bottom: 4px; font-size: 13.5px; }
   .chelp .row { padding: 1px 0; }
@@ -268,7 +267,6 @@ canvas#stage {
   .wrap > .hud strong { font-size: 13px; }
   .wrap .bar { height: 3px; margin-top: 2px; }
   .wrap > .msg { height: 3.4em; font-size: 12.5px; line-height: 1.35; }
-  html.glass .wrap > .msg { height: calc(3.4em + 18px) !important; }
   .cdov b { font-size: clamp(60px, 22vh, 130px); }
   /* 橫向觸控「只有畫面」：不顯示遙控器、讀數和訊息，3D 畫面置中放到最大 */
   body.lscreen .wrap .rc, body.lscreen .wrap > .chelp, body.lscreen .wrap .rcstat,
@@ -409,6 +407,72 @@ canvas#stage {
 .fb.l { clip-path: polygon(22% 0, 100% 0, 100% 100%, 0 100%); }
 .fb.r { clip-path: polygon(0 0, 78% 0, 100% 100%, 0 100%); }
 .fb:active { filter: brightness(0.9); }
+/* 無刷遙控器（Skykick 外觀） */
+.rc:not(.bl) svg.rs1, .rc.bl svg.rs0 { display: none !important; }
+.rc.bl .well { background: transparent; }
+.rc.bl .sw { background: transparent; box-shadow: none; width: 10%; height: 15.4%; border-radius: 14px; }
+.rc.bl .sw i { display: none; }
+.rc.bl .sw[aria-checked="true"] { box-shadow: 0 0 0 3px var(--accent, #2f86ff); }
+.rc.bl .fb { clip-path: none !important; background: transparent; border-radius: 10px; width: 12.5%; height: 13%; font-size: clamp(7px, 1.9vw, 9px); display: flex; align-items: flex-end; justify-content: center; padding: 0 0 1px; color: #7c786c; }
+@media (orientation: landscape) {
+}
+
+html.dt-bl .opts[aria-label="球殼顏色"], html.dt-bl .opts[aria-label="支架顏色"] { display: none !important; }
+/* 無刷遙控器搖桿：白色圓柱搖桿，頂端一圈缺口（像照片裡的 Skykick） */
+.rc.bl .knob { width: 40%; margin: -20% 0 0 -20%; background: none; box-shadow: none; }   /* 搖桿有 transform，自己是一個圖層：柱身(before)在下、帽子(after)在上 */
+.rc.bl .knob::after {
+  content: ''; position: absolute; inset: 0; z-index: 1; border-radius: 50%;
+  background:
+    radial-gradient(circle, #ffffff 0 9%, #bdb9ac 10% 13%, #f4f1e8 14% 30%, #cfcabc 31% 33%, transparent 34%),
+    repeating-conic-gradient(from 8deg, #fdfcf8 0 14deg, #c9c4b5 14deg 28deg);
+  box-shadow: 0 5px 6px rgba(70, 64, 50, 0.38), inset 0 0 0 2px rgba(255, 255, 255, 0.85), inset 0 -3px 5px rgba(90, 84, 68, 0.22);
+}
+.rc.bl .knob::before {
+  content: ''; position: absolute; z-index: 0; left: 30%; top: 60%; width: 40%; height: 52%;
+  background: linear-gradient(90deg, #cfcabb, #faf8f2 45%, #cdc8b9);
+  border-radius: 42% 42% 50% 50%; box-shadow: 0 3px 4px rgba(70, 64, 50, 0.35);
+}
+
+/* 無刷遙控器按鍵（照說明書功能） */
+.blb { position: absolute; background: transparent; border: 0; padding: 0; margin: 0; color: #6f6b60; font-size: clamp(6px, 1.6vw, 8px); line-height: 1.1; cursor: pointer; touch-action: manipulation; }
+.blb:active { background: rgba(0,0,0,0.10); }
+.blb[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--accent, #2f86ff); }
+.rc:not(.bl) .blb { display: none; }
+.rc.bl .well { top: 28.1% !important; }
+.rc.bl #swLock, .rc.bl #swHold, .rc.bl #fbL, .rc.bl #fbR { display: none !important; }
+.rc.bl #bSL { left: 31.000%; top: 6.538%; width: 15.000%; height: 8.462%; border-radius: 10px; }
+.rc.bl #bSR { left: 69.000%; top: 6.538%; width: 15.000%; height: 8.462%; border-radius: 10px; }
+.rc.bl #bE { left: 41.750%; top: 20.769%; width: 9.000%; height: 10.000%; border-radius: 9px; }
+.rc.bl #bM { left: 58.250%; top: 20.769%; width: 9.000%; height: 10.000%; border-radius: 9px; }
+.rc.bl #bPw { left: 32.250%; top: 46.923%; width: 7.500%; height: 11.538%; border-radius: 50px; }
+.rc.bl #bGo { left: 65.000%; top: 46.538%; width: 8.000%; height: 12.308%; border-radius: 14px; }
+.rc.bl #bTU { left: 50.000%; top: 35.385%; width: 7.500%; height: 7.692%; border-radius: 6px; }
+.rc.bl #bTD { left: 50.000%; top: 53.846%; width: 7.500%; height: 7.692%; border-radius: 6px; }
+.rc.bl #bTL { left: 43.000%; top: 44.615%; width: 5.500%; height: 10.769%; border-radius: 6px; }
+.rc.bl #bTR { left: 57.000%; top: 44.615%; width: 5.500%; height: 10.769%; border-radius: 6px; }
+.rc.bl #bTC { left: 50.000%; top: 44.615%; width: 4.500%; height: 6.923%; border-radius: 5px; }
+.rc.bl .cap:nth-of-type(1) { left: 65% !important; top: 54% !important; }
+.rc.bl .cap:nth-of-type(2) { left: 32.25% !important; top: 54% !important; }
+.rc.bl .cap:nth-of-type(3) { left: 18% !important; top: 41.5% !important; }
+.rc.bl .cap:nth-of-type(4) { left: 82% !important; top: 41.5% !important; }
+@media (orientation: landscape) {
+  body.lsplit[data-ctl="touch"] .rc.bl #bSL { left: calc(var(--hw) * 0.6200) !important; width: calc(var(--hh) * 0.2308); height: calc(var(--hh) * 0.0846); font-size: 8px; }
+  body.lsplit[data-ctl="touch"] .rc.bl #bSR { left: calc(100% - var(--hw) * 0.6200) !important; width: calc(var(--hh) * 0.2308); height: calc(var(--hh) * 0.0846); font-size: 8px; }
+  body.lsplit[data-ctl="touch"] .rc.bl #bE { left: calc(var(--hw) * 0.8350) !important; width: calc(var(--hh) * 0.1385); height: calc(var(--hh) * 0.1000); font-size: 8px; }
+  body.lsplit[data-ctl="touch"] .rc.bl #bM { left: calc(100% - var(--hw) * 0.8350) !important; width: calc(var(--hh) * 0.1385); height: calc(var(--hh) * 0.1000); font-size: 8px; }
+  body.lsplit[data-ctl="touch"] .rc.bl #bPw { left: calc(var(--hw) * 0.6450) !important; width: calc(var(--hh) * 0.1154); height: calc(var(--hh) * 0.1154); font-size: 8px; }
+  body.lsplit[data-ctl="touch"] .rc.bl #bGo { left: calc(100% - var(--hw) * 0.7000) !important; width: calc(var(--hh) * 0.1231); height: calc(var(--hh) * 0.1231); font-size: 8px; }
+  body.lsplit[data-ctl="touch"] .rc.bl #bTU { left: calc(var(--hw) * 0.96) !important; width: calc(var(--hh) * 0.1154); height: calc(var(--hh) * 0.0769); font-size: 8px; }
+  body.lsplit[data-ctl="touch"] .rc.bl #bTD { left: calc(var(--hw) * 0.96) !important; width: calc(var(--hh) * 0.1154); height: calc(var(--hh) * 0.0769); font-size: 8px; }
+  body.lsplit[data-ctl="touch"] .rc.bl #bTL { left: calc(var(--hw) * 0.8600) !important; width: calc(var(--hh) * 0.0846); height: calc(var(--hh) * 0.1077); font-size: 8px; }
+  body.lsplit[data-ctl="touch"] .rc.bl #bTR { left: calc(100% - var(--hw) * 0.8600) !important; width: calc(var(--hh) * 0.0846); height: calc(var(--hh) * 0.1077); font-size: 8px; }
+  body.lsplit[data-ctl="touch"] .rc.bl #bTC { left: calc(var(--hw) * 0.96) !important; width: calc(var(--hh) * 0.0692); height: calc(var(--hh) * 0.0692); font-size: 8px; }
+  body.lsplit[data-ctl="touch"] .rc.bl .cap:nth-of-type(1) { left: calc(100% - var(--hw) * 0.70) !important; }
+  body.lsplit[data-ctl="touch"] .rc.bl .cap:nth-of-type(2) { left: calc(var(--hw) * 0.645) !important; }
+  body.lsplit[data-ctl="touch"] .rc.bl .cap:nth-of-type(3) { left: calc(var(--hw) * 0.36) !important; }
+  body.lsplit[data-ctl="touch"] .rc.bl .cap:nth-of-type(4) { left: calc(100% - var(--hw) * 0.36) !important; }
+}
+
 .rcstat { margin: 0; text-align: center; font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
 
 .actions { display: flex; flex-wrap: wrap; gap: 10px 8px; align-items: center; }
@@ -566,6 +630,7 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
 .pill[data-s="net"] { color: var(--good); border-color: var(--good); }
 .opts button[data-pal="0"][aria-pressed="true"] { border-color: var(--good); color: var(--good); box-shadow: inset 0 0 0 1px var(--good); }
 .opts button[data-pal="1"][aria-pressed="true"] { border-color: var(--red); color: var(--red); box-shadow: inset 0 0 0 1px var(--red); }
+.opts button[data-pal="3"][aria-pressed="true"], .opts button[data-pal="4"][aria-pressed="true"] { border-color: var(--text, currentColor); box-shadow: inset 0 0 0 1px currentColor; }
 .opts button[data-pal="2"][aria-pressed="true"] { border-color: var(--blue); color: var(--blue); box-shadow: inset 0 0 0 1px var(--blue); }
 .plist {
   list-style: none;
@@ -605,27 +670,24 @@ html.sel-fill .segpill { background: color-mix(in srgb, currentColor 16%, transp
 
 /* 設定二級選單：第一層分類清單，點進去才看到該分類的選項 */
 #setBody:not([hidden]) { display: flex; flex-direction: column; position: fixed; z-index: 200; top: 12px; left: 0; right: 0; margin: 0 auto; width: min(calc(100% - 24px), 520px); max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px); overflow: hidden; box-sizing: border-box; padding: 12px 14px 14px; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 20px; box-shadow: 0 0 0 100vmax rgba(0,0,0,.5), 0 14px 44px rgba(0,0,0,.4); }
-html.setopen:not(.pair-ctl), html.setopen:not(.pair-ctl) body { overflow: hidden !important; }   /* 設定視窗開著時，背後的頁面不跟著捲 */
+html.setopen, html.setopen body { overflow: hidden !important; }   /* 設定視窗開著時，背後的頁面不跟著捲 */
 #setScroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; margin: 0 -4px; padding: 2px 4px 2px; }
-html.pair-ctl #setScroll { display: contents; }
 #setBar { display: flex; align-items: center; justify-content: center; position: relative; min-height: 38px; margin: 0 0 10px; flex: 0 0 auto; }
 #setBar b { flex: 0 1 auto; font-size: 20px; text-align: center; }
 #setBar #setClose { position: absolute; right: 0; top: 50%; transform: translateY(-50%); }
 #setBar button { min-height: 0; padding: 6px 14px; border-radius: 999px; flex: 0 0 auto; }
 #setBar [hidden] { display: none !important; }
-html.pair-ctl #setBody { display: contents; }
-html.pair-ctl #setTabsBox, html.pair-ctl #setBar { display: none !important; }
 #setTabs { display: flex !important; width: 100% !important; flex-wrap: nowrap !important; gap: 0 !important; }
 #setTabs > button { flex: 1 1 0 !important; min-width: 0 !important; padding-left: 2px !important; padding-right: 2px !important; margin: 0 !important; white-space: nowrap; text-align: center; }
 #setTabsBox { margin: 0 0 12px; padding: 0; flex: 0 0 auto; }
 /* 設定視窗、登入視窗：玻璃效果（半透明＋模糊背景＋高光邊） */
-html.glass #setBody:not([hidden]), html.glass #acct .acard, html.glass #tut .tcard {
+html.glass #setBody:not([hidden]), html.glass #acct .acard, html.glass #man .acard, html.glass #tut .tcard {
   background: linear-gradient(145deg, color-mix(in srgb, var(--panel) 62%, transparent), color-mix(in srgb, var(--panel) 38%, transparent)) !important;
   -webkit-backdrop-filter: blur(26px) saturate(1.8); backdrop-filter: blur(26px) saturate(1.8);
   border: 1px solid var(--g-edge) !important;
 }
 html.glass #setBody:not([hidden]) { box-shadow: 0 0 0 100vmax rgba(0,0,0,.38), inset 0 1px 0 var(--g-hi), inset 0 -1px 0 var(--g-lo), 0 18px 50px -12px var(--g-shadow); }
-html.glass #acct .acard, html.glass #tut .tcard { box-shadow: inset 0 1px 0 var(--g-hi), inset 0 -1px 0 var(--g-lo), 0 18px 50px -12px var(--g-shadow); }
+html.glass #acct .acard, html.glass #man .acard, html.glass #tut .tcard { box-shadow: inset 0 1px 0 var(--g-hi), inset 0 -1px 0 var(--g-lo), 0 18px 50px -12px var(--g-shadow); }
 html.glass #acct .arow button.pri { background: linear-gradient(145deg, rgba(255,255,255,.92), rgba(255,255,255,.7)) !important; color: #202124; }
 html.glass #acct input { background: linear-gradient(145deg, var(--g-fill), var(--g-fill2)); border: 1px solid var(--g-edge); border-radius: 999px; padding-left: 14px; padding-right: 14px; }
 html.glass #setBody #uiBox { background: color-mix(in srgb, var(--panel) 25%, transparent) !important; box-shadow: inset 0 1px 0 var(--g-hi) !important; }
@@ -633,7 +695,7 @@ html.glass #setBody #uiBox { background: color-mix(in srgb, var(--panel) 25%, tr
 html.glass { --r-pop: 22px; --r-card: 22px; }
 html.glass .netbox { padding: 12px 14px !important; }
 html.glass .msg { padding: 10px 14px !important; height: calc(6.2em + 20px); }   /* 圓角變大，內容往內縮一點，不要貼到邊 */
-html.glass #setBody:not([hidden]), html.glass #acct .acard, html.glass #tut .tcard { border-radius: var(--r-pop) !important; }
+html.glass #setBody:not([hidden]), html.glass #acct .acard, html.glass #man .acard, html.glass #tut .tcard { border-radius: var(--r-pop) !important; }
 html.glass :is(.board, .hud > div, #uiBox, .msg, .netbox, .opts.seg, #acct .astat div) { border-radius: var(--r-card) !important; }
 html.glass #tut .tbtns button, html.glass #tut .tskip { border-radius: 999px !important; }
 html.glass #tut .tbtns button.pri { background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 92%, #fff), var(--accent)) !important; color: var(--accent-ink); font-weight: 700; }
@@ -642,15 +704,31 @@ html.glass #tut .tbody kbd { border-radius: 8px; background: linear-gradient(145
 html.glass #tut .tdots i { background: var(--g-edge); }
 html.glass #tut .tdots i.on { background: var(--good); }
 html.glass #tut { background: rgba(0,0,0,.38); }
-html:not(.pair-ctl) #setBody .catoff { display: none !important; }
-html:not(.pair-ctl) #setBody .catoff + .lgtgl { display: none !important; }
-html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important; }
+#setBody .catoff { display: none !important; }
+#setBody .catoff + .lgtgl { display: none !important; }
+#setBody[data-lv="0"] [data-cat] { display: none !important; }
+/* 說明手冊 */
+#man .acard { width: min(100%, 520px); display: flex; flex-direction: column; overflow: hidden; padding-bottom: 8px; }
+#man h3 { justify-content: center; position: relative; flex: 0 0 auto; }
+#man h3 button { position: absolute; right: 0; top: 50%; transform: translateY(-50%); }
+#manTabsBox { flex: 0 0 auto; margin: 0 0 8px; }
+#manTabs { display: flex !important; width: 100% !important; flex-wrap: nowrap !important; gap: 0 !important; }
+#manTabs > button { flex: 1 1 0 !important; min-width: 0 !important; padding-left: 2px !important; padding-right: 2px !important; margin: 0 !important; white-space: nowrap; text-align: center; }
+#manBody { flex: 1 1 auto; overflow: auto; overscroll-behavior: contain; padding: 2px 2px 8px; -webkit-overflow-scrolling: touch; }
+#man section { display: none; }
+#man section.on { display: block; }
+#man h4 { margin: 12px 0 4px; font-size: 15px; }
+#man h4:first-child { margin-top: 2px; }
+#man ul { margin: 0; padding: 0 0 0 1.25em; font-size: 14.5px; line-height: 1.65; }
+#man li { padding: 1px 0; }
+#man kbd { font-family: var(--font-mono); font-size: 12.5px; padding: 0 5px; border: 1px solid var(--line); border-radius: 6px; }
+#man .mnote { margin: 8px 0 0; font-size: 13px; color: var(--muted); }
 /* 登入（Google） */
-#acct { position: fixed; inset: 0; z-index: 210; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,.55); }
-#acct[hidden] { display: none; }
-#acct .acard { width: min(100%, 440px); max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow: auto; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 18px; padding: 16px 16px 14px; box-shadow: 0 14px 44px rgba(0,0,0,.4); }
-#acct h3 { margin: 0 0 10px; font-size: 19px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-#acct h3 button { min-height: 0; padding: 2px 10px; font-size: 14px; border-radius: 999px; }
+#acct, #man { position: fixed; inset: 0; z-index: 210; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,.55); }
+#acct[hidden], #man[hidden] { display: none; }
+#acct .acard, #man .acard { width: min(100%, 440px); max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow: auto; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 18px; padding: 16px 16px 14px; box-shadow: 0 14px 44px rgba(0,0,0,.4); }
+#acct h3, #man h3 { margin: 0 0 10px; font-size: 19px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+#acct h3 button, #man h3 button { min-height: 0; padding: 2px 10px; font-size: 14px; border-radius: 999px; }
 #acct label { display: block; font-size: 12px; color: var(--muted); margin: 8px 0 3px; }
 #acct input { width: 100%; font: inherit; padding: 9px 11px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); -webkit-user-select: text; user-select: text; }
 #acct .arow { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
@@ -671,7 +749,7 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
 #acct .afr .nm small { display: block; color: var(--muted); font-size: 11.5px; }
 #acct .afr button { flex: 0 0 auto; min-height: 0; padding: 4px 10px; font-size: 13px; border-radius: 999px; }
 #acct .acode { font-family: var(--font-mono); font-size: 18px; letter-spacing: 2px; font-weight: 700; }
-#acct [hidden] { display: none !important; }
+#acct [hidden], #man [hidden] { display: none !important; }
 /* 新手教學 */
 #tut { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,.55); }
 #tut[hidden] { display: none; }
@@ -691,6 +769,96 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
 #tut .tskip { display: block; margin: 8px auto 0; background: none; border: 0; color: var(--muted); font: inherit; font-size: 13px; cursor: pointer; text-decoration: underline; }
 </style>
 
+<div id="man" hidden role="dialog" aria-modal="true" aria-labelledby="manT"><div class="acard">
+  <h3><span id="manT">說明手冊</span><button type="button" id="manClose">關閉</button></h3>
+  <div class="actions" id="manTabsBox"><div class="opts seg" id="manTabs" role="group" aria-label="手冊章節">
+    <button type="button" data-sec="fly" aria-pressed="true">飛行</button>
+    <button type="button" data-sec="score" aria-pressed="false">得分</button>
+    <button type="button" data-sec="ai" aria-pressed="false">AI</button>
+    <button type="button" data-sec="net" aria-pressed="false">多人</button>
+    <button type="button" data-sec="key" aria-pressed="false">按鍵</button>
+  </div></div>
+  <div id="manBody">
+  <section data-sec="fly" class="on">
+    <h4>搖桿</h4>
+    <ul><li>和實體遙控器相同：<b>左搖桿</b>控制升降與轉向，<b>右搖桿</b>控制前後左右。</li>
+    <li>「遙控種類」（主畫面）：1 所有搖桿放開都回彈；2 左搖桿上下不回彈，放開後油門停在原位，要自己推回中間才會停止升降。</li></ul>
+    <h4>起飛與降落</h4>
+    <ul><li><b>定高模式</b>（預設）：左搖桿往上推第一下起槳（馬達轉動），第二下起飛，放開搖桿會維持高度。</li>
+    <li><b>無定高模式</b>：左搖桿往上推過中間，沒有自動爬升，推多高升多快；推到約四成位置才能維持高度，放在中間會慢慢往下掉。</li>
+    <li><b>降落</b>：把左搖桿往下推到底，一直推到落地。</li></ul>
+    <h4>開關與按鍵</h4>
+    <ul><li><b>解鎖滑桿</b>往下撥：立即停槳。</li>
+    <li><b>定高滑桿</b>往下撥：不會自動維持高度。</li>
+    <li><b>燈光鍵</b>：上鎖時單按換腰帶燈顏色；連按兩下切換<b>無頭模式</b>（上鎖、解鎖、在地上或飛行中都可以，方向固定以選手面向的方向，也就是朝對方球框為準，開啟時上方會亮「無頭模式」）。</li>
+    <li><b>右功能鍵</b>：解鎖後循環切換慢、中、快；上鎖時（按鍵上的字會變成「尾燈」）是換尾燈顏色。</li></ul>
+    <h4>無刷遙控器（Skykick）</h4>
+    <ul><li>在「設定→外觀→機型」選<b>無刷</b>，遙控器就換成實體那支，<b>沒有解鎖／定高滑桿</b>，一開始就是可飛、定高狀態。</li>
+    <li><b>手動起飛</b>：把<b>左搖桿快速上下撥幾次</b>（約 1.6 秒內來回 3 次以上）就會起飛。</li>
+    <li><b>右下起降鍵</b>：長按＝自動起飛（飛到 1 公尺）／降落；油門拉到最低時短按＝緊急降落（馬達立即停止）。</li>
+    <li><b>E 鍵</b>：短按開關脫困（無頭）模式；長按返回原位（要 Sky Sensor，模擬器沒有）。</li>
+    <li><b>M 鍵</b>：長按切換模式1美國手／模式2日本手（左右搖桿功能對調）。</li>
+    <li><b>左上鍵</b>：速度加（著陸時長按＝最快）。<b>右上鍵</b>：速度減；飛行中長按＝360 度翻轉，再推右搖桿方向。</li>
+    <li><b>中間微調圓盤</b>：四個三角形微調前後左右的飄移，中間菱形歸零。<b>電源鍵</b>短按＝無人機 IMU 重置。</li></ul>
+    <h4>視角</h4>
+    <ul><li>預設的選手視角站在場外己方球框後方，眼睛離地 1.6 公尺，看著無人機。</li>
+    <li>站位可以改成球框後的左側、右側，或斜後方的左後、右後。</li></ul>
+  </section>
+  <section data-sec="score">
+    <h4>怎麼得分</h4>
+    <ul><li>選藍方或紅方，無人機會放在己方球框後面。</li>
+    <li>穿過<b>對方球框</b>得分；得分後要回到中線才能再次進攻。</li>
+    <li>穿過自己的球框不算分，從球框後面往場內穿過也不算。</li>
+    <li>發亮並有綠光的，是目前可以進攻的對方球框。球框顏色跟那一端的場地一樣。</li></ul>
+    <h4>角色</h4>
+    <ul><li>只有<b>攻擊手</b>能得分，<b>防守者</b>不能。</li>
+    <li>攻擊手的尾燈是對方隊伍的顏色，防守者的尾燈是自己隊伍的顏色。</li></ul>
+    <h4>碰撞</h4>
+    <ul><li>球機之間有碰撞，撞到會被彈開。</li></ul>
+  </section>
+  <section data-sec="ai">
+    <h4>AI 對打（單機）</h4>
+    <ul><li>在「設定」→「比賽」選簡單、普通或困難。</li>
+    <li>1 對 1 時，電腦扮演另一隊的攻擊手。</li>
+    <li>選 3 對 3 時，每隊 1 個攻擊手加 2 個防守員，你佔一個位置（看你選攻擊手或防守者），其他由電腦補滿。</li>
+    <li>第一次起飛時開始 3 分鐘比賽，兩邊都穿過對方球框得分，時間到比多少。</li>
+    <li>進多人房間時 AI 會自動關閉。</li></ul>
+    <h4>電腦怎麼打</h4>
+    <ul><li>電腦有反應延遲、會恍神、手會抖。</li>
+    <li>攻擊手會等空檔和做假動作；防守員會守在己方球框前面，跟著對方攻擊手左右上下移動擋路。</li>
+    <li>電腦也有碰撞，會撞到球框和你。</li></ul>
+  </section>
+  <section data-sec="net">
+    <h4>進房與比賽</h4>
+    <ul><li>輸入姓名和同一個房號，按「加入」就會進同一個場地（房號留空是大廳）。</li>
+    <li>最先加入的人是<b>裁判</b>，由裁判開始 3 分鐘的比賽，只有比賽中才算分。</li>
+    <li>裁判可以在玩家列表按「踢出」把人請出房間（要按兩下確認）。</li></ul>
+    <h4>犯規與賽後處理</h4>
+    <ul><li>比賽中，防守者從球框後面往前穿過算犯規。</li>
+    <li>賽後裁判可以選擇<b>罰球</b>（每球限時 1 分鐘）或<b>搶分</b>，兩種都分「耗犯規」和「不耗犯規」。</li>
+    <li>罰球：每次犯規讓對方罰一球。搶分：每次犯規讓對方直接搶走 1 分（犯規方 -1、對方 +1）。</li>
+    <li>耗犯規會把用掉的犯規次數扣掉（搶分後歸零）；不耗犯規則保留犯規次數。</li></ul>
+    <h4>帳號與好友</h4>
+    <ul><li>按「👤 登入」用 Google 帳號登入，會記住暱稱和設定、記錄聯機戰績、看排行榜。</li>
+    <li>用好友碼加好友；好友在房間裡時，清單會出現「加入」。</li></ul>
+    <p class="mnote">連線用點對點，部分公司或學校網路可能連不上。</p>
+  </section>
+  <section data-sec="key">
+    <h4>電腦鍵盤</h4>
+    <ul><li><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> 前後左右移動，<kbd>↑</kbd> <kbd>↓</kbd> 升降，<kbd>←</kbd> <kbd>→</kbd> 轉向。</li>
+    <li><kbd>U</kbd> 解鎖，<kbd>M</kbd> 定高，<kbd>Z</kbd> 燈光，<kbd>X</kbd> 速度。</li>
+    <li><kbd>V</kbd> 切換選手、平視、斜視、俯視，<kbd>T</kbd> 換隊伍，<kbd>R</kbd> 換攻擊手或防守者，<kbd>C</kbd> 輪流換選手站位。</li></ul>
+    <h4>自訂按鍵</h4>
+    <ul><li>點 3D 畫面上的「鍵盤」或「手把」，再點提示表裡的按鍵標籤（會變黃色），按下想要的新按鍵或手把按鈕就設好了。</li>
+    <li><kbd>Esc</kbd> 取消，「還原預設」可以重來。</li></ul>
+    <h4>手把</h4>
+    <ul><li>接上手把後按任一鍵即可。</li>
+    <li>左搖桿＝油門與轉向，右搖桿＝前後平移。</li>
+    <li>A 解鎖／上鎖，B 定高開關，X 燈光鍵，Y 右功能鍵（速度／尾燈）。</li>
+    <li>LB 切視角，RB 切站位，Back 換攻擊手／防守者，Start 換隊伍。</li></ul>
+  </section>
+  </div>
+</div></div>
 <div id="acct" hidden role="dialog" aria-modal="true" aria-labelledby="acctT"><div class="acard">
   <h3><span id="acctT">帳號</span><button type="button" id="acClose">關閉</button></h3>
   <div id="acGuide" class="aguide" hidden></div>
@@ -722,7 +890,7 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
 </div></div>
 <div class="wrap">
   <header>
-    <h1>無人機足球模擬器 <small class="ver" id="verTag">v220</small></h1>
+    <h1>無人機足球模擬器 <small class="ver" id="verTag">v232</small></h1>
     <span class="pill" id="status" data-s="idle">待機中</span>
   </header>
   <div class="netbox">
@@ -770,7 +938,9 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
     <span class="pill" id="headChip" data-s="net" style="visibility:hidden">無頭模式</span>
     <button type="button" class="pill" id="btnAcct" style="cursor:pointer;font:inherit">👤 登入</button>
     <button type="button" class="pill" id="btnTut" style="cursor:pointer;font:inherit">❓ 新手教學</button>
+    <button type="button" class="pill" id="btnMan" style="cursor:pointer;font:inherit">📖 說明手冊</button>
     <button type="button" class="pill" id="btnToSet" style="cursor:pointer;font:inherit">⚙ 設定</button>
+    <button type="button" class="pill" id="btnReset" style="cursor:pointer;font:inherit">🔄 重新開始</button>
   </div>
 
   <div class="play" id="play">
@@ -782,13 +952,13 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
     <button type="button" class="fsbtn" id="btnFs">全螢幕</button>
     <div class="lights" id="lightBox"><b>燈光 <u id="lgBelt"></u><span id="lgBeltT"></span></b><b>尾燈 <u id="lgTail"></u><span id="lgTailT"></span></b><span id="lgHead" hidden>無頭</span></div>
     <div class="ctlmode" id="ctlMode"><div class="opts" id="cmRow" role="group" aria-label="操作模式"><button type="button" id="cmTouch" aria-pressed="false">觸控</button><button type="button" id="cmKey" aria-pressed="false">鍵盤</button><button type="button" id="cmPad" aria-pressed="false">手把</button></div><span id="cmLayout">版面：合併</span></div>
-    <div class="gear" id="gearBox"><span id="gearTxt">檔位</span><span id="gearBars"><i></i> <i></i> <i></i></span></div>
+    <div class="gear" id="gearBox"><span id="gearTxt">檔位</span><span id="gearBars"><i></i> <i></i> <i></i> <i id="gear4"></i></span></div>
     <div class="cdov" id="cdOv" hidden><b id="cdNum">10</b><span>所有球機回到起點，倒數結束開賽</span></div>
   </div>
 
 
   <div class="rc" id="rc">
-    <svg viewBox="0 0 400 260" aria-hidden="true">
+    <svg class="rs0" viewBox="0 0 400 260" aria-hidden="true">
       <defs>
         <linearGradient id="rcg" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stop-color="#ffffff"/>
@@ -815,6 +985,48 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
       </g>
     </svg>
 
+    <svg id="rcBL" class="rs1" viewBox="0 0 400 260" aria-hidden="true">
+      <defs>
+        <linearGradient id="rcgB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffefb"/><stop offset="0.55" stop-color="#f3f0e8"/><stop offset="1" stop-color="#e4e0d5"/></linearGradient>
+        <radialGradient id="rcgW" cx="0.5" cy="0.45" r="0.6"><stop offset="0" stop-color="#d5d1c5"/><stop offset="0.7" stop-color="#e3dfd4"/><stop offset="1" stop-color="#efece3"/></radialGradient>
+        <radialGradient id="rcgD" cx="0.4" cy="0.35" r="0.8"><stop offset="0" stop-color="#fbfaf6"/><stop offset="1" stop-color="#e2ded3"/></radialGradient>
+        <linearGradient id="rcgK" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fdfcf8"/><stop offset="1" stop-color="#e6e2d7"/></linearGradient>
+      </defs>
+      <path d="M75 29 Q100 20 134 19 L266 19 Q300 20 325 29 Q362 40 373 77 C380 105 382 140 391 197 C393 215 386 233 367 240 C347 247 322 244 308 231 C298 214 290 198 270 184 Q252 174 230 174 L170 174 Q148 174 130 184 C110 198 102 214 92 231 C78 244 53 247 33 240 C14 233 7 215 9 197 C18 140 20 105 27 77 Q38 40 75 29 Z" fill="url(#rcgB)" stroke="#c4bfb1" stroke-width="1.3"/>
+      <g fill="url(#rcgK)" stroke="#cdc8bb" stroke-width="1"><path d="M98 21 Q100 10 112 9 L140 9 Q152 10 154 21 Z"/><path d="M302 21 Q300 10 288 9 L260 9 Q248 10 246 21 Z"/></g>
+      <g fill="none" stroke="#d3cec0" stroke-width="1.2" stroke-linecap="round">
+        <path d="M120 146 Q200 163 280 146"/>
+        <path d="M37 95 C58 98 78 112 99 137"/><path d="M34 133 C50 142 70 156 94 183"/><path d="M27 176 C42 174 64 190 71 214 C75 229 62 237 46 236 C33 235 27 226 25 208"/>
+        <path d="M363 95 C342 98 322 112 301 137"/><path d="M366 133 C350 142 330 156 306 183"/><path d="M373 176 C358 174 336 190 329 214 C325 229 338 237 354 236 C367 235 373 226 375 208"/>
+      </g>
+      <g fill="#fff" opacity="0.45"><ellipse cx="38" cy="206" rx="9" ry="20" transform="rotate(-14 38 206)"/><ellipse cx="362" cy="206" rx="9" ry="20" transform="rotate(14 362 206)"/></g>
+      <g stroke="#cdc8bb" stroke-width="1.2">
+        <rect x="60" y="37" width="80" height="74" rx="30" fill="#f6f4ed"/><rect x="260" y="37" width="80" height="74" rx="30" fill="#f6f4ed"/>
+        <rect x="67" y="43" width="66" height="62" rx="25" fill="url(#rcgW)"/><rect x="267" y="43" width="66" height="62" rx="25" fill="url(#rcgW)"/>
+        <circle cx="200" cy="116" r="39" fill="url(#rcgD)"/>
+        <circle cx="200" cy="116" r="33" fill="#efece3" stroke="#ddd9cd"/>
+        <rect x="157" y="44" width="20" height="15" rx="5" fill="url(#rcgK)"/><rect x="223" y="44" width="20" height="15" rx="5" fill="url(#rcgK)"/>
+        <circle cx="129" cy="122" r="13" fill="url(#rcgK)"/><circle cx="129" cy="122" r="10" fill="#f1eee6" stroke="#ddd9cd"/>
+        <rect x="249" y="110" width="22" height="22" rx="6" transform="rotate(45 260 121)" fill="url(#rcgK)"/>
+      </g>
+      <g fill="none" stroke="#d6d1c4" stroke-width="1.4" stroke-linecap="round">
+        <path d="M214 88 Q232 96 235 112 Q225 100 208 96"/><path d="M186 88 Q168 96 165 112 Q175 100 192 96"/>
+        <path d="M214 144 Q232 136 235 120 Q225 132 208 136"/><path d="M186 144 Q168 136 165 120 Q175 132 192 136"/>
+      </g>
+      <circle cx="200" cy="55" r="3.2" fill="#a29e92"/><circle cx="200" cy="55" r="1.2" fill="#4a4840"/>
+      <text x="200" y="39" text-anchor="middle" font-size="11" font-style="italic" font-weight="700" fill="#c8c3b5" font-family="sans-serif">SKYKICK</text>
+      <g fill="#8f8b7f" font-family="sans-serif" font-weight="700" font-size="11" text-anchor="middle"><text x="167" y="55.5">E</text><text x="233" y="55.5">M</text></g>
+      <g fill="#b9b5a8" stroke="#d3cec0" stroke-width="0.6">
+        <path d="M200 84 L206 94 L194 94 Z"/><path d="M200 148 L206 138 L194 138 Z"/>
+        <path d="M172 116 L182 110 L182 122 Z"/><path d="M228 116 L218 110 L218 122 Z"/>
+      </g>
+      <rect x="193" y="109" width="14" height="14" rx="3.5" transform="rotate(45 200 116)" fill="#f7f5ef" stroke="#c9c4b7"/>
+      <g fill="none" stroke="#9a968a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M124.5 117.5 A6.5 6.5 0 1 0 133.5 117.5"/><path d="M129 114 L129 122"/>
+        <path d="M260 113 L260 129 M255.5 117.5 L260 113 L264.5 117.5 M255.5 124.5 L260 129 L264.5 124.5"/>
+      </g>
+    </svg>
+
     <span class="cap at" style="left:43%;top:54.5%">解鎖</span>
     <span class="cap at" style="left:57%;top:54.5%">定高</span>
     <span class="cap at" style="left:25%;top:69%">升降・轉向</span>
@@ -827,6 +1039,17 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
     <button type="button" class="sw at" id="swHold" role="switch" aria-checked="true" aria-label="定高模式" style="left:57%;top:64%"><i></i></button>
 
     <button type="button" class="fb l at" id="fbL" style="left:41%;top:83%">燈光</button>
+    <button type="button" class="blb at" id="bSL" aria-label="速度加"><span>速度＋</span></button>
+    <button type="button" class="blb at" id="bSR" aria-label="速度減，長按翻轉"><span>速度－<br>長按翻轉</span></button>
+    <button type="button" class="blb at" id="bE" aria-label="脫困模式"></button>
+    <button type="button" class="blb at" id="bM" aria-label="M 鍵"></button>
+    <button type="button" class="blb at" id="bPw" aria-label="電源，IMU 重置"></button>
+    <button type="button" class="blb at" id="bGo" aria-label="自動起飛降落"></button>
+    <button type="button" class="blb at" id="bTU" aria-label="微調 前"></button>
+    <button type="button" class="blb at" id="bTD" aria-label="微調 後"></button>
+    <button type="button" class="blb at" id="bTL" aria-label="微調 左"></button>
+    <button type="button" class="blb at" id="bTR" aria-label="微調 右"></button>
+    <button type="button" class="blb at" id="bTC" aria-label="微調歸零"></button>
     <button type="button" class="fb r at" id="fbR" style="left:59%;top:83%">速度</button>
   </div>
   </div>
@@ -844,7 +1067,6 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
   <p class="rcstat" id="rcstat"></p>
 
 
-  <div class="actions" id="mainRow"><button id="btnReset" type="button">重新開始</button></div>
   <div class="actions" id="pairRow">
     <div class="opts seg" role="group" aria-label="配對角色"><span class="lab">PIN 配對</span>
       <button type="button" id="pairDisp" aria-pressed="false">顯示端</button>
@@ -869,6 +1091,13 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
       <button type="button" data-role="1" aria-pressed="false">防守者</button>
     </div>
   </div>
+  <div class="actions">
+    <div class="opts" role="group" aria-label="遙控種類">
+      <span class="lab">遙控種類</span>
+      <button type="button" data-rc="1" aria-pressed="true">1 所有搖桿回彈</button>
+      <button type="button" data-rc="2" aria-pressed="false">2 左搖桿上下不回彈</button>
+    </div>
+  </div>
 <div id="setBody" hidden role="dialog" aria-modal="true" aria-label="設定">
   <div id="setBar"><b id="setTitle">設定</b><button type="button" id="setClose">關閉</button></div>
   <div class="actions" id="setTabsBox"><div class="opts seg" id="setTabs" role="group" aria-label="設定分類">
@@ -877,19 +1106,11 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
     <button type="button" data-go="look" aria-pressed="false">外觀</button>
     <button type="button" data-go="ui" aria-pressed="false">界面</button>
     <button type="button" data-go="snd" aria-pressed="false">聲音</button>
-    <button type="button" data-go="ctl" aria-pressed="false">遙控</button>
   </div></div>
 
   <div id="setScroll">
 <div data-cat="snd" class="actions" id="setTop">
     <button data-cat="snd" id="btnSnd" type="button" aria-pressed="true">音效震動：開</button>
-  </div>
-  <div data-cat="ctl" class="actions">
-    <div data-cat="ctl" class="opts" role="group" aria-label="遙控種類">
-      <span class="lab">遙控種類</span>
-      <button type="button" data-rc="1" aria-pressed="true">1 所有搖桿回彈</button>
-      <button type="button" data-rc="2" aria-pressed="false">2 左搖桿上下不回彈</button>
-    </div>
   </div>
   <div data-cat="play" class="actions">
     <div data-cat="play" class="opts" role="group" aria-label="AI 對打">
@@ -950,17 +1171,24 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
     </div>
   </div>
   <div data-cat="look" class="actions">
+    <div data-cat="look" class="opts" role="group" aria-label="機型">
+      <span class="lab">機型</span>
+      <button type="button" data-dtype="0" aria-pressed="true">有刷</button>
+      <button type="button" data-dtype="1" aria-pressed="false">無刷</button>
+    </div>
     <div data-cat="look" class="opts" role="group" aria-label="球殼顏色">
       <span class="lab">球殼</span>
       <button type="button" data-shell="0" data-pal="0" aria-pressed="false">綠</button>
       <button type="button" data-shell="1" data-pal="1" aria-pressed="true">紅</button>
       <button type="button" data-shell="2" data-pal="2" aria-pressed="false">藍</button>
+      <button type="button" data-shell="3" data-pal="3" aria-pressed="false">白</button>
     </div>
     <div data-cat="look" class="opts" role="group" aria-label="支架顏色">
       <span class="lab">支架</span>
       <button type="button" data-frame="0" data-pal="0" aria-pressed="false">綠</button>
       <button type="button" data-frame="1" data-pal="1" aria-pressed="false">紅</button>
       <button type="button" data-frame="2" data-pal="2" aria-pressed="true">藍</button>
+      <button type="button" data-frame="4" data-pal="4" aria-pressed="false">黑</button>
     </div>
   </div>
   <div data-cat="ui snd" class="actions uibox" id="uiBox">
@@ -1021,7 +1249,6 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
 </div><!-- /setScroll -->
 </div><!-- /setBody -->
 
-  <p class="hint">和實體遙控器相同：左搖桿控制升降與轉向，右搖桿控制前後左右。定高模式起飛：左搖桿往上推第一下起槳（馬達轉動），第二下起飛；無定高模式起飛：左搖桿往上推過中間，沒有自動爬升，推多高升多快，推到約四成位置才能維持高度，放在中間會慢慢往下掉；降落：把左搖桿往下推到底，一直推到落地。選藍方或紅方，無人機會放在己方球框後面；預設的選手視角站在場外己方球框後方，眼睛離地 1.6 公尺，看著無人機；站位可以改成球框後的左側、右側，或斜後方的左後、右後。穿過對方球框得分，得分後要回到中線才能再次進攻，穿過自己的球框不算分，從球框後面往場內穿過也不算分。只有攻擊手能得分，防守者不能；攻擊手的尾燈是對方隊伍的顏色，防守者的尾燈是自己隊伍的顏色。球機之間有碰撞，撞到會被彈開。<br>AI 對打（單機）：選簡單、普通或困難。1 對 1 時電腦扮演另一隊的攻擊手；選 3 對 3 時，每隊 1 個攻擊手加 2 個防守員，你佔一個位置（看你選攻擊手或防守者），其他由電腦補滿。電腦有反應延遲、會恍神、手會抖，攻擊手會等空檔和做假動作，防守員會守在己方球框前面，跟著對方攻擊手左右上下移動擋路。你第一次起飛時開始 3 分鐘比賽，兩邊都穿過對方球框得分，時間到比多少；電腦也有碰撞，會撞到球框和你。進多人房間時 AI 會自動關閉。<br>多人房間裡，最先加入的人是裁判，由裁判開始 3 分鐘的比賽，只有比賽中才算分。比賽中防守者從球框後面往前穿過算犯規；裁判可以在玩家列表按「踢出」把人請出房間（要按兩下確認）；賽後裁判可以選擇罰球（每球限時 1 分鐘）或搶分，兩種都分「耗犯規」和「不耗犯規」：罰球是每次犯規讓對方罰一球，搶分是每次犯規讓對方直接搶走 1 分（犯規方 -1、對方 +1）；耗犯規會把用掉的犯規次數扣掉（搶分後歸零），不耗犯規則保留犯規次數。球框顏色跟那一端的場地一樣，發亮並有綠光的是目前可以進攻的對方球框；解鎖滑桿往下撥會立即停槳；定高滑桿往下撥則不會自動維持高度；燈光鍵（上鎖時單按換腰帶燈顏色）連按兩下切換無頭模式，上鎖、解鎖都可以（地上或飛行中都可以，方向固定以選手面向的方向（朝對方球框）為準，開啟時上方會亮「無頭模式」）；右功能鍵在解鎖後循環切換慢、中、快，上鎖時（按鍵上的字會變成「尾燈」）是換尾燈顏色。遙控種類 2 的左搖桿上下不會回彈，放開後油門停在原位，要自己推回中間才會停止升降。<br>電腦操作：W A S D 移動，↑ ↓ 升降，← → 轉向，U 解鎖，M 定高，Z 燈光，X 速度，V 切換選手、平視、斜視、俯視，T 換隊伍，R 換攻擊手或防守者，C 輪流換選手站位。<br>自訂按鍵：點上面的「鍵盤」或「手把」，再點提示表裡的按鍵標籤（會變黃色），按下想要的新按鍵或手把按鈕就設好了，Esc 取消，「還原預設」可以重來。<br>手把：接上手把後按任一鍵即可，左搖桿＝油門與轉向，右搖桿＝前後平移，A 解鎖／上鎖，B 定高開關，X 燈光鍵，Y 右功能鍵（速度／尾燈），LB 切視角，RB 切站位，Back 換攻擊手／防守者，Start 換隊伍。</p>
   <p class="hint" id="netHint">聯機載入中…（在 Claude 裡用已登入的帳號開啟，或在一般網站上用點對點連線）。</p>
   <div id="pgPad" style="height:0"></div>
 </div>
@@ -1060,6 +1287,8 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
   try { var fk0 = localStorage.getItem('cd_field'); if (FIELDS[fk0]) FIELD = fk0; } catch (e) {}
   setFieldConsts(FIELD);
   var SPEEDS = [1.8, 2.3, 2.8], SPEED_NAMES = ['慢速', '中速', '快速'];
+  var SPEEDS_3 = SPEEDS.slice(), NAMES_3 = SPEED_NAMES.slice();
+  var SPEEDS_BL = [1.8, 1.8 + 1 / 3, 1.8 + 2 / 3, 2.8], NAMES_BL = ['慢速', '中低速', '中高速', '快速'];   // 無刷四檔：最低速、最高速和有刷一樣
   var VMAX = SPEEDS[0];
   var LED_NAMES = ['綠', '紅', '藍', '黃', '淺藍', '白'];
 
@@ -1249,7 +1478,7 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
   buildArena();
 
   /* ---------- 無人機模型 ---------- */
-  var PAL = [0x22b573, 0xe4572e, 0x1e5bd6];   // 球殼與支架可選：綠、紅、藍
+  var PAL = [0x22b573, 0xe4572e, 0x1e5bd6, 0xf2efe6, 0x16191d];   // 球殼與支架可選：綠、紅、藍
   var orangeMat = new THREE.MeshStandardMaterial({ color: C.orange, roughness: 0.55 });
   var blueMat = new THREE.MeshStandardMaterial({ color: C.blue, roughness: 0.5 });
   var darkMat = new THREE.MeshStandardMaterial({ color: 0x1b2430, roughness: 0.6 });
@@ -1349,6 +1578,8 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
   function makeDroneMats() {
     return {
       blade: new THREE.MeshStandardMaterial({ color: 0x9aa9b6, roughness: 0.2, metalness: 0.3, transparent: true, opacity: 0.8 }),
+      bladeR: new THREE.MeshStandardMaterial({ color: 0xe83a2a, roughness: 0.3, transparent: true, opacity: 0.85 }),
+      bladeB: new THREE.MeshStandardMaterial({ color: 0x2457d6, roughness: 0.3, transparent: true, opacity: 0.85 }),
       disc: new THREE.MeshBasicMaterial({ color: 0xb8c4cf, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false }),
       dome: new THREE.MeshStandardMaterial({ color: 0xf1f5f7, roughness: 0.35, emissive: 0xffffff, emissiveIntensity: 0.3 }),
       strip: new THREE.MeshBasicMaterial({ color: 0xffffff }),
@@ -1356,7 +1587,9 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
       beltGlow: new THREE.SpriteMaterial({ map: glowTex, color: 0xffffff, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending }),
       tailGlow: new THREE.SpriteMaterial({ map: glowTex, color: 0xffffff, transparent: true, opacity: 0.8, depthWrite: false }),
       shell: new THREE.MeshStandardMaterial({ color: PAL[1], roughness: 0.55 }),
-      frame: new THREE.MeshStandardMaterial({ color: PAL[2], roughness: 0.5 })
+      frame: new THREE.MeshStandardMaterial({ color: PAL[2], roughness: 0.5 }),
+      redLed: new THREE.MeshBasicMaterial({ color: 0xff2418 }),
+      redGlow: new THREE.SpriteMaterial({ map: glowTex, color: 0xff2418, transparent: true, opacity: 0.75, depthWrite: false, blending: THREE.AdditiveBlending })
     };
   }
 
@@ -1365,7 +1598,7 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
   function buildDrone(M) {
     var drone = new THREE.Group();   // 位置 + 航向（護籠隨航向轉）
     var body = new THREE.Group();    // 傾斜（機身）
-    var blades = [];
+    var blades = [], bladeMeshes = [];
     drone.add(body);
     var cage = cageProto.clone();
     cage.material = M.shell;
@@ -1392,6 +1625,7 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
       bg.position.set(q.x, motorY + 0.036, q.z);
       for (var b = 0; b < 3; b++) {
         var blade = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.0025, 0.02), M.blade);
+        bladeMeshes.push([blade, i]);
         blade.position.x = 0.05;
         var arm = new THREE.Group();
         arm.rotation.y = b * TAU / 3;
@@ -1409,7 +1643,9 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
     // 電池盒（機頭在前）
     var bat = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.05, 0.055), M.frame);
     bat.position.set(0, 0.05, -0.11);
-    body.add(bat);
+    var brushedG = new THREE.Group(); body.add(brushedG);
+    var brushlessG = new THREE.Group(); body.add(brushlessG);
+    brushedG.add(bat);
     // 白色燈罩
     var dome = new THREE.Mesh(new THREE.SphereGeometry(0.07, 28, 14, 0, TAU, 0, Math.PI / 2), M.dome);
     dome.scale.y = 0.55;
@@ -1427,13 +1663,13 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
     // 尾燈：機身後方下凸的小燈板（三排兩顆）
     var tailBoard = new THREE.Mesh(new THREE.BoxGeometry(0.056, 0.082, 0.008), darkMat);
     tailBoard.position.set(0, -0.037, 0.112);
-    body.add(tailBoard);
+    brushedG.add(tailBoard);
     var tg = new THREE.BoxGeometry(0.016, 0.016, 0.004);
     for (var tr = 0; tr < 3; tr++) {
       for (var tc = 0; tc < 2; tc++) {
         var tl = new THREE.Mesh(tg, M.tail);
         tl.position.set(tc === 0 ? -0.0125 : 0.0125, -0.014 - tr * 0.021, 0.119);
-        body.add(tl);
+        brushedG.add(tl);
       }
     }
     var bglow = new THREE.Sprite(M.beltGlow);   // 腰帶燈光暈
@@ -1443,10 +1679,26 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
     var tglow = new THREE.Sprite(M.tailGlow);   // 尾燈光暈
     tglow.scale.set(0.3, 0.3, 1);
     tglow.position.set(0, -0.037, 0.135);
-    body.add(tglow);
+    brushedG.add(tglow);
+    // 無刷機：電池盒在機身正下方，紅色指示燈在機身後方
+    var batB = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.07, 0.042), darkMat);
+    batB.position.set(0, -0.03, 0.005);
+    brushlessG.add(batB);
+    var rled = new THREE.Mesh(new THREE.SphereGeometry(0.012, 14, 10), M.redLed);
+    rled.position.set(0, 0.014, 0.076);
+    brushlessG.add(rled);
+    var rglow = new THREE.Sprite(M.redGlow);
+    rglow.scale.set(0.2, 0.2, 1);
+    rglow.position.set(0, 0.012, 0.082);
+    brushlessG.add(rglow);
+    function setType(n) {
+      brushedG.visible = n !== 1; brushlessG.visible = n === 1;
+      bladeMeshes.forEach(function (bm) { bm[0].material = n === 1 ? ((bm[1] === 0 || bm[1] === 3) ? M.bladeR : M.bladeB) : M.blade; });
+    }
+    setType(0);
     drone.traverse(function (o) { if (o.isMesh && o.material !== M.disc) o.castShadow = true; });
     drone.scale.setScalar(RM / MR);   // 模型縮成 20 cm 的無人機
-    return { drone: drone, body: body, blades: blades, M: M, cage: cage };
+    return { drone: drone, body: body, blades: blades, M: M, cage: cage, setType: setType };
   }
 
   var local = buildDrone(makeDroneMats());
@@ -1455,6 +1707,18 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
   scene.add(drone);
 
   var ledLight = new THREE.PointLight(0xffffff, 0.8, 1.6, 2);
+  function setDType(n, auto) {
+    var was = S.type; S.type = n === 1 ? 1 : 0; local.setType(S.type);
+    if (was !== S.type) {
+      var ov = SPEEDS[S.speedIdx] || SPEEDS[0], ns = S.type === 1 ? SPEEDS_BL : SPEEDS_3, nn = S.type === 1 ? NAMES_BL : NAMES_3, bi = 0, k;
+      SPEEDS.length = 0; SPEED_NAMES.length = 0;
+      for (k = 0; k < ns.length; k++) { SPEEDS.push(ns[k]); SPEED_NAMES.push(nn[k]); if (Math.abs(ns[k] - ov) < Math.abs(ns[bi] - ov)) bi = k; }
+      S.speedIdx = bi; VMAX = SPEEDS[bi]; try { gearLast = -1; } catch (e4) {}
+    }
+    var rcEl = document.getElementById('rc'); if (rcEl) rcEl.classList.toggle('bl', S.type === 1);
+    document.documentElement.classList.toggle('dt-bl', S.type === 1);   // 無刷：外觀固定（白護籠、黑機臂），不給選顏色
+    if (was !== S.type) { S.jp = false; S.trimF = S.trimR = 0; if (S.type === 1) { S.unlocked = true; S.hold = true; } else if (S.mode === 'landed') S.unlocked = false; try { syncBl(); syncRc(); } catch (e3) {} }
+    if (auto && was !== S.type) { if (S.type === 1) { S.shell = 3; S.frame = 4; } else { if (S.shell === 3) S.shell = 1; if (S.frame === 4) S.frame = 2; } } try { localStorage.setItem('cd_dtype', String(S.type)); } catch (e) {} }
   scene.add(ledLight);
 
   /* ---------- 狀態 ---------- */
@@ -1465,9 +1729,10 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
     rcType: 1, team: 'blue', scores: { blue: 0, red: 0 }, armed: true,
     px: AX / 2, pulse: 0, tiltX: 0, tiltZ: 0,
     unlocked: false, hold: true, speedIdx: 0, headless: false, fallV: 0,
-    upHeld: false, lastUp: -9, tail: 5, upTime: 0, role: 0, shell: 1, frame: 2,
+    upHeld: false, lastUp: -9, tail: 5, upTime: 0, role: 0, shell: 1, frame: 2, type: 0, jp: false, trimF: 0, trimR: 0, alNow: 0,
     kx: 0, kz: 0, kxv: 0, kzv: 0, spinY: 0, stun: 0, dropT: 0, drx: 0, dry: 0, drz: 0, dive: 0
   };
+  try { if (localStorage.getItem('cd_dtype') === '1') { setDType(1); S.shell = 3; S.frame = 4; } } catch (e) {}
   var TL = { blue: false, red: false }, PG = { blue: 0, red: 0 };   // 隊伍得分後鎖住進攻，全隊都回到中線才解鎖
   /* ---------- 蜂鳴聲與震動（遙控器蜂鳴器、撞擊、得分、犯規、倒數） ---------- */
   var SND = { on: true, ctx: null, lastHit: 0 };
@@ -1836,7 +2101,7 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
       st.push({ t: '第 5 步：隊伍、場地與賽制', b: '<p><b>隊伍</b>（藍／紅）、<b>角色</b>（攻擊手／防守者）和<b>重新開始</b>直接在主畫面上選。</p><p>按「⚙ 設定」→<b>「比賽」</b>分頁：可以開<b>AI 對打</b>（簡單／普通／困難）、選<b>賽制</b>（1 對 1、3 對 3、5 對 5）和<b>場地</b>：<b>FAI 20cm</b>（6×3×3 m）或較大的 <b>FIDA 20cm</b>（8×4×3 m）。</p><p>「外觀」分頁換球殼和支架顏色，「界面」分頁換風格、配色和畫面大小，「聲音」分頁調馬達聲、嗶聲和測試震動。</p>' });
       st.push({ t: '第 6 步：比賽與多人', b: '<p>一個人可以直接練習。想和朋友玩：在上方輸入<b>姓名</b>和<b>房號</b>按「加入」，朋友輸入同一個房號就會進同一間。</p><p>房主可以按「開始比賽」進行 3 分鐘的比賽。</p><p>兩支手機也可以<b>PIN 配對</b>：一支當顯示端、一支當操控端（在主畫面的「顯示端／操控端」）。</p>' });
       if (typeof ACCT !== 'undefined' && ACCT && ACCT.on) st.push({ t: '第 7 步：帳號與好友', b: '<p>按「👤 登入」用 <b>Google 帳號</b>登入：會記住暱稱和所有設定、記錄聯機比賽的<b>戰績</b>（含最近 20 場歷史）、上<b>排行榜</b>。</p><p>每個人有一組<b>好友碼</b>，輸入朋友的好友碼就能加好友；朋友在房間裡時，好友清單會出現「加入」。</p><p>進聯機房間前需要先登入。</p>' });
-      st.push({ t: '準備好了！', b: '<p>去飛一圈吧，祝你玩得開心！</p>' });
+      st.push({ t: '準備好了！', b: '<p>想看完整規則和按鍵，按「📖 說明手冊」。</p><p>去飛一圈吧，祝你玩得開心！</p>' });
       return st;
     }
     function paint() {
@@ -1889,7 +2154,7 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
       clearTimeout($('volB').__t); $('volB').__t = setTimeout(function () { if (SND.on) beep(1, 1800, 0.16, 0, 'square', 0.2); }, 120);
     });
   })();
-  window.addEventListener('pointerdown', function (e) { if (e.target && e.target.closest && e.target.closest('#ctlMode, #tut, #acct, #setBody')) return; setCtl('touch'); }, { passive: true, capture: true });
+  window.addEventListener('pointerdown', function (e) { if (e.target && e.target.closest && e.target.closest('#ctlMode, #tut, #acct, #man, #setBody')) return; setCtl('touch'); }, { passive: true, capture: true });
   window.addEventListener('keydown', function (e) { if (e.target && e.target.tagName === 'INPUT') return; if (TUT.el && !TUT.el.hidden) return; setCtl('key'); }, true);
   // 手把鍵位：Xbox／PS／Switch（瀏覽器的標準對應是依「位置」編號：0 下、1 右、2 左、3 上），自動依手把名稱判斷
   var PAD_LAY = {
@@ -2066,11 +2331,11 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
     if (!keepScores) clearScores();
     S.armed = true; TL[S.team] = false;
     S.tiltX = 0; S.tiltZ = 0; V.ready = false;
-    S.unlocked = false; S.headless = false; S.fallV = 0;
+    S.unlocked = S.type === 1; S.headless = false; S.fallV = 0; if (S.type === 1) S.hold = true;
     syncTeamBtns();
     syncOpts();
     syncRc();
-    setMsg('你是<b>' + teamName(S.team) + '</b>，在己方球框後面。先把<b>解鎖滑桿</b>往上撥，再用左搖桿起飛，穿過<b>' +
+    setMsg('你是<b>' + teamName(S.team) + '</b>，在己方球框後面。' + (S.type === 1 ? '<b>長按右下起降鍵</b>自動起飛（或左搖桿快速上下撥幾次），穿過<b>' : '先把<b>解鎖滑桿</b>往上撥，再用左搖桿起飛，穿過<b>') + '' +
       teamName(S.team === 'blue' ? 'red' : 'blue') + '球框</b>得分，得分後要回到中線才能再次進攻。');
   }
   function setTeam(t) {
@@ -2114,16 +2379,18 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
   var rcBar = $('rcBar'), rcP1 = $('rcP1'), rcP2 = $('rcP2'), rcStat = $('rcstat');
   // 分開版面：把遙控器圖片切成左右兩半（複製兩份，各顯示一半）
   (function () {
-    var src = document.querySelector('#rc > svg');
-    if (!src) return;
+    var srcs = document.querySelectorAll('#rc > svg');
+    for (var si = 0; si < srcs.length; si++) (function (src) {
+    var rsc = src.getAttribute('class') || 'rs0';
     [['l', '0 0 200 260'], ['r', '200 0 200 260']].forEach(function (h) {
       var c = src.cloneNode(true);
-      c.setAttribute('class', 'half ' + h[0]); c.setAttribute('viewBox', h[1]);
+      c.setAttribute('class', 'half ' + h[0] + ' ' + rsc); c.setAttribute('viewBox', h[1]);
       var ids = c.querySelectorAll('[id]');
       for (var i = 0; i < ids.length; i++) { if (/^rc(Bar|P1|P2)$/.test(ids[i].id)) ids[i].setAttribute('data-m', ids[i].id); ids[i].removeAttribute('id'); }
       var dfs = c.querySelector('defs'); if (dfs) dfs.parentNode.removeChild(dfs);   // 漸層共用原本那份
       src.parentNode.insertBefore(c, src.nextSibling);
     });
+    })(srcs[si]);
   })();
   function mirrorRc() {
     var m = document.querySelectorAll('[data-m]');
@@ -2142,6 +2409,7 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
     flipHud.hidden = !(S.flipArm > 0);
     fbL.textContent = S.unlocked ? '翻滾' : '燈光';   // 解鎖後這顆鍵是翻滾
     fbR.textContent = S.unlocked ? '速度' : '尾燈';   // 上鎖時這顆鍵是換尾燈顏色
+    try { syncBl(); } catch (e) {}
   }
   function setLed(n) { S.led = n; syncRc(); }
   function setHold(v) {
@@ -2198,7 +2466,7 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
       setMsg('尾燈顏色：<b>' + LED_NAMES[S.tail] + '</b>。解鎖後這顆鍵是切換速度。');
       return;
     }
-    S.speedIdx = (S.speedIdx + 1) % 3;
+    S.speedIdx = (S.speedIdx + 1) % SPEEDS.length;
     VMAX = SPEEDS[S.speedIdx];
     syncRc();
     sfx('speed', S.speedIdx + 1);
@@ -2233,6 +2501,80 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
   pressOn(swHold, function () { setHold(!S.hold); });
   pressOn(fbL, pressLeft, true);
   pressOn(fbR, pressRight);
+
+  /* ---------- 無刷遙控器（照說明書：起降鍵長按、E 脫困、M 長按換手、肩鍵速度／翻轉、微調、IMU 重置） ---------- */
+  var BLIDS = ['bSL', 'bSR', 'bE', 'bM', 'bPw', 'bGo', 'bTU', 'bTD', 'bTL', 'bTR', 'bTC'];
+  function syncBl() {
+    var bl = S.type === 1, caps = document.querySelectorAll('#rc .cap');
+    if (caps.length >= 4) {
+      caps[0].textContent = bl ? '起降（長按）' : '解鎖';
+      caps[1].textContent = bl ? 'IMU 重置' : '定高';
+      caps[2].textContent = bl && S.jp ? '前後・平移' : '升降・轉向';
+      caps[3].textContent = bl && S.jp ? '升降・轉向' : '前後・平移';
+    }
+    var e = $('bE'), m = $('bM');
+    if (e) e.setAttribute('aria-pressed', String(!!S.headless));
+    if (m) m.setAttribute('aria-pressed', String(!!S.jp));
+  }
+  function blTrimMsg() { setMsg('微調：前後 <b>' + S.trimF + '</b>、左右 <b>' + S.trimR + '</b>（每按一格，機身會慢慢往那個方向飄一點；按中間菱形歸零）。'); }
+  function blSpeed(d, max) {
+    S.speedIdx = max ? SPEEDS.length - 1 : (S.speedIdx + d + SPEEDS.length) % SPEEDS.length;
+    VMAX = SPEEDS[S.speedIdx]; syncRc(); sfx('speed', S.speedIdx + 1);
+    setMsg('速度：<b>' + SPEED_NAMES[S.speedIdx] + '</b>' + (max ? '（著陸時長按＝最快）' : '') + '。');
+  }
+  function blAct(id, lg) {
+    var fly = S.mode === 'flying' || S.mode === 'takeoff';
+    var air = S.mode !== 'landed' && S.mode !== 'fall';
+    if (id === 'bGo') {
+      if (lg) {
+        if (S.mode === 'landed') { toggleFly(); if (S.mode === 'flying') { S.mode = 'takeoff'; S.toAlt = 1.0; } }
+        else if (fly) { S.mode = 'landing'; setMsg('<b>自動降落</b>中。'); }
+      } else if (air && S.alNow < -0.4) {
+        S.mode = 'fall'; S.fallV = 0; S.toAlt = 0; S.flip = null; S.flipArm = 0; sfx('lock'); setMsg('<b>緊急降落</b>：油門在最低時短按起降鍵，馬達立即停止。');
+      } else setMsg('起降鍵：<b>長按</b>＝自動起飛／降落；油門拉到最低時<b>短按</b>＝緊急降落（馬達立即停止）。');
+    } else if (id === 'bE') {
+      if (lg) setMsg('E 鍵長按＝返回原位，需要安裝 Sky Sensor，模擬器沒有這個配件。');
+      else { S.headless = !S.headless; sfx('key'); syncRc(); setMsg(S.headless ? '<b>脫困（無頭）模式開啟</b>：右搖桿方向固定朝對方球框，不管機頭轉到哪裡。再按一下 E 關閉。' : '<b>脫困（無頭）模式關閉</b>。'); }
+    } else if (id === 'bM') {
+      if (lg) { S.jp = !S.jp; sfx('key'); syncBl(); setMsg(S.jp ? '<b>模式2・日本手</b>：左搖桿＝前後・左右平移，右搖桿＝升降・轉向。長按 M 切回美國手。' : '<b>模式1・美國手</b>：左搖桿＝升降・轉向，右搖桿＝前後・左右平移。'); }
+      else setMsg('M 鍵：<b>長按</b>切換模式1（美國手）／模式2（日本手）；短按是 USB 連接的控制／編成切換，模擬器沒有。');
+    } else if (id === 'bPw') {
+      if (lg) setMsg('電源鍵長按＝遙控器開／關機，模擬器不需要。');
+      else { S.tiltX = S.tiltZ = 0; S.kx = S.kz = S.kxv = S.kzv = 0; sfx('key'); setMsg('<b>無人機 IMU 重置</b>：機身姿態校正歸零。'); }
+    } else if (id === 'bSL') {
+      blSpeed(1, lg && S.mode === 'landed');
+    } else if (id === 'bSR') {
+      if (lg) {
+        if (fly && S.unlocked) {
+          if (S.flipArm > 0) { S.flipArm = 0; setMsg('已取消翻滾準備。'); }
+          else { S.flipArm = 1e9; S.flipB = 0; sfx('key'); setMsg('<b>翻滾準備</b>：把右搖桿往 <b>前／後／左／右</b> 推就會翻一圈（再長按一次取消）。'); }
+        } else setMsg('飛起來之後，<b>長按</b>右上鍵才能 360 度翻轉。');
+      } else blSpeed(-1, false);
+    } else if (id === 'bTU') { S.trimF = clamp(S.trimF + 1, -8, 8); blTrimMsg(); }
+    else if (id === 'bTD') { S.trimF = clamp(S.trimF - 1, -8, 8); blTrimMsg(); }
+    else if (id === 'bTR') { S.trimR = clamp(S.trimR + 1, -8, 8); blTrimMsg(); }
+    else if (id === 'bTL') { S.trimR = clamp(S.trimR - 1, -8, 8); blTrimMsg(); }
+    else if (id === 'bTC') { S.trimF = S.trimR = 0; blTrimMsg(); }
+  }
+  function blPress(id, lg) { if (PAIR.fwd('bl:' + id + ':' + (lg ? 1 : 0))) return; blAct(id, lg); }
+  window.__blAct = blPress;
+  BLIDS.forEach(function (id) {
+    var el = $(id); if (!el) return;
+    if (/^bT/.test(id)) { pressOn(el, function () { blPress(id, false); }, true); return; }
+    var tm = 0, pid = null;
+    el.addEventListener('pointerdown', function (e) {
+      e.preventDefault(); pid = e.pointerId; el._ptr = true; el._t0 = performance.now(); sfx('key');
+      clearTimeout(tm); tm = setTimeout(function () { tm = 0; blPress(id, true); }, 550);
+    });
+    function up(e) {
+      if (pid === null || e.pointerId !== pid) return; pid = null;
+      if (tm) { clearTimeout(tm); tm = 0; if (e.type !== 'pointercancel') blPress(id, performance.now() - el._t0 >= 550); }
+      setTimeout(function () { el._ptr = false; }, 400);
+    }
+    window.addEventListener('pointerup', up, true); window.addEventListener('pointercancel', up, true);
+    el.addEventListener('click', function () { if (el._ptr) return; blPress(id, false); });   // 鍵盤 Enter／空白鍵
+  });
+  syncBl();
   syncRc();
 
   var viewBtns = document.querySelectorAll('[data-view]');
@@ -2260,6 +2602,7 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
   var roleBtns = document.querySelectorAll('[data-role]');
   var standBtns = document.querySelectorAll('[data-stand]');
   var shellBtns = document.querySelectorAll('[data-shell]');
+  var dtypeBtns = document.querySelectorAll('[data-dtype]');
   var frameBtns = document.querySelectorAll('[data-frame]');
   var aiBtns = document.querySelectorAll('[data-ai]');
   var fmtBtns = document.querySelectorAll('[data-fmt]');
@@ -2328,6 +2671,7 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
     for (i = 0; i < fmtBtns.length; i++) fmtBtns[i].setAttribute('aria-pressed', String(parseInt(fmtBtns[i].getAttribute('data-fmt'), 10) === AI.fmt));
     for (i = 0; i < fieldBtns.length; i++) fieldBtns[i].setAttribute('aria-pressed', String(fieldBtns[i].getAttribute('data-field') === FIELD));
     for (i = 0; i < frameBtns.length; i++) frameBtns[i].setAttribute('aria-pressed', String(parseInt(frameBtns[i].getAttribute('data-frame'), 10) === S.frame));
+    for (i = 0; i < dtypeBtns.length; i++) dtypeBtns[i].setAttribute('aria-pressed', String(parseInt(dtypeBtns[i].getAttribute('data-dtype'), 10) === S.type));
   }
   function setRole(n) {
     if (S.mode !== 'landed') { setMsg('請先降落，再切換攻擊手或防守者。'); return; }
@@ -2378,7 +2722,7 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(later);
     setTimeout(segRound, 300); setTimeout(segRound, 1200);
   })();
-  var setBody = $('setBody'), setCatNm = { play: '比賽', view: '視角與球框', look: '外觀', ui: '界面', snd: '聲音與震動', ctl: '遙控與連線' };
+  var setBody = $('setBody'), setCatNm = { play: '比賽', view: '視角與球框', look: '外觀', ui: '界面', snd: '聲音與震動' };
   function setLevel(k) {   // k 為空＝第一層（分類清單）
     setBody.setAttribute('data-lv', k ? '1' : '0');
     var els = setBody.querySelectorAll('[data-cat]'), i;
@@ -2401,7 +2745,7 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
   $('btnToSet').addEventListener('click', function () { if (setBody.hidden) setOpen(); else setShut(); });
   $('setClose').addEventListener('click', setShut);
   document.addEventListener('pointerdown', function (e) {   // 點到視窗外面：關掉
-    if (!setBody.hidden && !document.documentElement.classList.contains('pair-ctl') && !e.target.closest('#setBody, #btnToSet')) setShut();
+    if (!setBody.hidden && !e.target.closest('#setBody, #btnToSet')) setShut();
   }, true);
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !setBody.hidden) setShut(); });
   (function () {
@@ -3117,6 +3461,7 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
   bindOpt(hoopXBtns, 'data-hoopx', function (v) { setHoopAlpha('x', v); }, true);
   bindOpt(roleBtns, 'data-role', setRole, true);
   bindOpt(standBtns, 'data-stand', setStand, false);
+  bindOpt(dtypeBtns, 'data-dtype', function (i) { setDType(i, true); syncOpts(); netSend(true); }, true);
   bindOpt(shellBtns, 'data-shell', function (i) { S.shell = i; syncOpts(); netSend(true); }, true);
   $('aiGo').addEventListener('click', aiStartCd);
   $('aiFree').addEventListener('click', function () { AI.over = false; AI.run = false; setMsg('<b>自由練習</b>：可以起飛練習。要比賽時按「開始比賽」。'); });
@@ -3187,10 +3532,13 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
 
     // 實體遙控器：左搖桿＝油門與轉向，右搖桿＝前後與平移
     gpPoll();
-    var mx = clamp(dz(stickR.x) + GP.rx + PI.rx + (keys.right ? 1 : 0) - (keys.left ? 1 : 0), -1, 1);
-    var my = clamp(dz(stickR.y) + GP.ry + PI.ry + (keys.back ? 1 : 0) - (keys.fwd ? 1 : 0), -1, 1);
-    var al = clamp(-dz(stickL.y) - GP.ly + PI.ly + (keys.up ? 1 : 0) - (keys.down ? 1 : 0), -1, 1);
-    var yw = clamp(dz(stickL.x) + GP.lx + PI.lx + (keys.yawr ? 1 : 0) - (keys.yawl ? 1 : 0), -1, 1);
+    var SA = S.jp ? stickR : stickL, SB = S.jp ? stickL : stickR;   // 日本手（模式2）：左右搖桿功能對調
+    if (S.type === 1) { S.unlocked = true; S.hold = true; }   // 無刷：沒有解鎖／定高滑桿，開機配對後就是可飛、定高狀態
+    var mx = clamp(dz(SB.x) + GP.rx + PI.rx + (keys.right ? 1 : 0) - (keys.left ? 1 : 0), -1, 1);
+    var my = clamp(dz(SB.y) + GP.ry + PI.ry + (keys.back ? 1 : 0) - (keys.fwd ? 1 : 0), -1, 1);
+    var al = clamp(-dz(SA.y) - GP.ly + PI.ly + (keys.up ? 1 : 0) - (keys.down ? 1 : 0), -1, 1);
+    var yw = clamp(dz(SA.x) + GP.lx + PI.lx + (keys.yawr ? 1 : 0) - (keys.yawl ? 1 : 0), -1, 1);
+    S.alNow = al;
     if (S.stun > 0) { mx *= 0.25; my *= 0.25; yw *= 0.25; }   // 剛被撞到，操控變遲鈍
 
     // 翻滾：左鍵按一下後，右搖桿往某方向推就翻一圈
@@ -3217,7 +3565,19 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
     // 搖桿手勢起飛
     // 定高：左搖桿往上推兩下（1.5 秒內），或往上推住不放 0.7 秒
     // 無定高：左搖桿往上推過中間（超過一半行程）就起飛
-    if (S.mode === 'landed') {
+    if (S.mode === 'landed' && S.type === 1) {
+      // 無刷手動起飛：左搖桿（油門）快速上下撥幾次（1.6 秒內來回 3 次以上）
+      var wz = al > 0.5 ? 1 : (al < -0.5 ? -1 : 0);
+      if (wz !== 0 && wz !== S.wigZ) {
+        var wn = performance.now();
+        S.wigT = (S.wigT || []).filter(function (t) { return wn - t < 1600; });
+        if (S.wigZ) S.wigT.push(wn);
+        S.wigZ = wz;
+        if (S.wigT.length) sfx('key');
+        if (S.wigT.length >= 3 && S.unlocked && !S.done && !matchLocked() && cdLeft() <= 0) { S.wigT = []; S.wigZ = 0; toggleFly(); if (S.mode === 'flying') { S.mode = 'takeoff'; S.toAlt = 0; } }
+      }
+      S.upHeld = al > 0.5; S.upTime = 0;
+    } else if (S.mode === 'landed') {
       var pushUp = al > 0.5;
       S.upTime = pushUp ? S.upTime + dt : 0;
       if (!S.hold) {
@@ -3243,6 +3603,7 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
       S.upHeld = al > 0.5;
       S.upTime = 0;
       S.dnArm = false;
+      S.wigZ = 0; S.wigT = [];
     }
 
     if (!flying || S.mode !== 'flying') S.vzh = 0;
@@ -3259,7 +3620,7 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
     } else if (flying) {
       S.yawR = (S.yawR || 0) + (yw * 2.0 - (S.yawR || 0)) * Math.min(1, dt * 7);   // 轉向有慣性：不會瞬間轉，放開搖桿也會稍微滑一下
       S.yaw += S.yawR * dt;
-      var fwd = -my, right = mx;
+      var fwd = -my + S.trimF * 0.04, right = mx + S.trimR * 0.04;   // 微調：每按一次讓機身多飄一點
       var fx = Math.sin(S.yaw), fy = -Math.cos(S.yaw);
       var rx = Math.cos(S.yaw), ry = Math.sin(S.yaw);
       if (S.headless) { fx = Math.sin(S.hy); fy = -Math.cos(S.hy); rx = Math.cos(S.hy); ry = Math.sin(S.hy); }   // 無頭：方向固定以起飛時的機頭為準
@@ -3270,10 +3631,12 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
       S.vy += (tvy - S.vy) * k;
 
       if (S.mode === 'takeoff' && !S.hold) S.mode = 'flying';   // 飛到一半關掉定高，就不再自動爬升
-      if (S.mode === 'takeoff' && Math.abs(al) > 0.15 && S.z > 0.08) S.mode = 'flying';   // 起飛途中一動搖桿就交還控制，不必爬到定點高度
+      if (S.mode !== 'takeoff') S.toAlt = 0;
+      if (S.mode === 'takeoff' && !S.toAlt && Math.abs(al) > 0.15 && S.z > 0.08) S.mode = 'flying';   // 起飛途中一動搖桿就交還控制，不必爬到定點高度
       if (S.mode === 'takeoff') {
         S.z += 0.8 * dt;
-        if (S.z >= 0.5) { S.z = 0.5; S.mode = 'flying'; }   // 起飛只離地約 0.5 m，之後由搖桿控制高度
+        var tAlt = S.toAlt || 0.5;   // 一般起飛只離地約 0.5 m；無刷自動起飛飛到 1 m
+        if (S.z >= tAlt) { S.z = tAlt; S.mode = 'flying'; S.toAlt = 0; }
       } else if (S.mode === 'landing') {
         S.z -= 0.7 * dt;
         if (S.z <= 0) { S.z = 0; S.mode = 'landed'; S.vx = 0; S.vy = 0; }
@@ -3291,7 +3654,7 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
         }
         if (S.z <= 0) {
           S.z = 0; S.mode = 'landed'; S.vx = 0; S.vy = 0;
-          setMsg(S.hold ? '已降落。再飛一次：左搖桿往上推一下起槳，再推一下起飛。' : '已降落。再飛一次：左搖桿先往下推，再往上推過中間。');
+          setMsg(S.type === 1 ? '已降落。再飛一次：長按右下起降鍵，或左搖桿快速上下撥幾次。' : S.hold ? '已降落。再飛一次：左搖桿往上推一下起槳，再推一下起飛。' : '已降落。再飛一次：左搖桿先往下推，再往上推過中間。');
         }
       }
 
@@ -3498,6 +3861,7 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
     frameMat.color.setHex(PAL[S.frame]);
     discMat.opacity = 0.16 * S.spin;
     bladeMat.opacity = 0.8 - 0.45 * S.spin;
+    local.M.bladeR.opacity = local.M.bladeB.opacity = 0.85 - 0.45 * S.spin;
 
     var led = ledColor();
     var power = S.mode === 'landed' ? 0.5 : 1;
@@ -3582,7 +3946,7 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
     var pop = gearLast >= 0;
     gearLast = S.speedIdx;
     gearTxt.textContent = '檔位 ' + (S.speedIdx + 1) + '・' + SPEED_NAMES[S.speedIdx];
-    for (var gi = 0; gi < gearBars.length; gi++) gearBars[gi].className = gi <= S.speedIdx ? 'on' : '';
+    for (var gi = 0; gi < gearBars.length; gi++) { gearBars[gi].className = gi <= S.speedIdx ? 'on' : ''; gearBars[gi].style.display = gi < SPEEDS.length ? '' : 'none'; }
     if (pop) { gearBox.classList.add('pop'); setTimeout(function () { gearBox.classList.remove('pop'); }, 220); }
   }
   var lgBelt = $('lgBelt'), lgBeltT = $('lgBeltT'), lgTail = $('lgTail'), lgTailT = $('lgTailT'), lgHead = $('lgHead'), lgKey = '';
@@ -4375,7 +4739,7 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
     return {
       id: MYID, tm: S.team === 'blue' ? 'b' : 'r',
       x: r3(S.x), y: r3(S.y), z: r3(S.z), vx: r2(S.vx), vy: r2(S.vy), yw: r3(S.yaw),
-      ld: S.led, tl: S.tail, md: mdCode(), bt: Math.round(S.bat), ep: epoch, g: g, rl: S.role, cc: S.shell, fc: S.frame, nm: NET.myName,
+      ld: S.led, tl: S.tail, md: mdCode(), bt: Math.round(S.bat), ep: epoch, g: g, rl: S.role, cc: S.shell, fc: S.frame, dt: S.type, nm: NET.myName,
       f: f, hl: S.headless ? 1 : 0, jt: NET.jt, mx: NET.amRef ? msPublish() : null, kk: (NET.amRef && Object.keys(NET.kicks).length) ? NET.kicks : null
     };
   }
@@ -4537,7 +4901,7 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
     scene.add(holder);
     return {
       key: key, holder: holder, drone: d.drone, body: d.body, blades: d.blades, M: M, tag: tag,
-      cage: d.cage, kx: 0, kz: 0, kxv: 0, kzv: 0, yawOff: 0, spinY: 0, pvx: 0, pvy: 0, lastK: 0,
+      cage: d.cage, setType: d.setType, dt: 0, kx: 0, kz: 0, kxv: 0, kzv: 0, yawOff: 0, spinY: 0, pvx: 0, pvy: 0, lastK: 0,
       p: {}, at: Date.now(), by: null, init: false,
       x: 0, y: 0, z: 0, yaw: 0, spin: 0, propA: 0, tiltX: 0, tiltZ: 0
     };
@@ -4601,8 +4965,10 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
       for (i = 0; i < r.blades.length; i++) r.blades[i].rotation.y = r.propA * (i % 2 === 0 ? 1 : -1) + i;
       r.M.disc.opacity = 0.16 * r.spin;
       r.M.blade.opacity = 0.8 - 0.45 * r.spin;
-      r.M.shell.color.setHex(PAL[isNum(p.cc) ? clamp(Math.floor(p.cc), 0, 2) : 1]);
-      r.M.frame.color.setHex(PAL[isNum(p.fc) ? clamp(Math.floor(p.fc), 0, 2) : 2]);
+      r.M.bladeR.opacity = r.M.bladeB.opacity = 0.85 - 0.45 * r.spin;
+      r.M.shell.color.setHex(PAL[isNum(p.cc) ? clamp(Math.floor(p.cc), 0, 4) : 1]);
+      r.M.frame.color.setHex(PAL[isNum(p.fc) ? clamp(Math.floor(p.fc), 0, 4) : 2]);
+      var dtv = p.dt === 1 ? 1 : 0; if (r.dt !== dtv) { r.dt = dtv; r.setType(dtv); }
 
       var li = isNum(p.ld) ? clamp(Math.floor(p.ld), 0, 5) : 2;
       var ti = isNum(p.tl) ? clamp(Math.floor(p.tl), 0, 5) : 5;
@@ -4862,7 +5228,7 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
     var LOCAL = ['data-gl', 'data-ui', 'data-bg', 'data-fill', 'data-fg', 'data-rc'];
     function fwdList() {
       return Array.prototype.filter.call(document.querySelectorAll('.opts button, #btnReset'), function (b) {
-        if (b.closest('#pairRow') || b.closest('#setTabs') || b.closest('#cmRow') || b.closest('#rc') || b.closest('#sndOpts') || b.closest('#sndOpts2')) return false;
+        if (b.closest('#pairRow') || b.closest('#setTabs') || b.closest('#manTabs') || b.closest('#cmRow') || b.closest('#rc') || b.closest('#sndOpts') || b.closest('#sndOpts2')) return false;
         for (var i = 0; i < LOCAL.length; i++) if (b.hasAttribute(LOCAL[i])) return false;
         return true;
       });
@@ -4911,7 +5277,8 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
     }
     function restore() {   // 斷線：操控端把遙控器狀態還原成配對前
       if (!snap) return;
-      S.unlocked = snap.u; S.hold = snap.h; S.headless = snap.hd; S.speedIdx = snap.sp; S.led = snap.led; S.tail = snap.tl; S.role = snap.role; S.flipArm = 0;
+      if (snap.ty === 0 || snap.ty === 1) { if (snap.ty !== S.type) setDType(snap.ty); }
+      S.unlocked = snap.u; S.hold = snap.h; S.headless = snap.hd; S.speedIdx = Math.min(snap.sp, SPEEDS.length - 1); S.led = snap.led; S.tail = snap.tl; S.role = snap.role; S.flipArm = 0;
       try { VMAX = SPEEDS[S.speedIdx]; } catch (e) {}
       if (optSnap) { applyOpts(optSnap); optSnap = null; }
       snap = null; syncRc();
@@ -4942,16 +5309,17 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
           stT = setInterval(function () {
             if (!conn || !conn.open) return;
             if (performance.now() - PI.t > 1500) PI.rx = PI.ry = PI.lx = PI.ly = 0;   // 操控端斷訊就放開搖桿
-            try { conn.send({ t: 'st', u: S.unlocked, h: S.hold, hd: S.headless, sp: S.speedIdx, led: S.led, tl: S.tail, role: S.role, f: S.flipArm > 0, o: optState() }); } catch (e) {}
+            try { conn.send({ t: 'st', u: S.unlocked, h: S.hold, hd: S.headless, sp: S.speedIdx, ty: S.type, jp: S.jp, led: S.led, tl: S.tail, role: S.role, f: S.flipArm > 0, o: optState() }); } catch (e) {}
           }, 200);
         });
         c.on('data', function (m) {
           if (!m) return; PI.t = performance.now();
           if (m.t === 'i') { PI.rx = +m.rx || 0; PI.ry = +m.ry || 0; PI.lx = +m.lx || 0; PI.ly = +m.ly || 0; }
-          else if (m.t === 'o') { var bb = fwdList()[m.i | 0]; if (bb && !bb.disabled) { bb.click(); try { conn.send({ t: 'st', u: S.unlocked, h: S.hold, hd: S.headless, sp: S.speedIdx, led: S.led, tl: S.tail, role: S.role, f: S.flipArm > 0, o: optState() }); } catch (er) {} } }
+          else if (m.t === 'o') { var bb = fwdList()[m.i | 0]; if (bb && !bb.disabled) { bb.click(); try { conn.send({ t: 'st', u: S.unlocked, h: S.hold, hd: S.headless, sp: S.speedIdx, ty: S.type, jp: S.jp, led: S.led, tl: S.tail, role: S.role, f: S.flipArm > 0, o: optState() }); } catch (er) {} } }
           else if (m.t === 'b') {
             if (m.k === 'lock') setUnlock(!S.unlocked); else if (m.k === 'hold') setHold(!S.hold);
             else if (m.k === 'fbL') pressLeft(); else if (m.k === 'fbR') pressRight();
+            else if (typeof m.k === 'string' && /^bl:b[A-Za-z]+:[01]$/.test(m.k)) { var bp = m.k.split(':'); if (BLIDS.indexOf(bp[1]) >= 0) blAct(bp[1], bp[2] === '1'); }
           }
         });
         c.on('close', function () { conn = null; PI.rx = PI.ry = PI.lx = PI.ly = 0; clearInterval(stT); say('操控端已離線，PIN：' + pin); ui(); });
@@ -4981,13 +5349,15 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
         var c = peer.connect('cdpair-' + pin, { reliable: false, serialization: 'json' });
         c.on('open', function () {
           if (done) return; done = true; clearTimeout(to); conn = c; say('已連線，可以操控了');
-          optSnap = optState(); lastSt = performance.now(); snap = { u: S.unlocked, h: S.hold, hd: S.headless, sp: S.speedIdx, led: S.led, tl: S.tail, role: S.role }; ui();
+          optSnap = optState(); lastSt = performance.now(); snap = { u: S.unlocked, h: S.hold, hd: S.headless, ty: S.type, sp: S.speedIdx, led: S.led, tl: S.tail, role: S.role }; ui();
           clearInterval(sendT); sendT = setInterval(pushInput, 33);
         });
         c.on('data', function (m) {
           if (!m || m.t !== 'st') return;
           lastSt = performance.now();
-          S.unlocked = !!m.u; S.hold = !!m.h; S.headless = !!m.hd; S.speedIdx = m.sp | 0; S.led = m.led | 0; S.tail = m.tl | 0; S.role = m.role | 0; S.flipArm = m.f ? 1e9 : 0;
+          if ((m.ty === 0 || m.ty === 1) && m.ty !== S.type) setDType(m.ty);
+          S.jp = !!m.jp; try { syncBl(); } catch (e5) {}
+          S.unlocked = !!m.u; S.hold = !!m.h; S.headless = !!m.hd; S.speedIdx = Math.min(m.sp | 0, SPEEDS.length - 1); S.led = m.led | 0; S.tail = m.tl | 0; S.role = m.role | 0; S.flipArm = m.f ? 1e9 : 0;
           if (m.o) applyOpts(m.o);
           syncRc();
         });
@@ -5247,7 +5617,7 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
   /* ---------- 線上帳號：Google 登入、暱稱與設定同步、戰績、排行（Firebase） ---------- */
   var ACCT = (function () {
     var A = { user: null, nick: '', prof: null, fb: null, db: null, ph: '', pushed: '', busy: false };
-    var SYNC_KEYS = ['cd_volm', 'cd_volb', 'cd_ui', 'cd_ui2', 'cd_sz', 'cd_split', 'cd_padlay', 'cd_padcus', 'cd_kb', 'cd_hoopalpha', 'cd_field'];
+    var SYNC_KEYS = ['cd_volm', 'cd_volb', 'cd_ui', 'cd_ui2', 'cd_sz', 'cd_split', 'cd_padlay', 'cd_padcus', 'cd_kb', 'cd_hoopalpha', 'cd_field', 'cd_dtype'];
     var el = $('acct'), msg = $('acMsg'), V = '10.12.2';
     A.on = !!(CLOUD && CLOUD.apiKey && CLOUD.projectId && CLOUD.authDomain);
     function say(t, err) { msg.textContent = t || ''; msg.className = 'amsg' + (err ? ' err' : ''); }
@@ -5525,6 +5895,29 @@ html:not(.pair-ctl) #setBody[data-lv="0"] [data-cat] { display: none !important;
     }).catch(function () {});
     function afterLoginQuiet(u) { return setUser(u); }
     return A;
+  })();
+
+
+  /* ---------- 說明手冊 ---------- */
+  (function () {
+    var man = $('man'), tabs = $('manTabs'), body = $('manBody');
+    function sec(k) {
+      Array.prototype.forEach.call(man.querySelectorAll('section'), function (e) { e.classList.toggle('on', e.getAttribute('data-sec') === k); });
+      Array.prototype.forEach.call(tabs.querySelectorAll('[data-sec]'), function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-sec') === k)); });
+      body.scrollTop = 0;
+    }
+    Array.prototype.forEach.call(tabs.querySelectorAll('[data-sec]'), function (b) { b.addEventListener('click', function () { sec(b.getAttribute('data-sec')); }); });
+    function open() {
+      man.hidden = false;
+      requestAnimationFrame(function () { window.dispatchEvent(new Event('resize')); var t = tabs.__lgt; if (t) { try { t.measure(); t.syncSel(false); t.frame(t.D); } catch (e) {} } });
+      setTimeout(function () { window.dispatchEvent(new Event('resize')); var t = tabs.__lgt; if (t) { try { t.measure(); t.syncSel(false); t.frame(t.D); } catch (e) {} } }, 200);
+    }
+    function shut() { man.hidden = true; }
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !man.hidden) shut(); });
+    $('btnMan').addEventListener('click', open);
+    $('manClose').addEventListener('click', shut);
+    man.addEventListener('pointerdown', function (e) { if (e.target === man) shut(); });
+    ['keydown', 'keyup', 'keypress'].forEach(function (t) { man.addEventListener(t, function (e) { if (t === 'keydown' && e.key === 'Escape') shut(); e.stopPropagation(); }); });
   })();
 
   var errAt = 0;
