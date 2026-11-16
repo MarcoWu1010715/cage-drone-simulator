@@ -892,7 +892,7 @@ html.glass #tut { background: rgba(0,0,0,.38); }
 </div></div>
 <div class="wrap">
   <header>
-    <h1>無人機足球模擬器 <small class="ver" id="verTag">v237</small></h1>
+    <h1>無人機足球模擬器 <small class="ver" id="verTag">v238</small></h1>
     <span class="pill" id="status" data-s="idle">待機中</span>
   </header>
   <div class="netbox">
@@ -5203,21 +5203,131 @@ html.glass #tut { background: rgba(0,0,0,.38); }
      沒有 Claude 的 room 時，改用 PeerJS 的公用中介牽線，介面和 room 一樣（presence / peers / onPeers）。
      同房號裡最先上線的人當「主機」，其他人連到主機，主機把每個人的狀態轉給大家；主機離開時，剩下的人會自動重連、推出新的主機。 */
   function loadPeerJs() {
-    // 連線工具庫可能被某些網路擋掉：依序試三個來源，任何一個載入成功就用
-    var urls = ['https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js', 'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js'];
-    var get = function () { return window.Peer || (window.peerjs && window.peerjs.Peer); };
+    // 不再用 PeerJS 公用伺服器（有些網路連不到）：改用 Firebase Firestore 當「牽線」，資料還是 WebRTC 點對點直連。
     return new Promise(function (resolve, reject) {
-      if (get()) { resolve(get()); return; }
-      var i = 0;
-      (function next() {
-        if (i >= urls.length) { reject(new Error('peerjs')); return; }
-        var sc = document.createElement('script');
-        sc.src = urls[i++];
-        sc.onload = function () { if (get()) resolve(get()); else next(); };
-        sc.onerror = function () { try { sc.remove(); } catch (e) {} next(); };
-        document.head.appendChild(sc);
-      })();
+      if (typeof RTCPeerConnection === 'undefined') { reject({ type: 'browser-incompatible' }); return; }
+      if (typeof ACCT === 'undefined' || !ACCT || !ACCT.on || !ACCT.ready) { reject({ type: 'fb-off' }); return; }
+      ACCT.ready().then(function () { resolve(FsPeer); }, function () { reject({ type: 'fb-lib' }); });
     });
+  }
+  /* 和 PeerJS 的 Peer 介面一樣的小子集（open/error/connection/disconnected/close、connect、destroy、reconnect；連線物件有 open/data/close/error、send、close）。
+     牽線資料放在 Firestore：sig/{peerId} 是「這個名字被佔用」的標記（定時更新），sig/{peerId}/m/* 是寄給它的信（offer／answer／ICE），讀完就刪。 */
+  function FsPeer(id, opts) {
+    var self = this, db = ACCT.db, fv = ACCT.fb.firestore, cfg = (opts && opts.config) || {};
+    var owner = Math.random().toString(36).slice(2) + Date.now().toString(36);
+    var hs = {}, conns = {}, pend = {}, unsub = null, hbT = 0, hbFail = 0;
+    var STALE = 75000, HB = 30000;
+    self.id = id; self.open = false; self.disconnected = false; self.destroyed = false;
+    self.on = function (ev, fn) { (hs[ev] = hs[ev] || []).push(fn); return self; };
+    function emit(ev, a) { var l = (hs[ev] || []).slice(); for (var i = 0; i < l.length; i++) { try { l[i](a); } catch (e) {} } }
+    function errType(e) { var c = String((e && e.code) || ''); return /permission/.test(c) ? 'permission' : 'network'; }
+    function me() { return db.collection('sig').doc(id); }
+    function inbox(pid) { return db.collection('sig').doc(pid).collection('m'); }
+    function post(to, cid, k, d) { return inbox(to).add({ f: id, c: cid, k: k, d: JSON.stringify(d), t: Date.now() }).catch(function () {}); }
+    function claim() {
+      var ref = me();
+      return db.runTransaction(function (tx) {
+        return tx.get(ref).then(function (s) {
+          if (s.exists && s.data().o !== owner && Date.now() - (s.data().t || 0) < STALE) throw { type: 'unavailable-id' };
+          tx.set(ref, { t: Date.now(), o: owner });
+        });
+      });
+    }
+    function withTimeout(p, ms) {
+      return new Promise(function (res, rej) { var t = setTimeout(function () { rej({ code: 'timeout' }); }, ms); p.then(function (v) { clearTimeout(t); res(v); }, function (e) { clearTimeout(t); rej(e); }); });
+    }
+    function mkConn(remote, cid, init) {
+      var c = { peer: remote, open: false, metadata: null }, ch = {}, pc = null, dc = null, q = [], haveRd = false, closed = false, discT = 0;
+      c.on = function (ev, fn) { (ch[ev] = ch[ev] || []).push(fn); return c; };
+      function ce(ev, a) { var l = (ch[ev] || []).slice(); for (var i = 0; i < l.length; i++) { try { l[i](a); } catch (e) {} } }
+      function done() { if (closed) return; closed = true; clearTimeout(discT); var was = c.open; c.open = false; try { if (dc) dc.close(); } catch (e) {} try { pc.close(); } catch (e) {} delete conns[cid]; ce('close'); }
+      function wire(d) {
+        dc = d;
+        dc.onopen = function () { if (closed) return; c.open = true; ce('open'); };
+        dc.onclose = done;
+        dc.onerror = function () { ce('error', { type: 'webrtc' }); };
+        dc.onmessage = function (ev) { var m; try { m = JSON.parse(ev.data); } catch (e) { return; } ce('data', m); };
+      }
+      c.send = function (m) { if (dc && dc.readyState === 'open') dc.send(JSON.stringify(m)); };
+      c.close = done;
+      c._signal = function (k, d) {
+        if (closed) return Promise.resolve();
+        if (k === 'o') {
+          return pc.setRemoteDescription(d).then(function () { haveRd = true; return flush(); }).then(function () { return pc.createAnswer(); })
+            .then(function (a) { return pc.setLocalDescription(a).then(function () { return post(remote, cid, 'a', { type: a.type, sdp: a.sdp }); }); });
+        }
+        if (k === 'a') return pc.setRemoteDescription(d).then(function () { haveRd = true; return flush(); });
+        if (k === 'i') { if (haveRd) return pc.addIceCandidate(d).catch(function () {}); q.push(d); }
+        return Promise.resolve();
+      };
+      function flush() { var l = q; q = []; return Promise.all(l.map(function (x) { return pc.addIceCandidate(x).catch(function () {}); })); }
+      pc = new RTCPeerConnection({ iceServers: cfg.iceServers || [], iceCandidatePoolSize: cfg.iceCandidatePoolSize || 0, iceTransportPolicy: cfg.iceTransportPolicy || 'all' });
+      pc.onicecandidate = function (e) { if (e.candidate) post(remote, cid, 'i', e.candidate.toJSON ? e.candidate.toJSON() : e.candidate); };
+      pc.onconnectionstatechange = function () {
+        var s = pc.connectionState;
+        if (s === 'failed' || s === 'closed') done();
+        else if (s === 'disconnected') { clearTimeout(discT); discT = setTimeout(function () { if (pc.connectionState !== 'connected') done(); }, 6000); }
+        else if (s === 'connected') clearTimeout(discT);
+      };
+      if (init) {
+        wire(pc.createDataChannel('d', (opts && opts.reliable === false) ? { ordered: false, maxRetransmits: 0 } : { ordered: true }));
+        pc.createOffer().then(function (o) { return pc.setLocalDescription(o).then(function () { return post(remote, cid, 'o', { type: o.type, sdp: o.sdp }); }); }).catch(function () { done(); });
+      } else pc.ondatachannel = function (e) { wire(e.channel); };
+      conns[cid] = c;
+      return c;
+    }
+    function onMsg(m) {
+      var d; try { d = JSON.parse(m.d); } catch (e) { return; }
+      var c = conns[m.c];
+      if (!c && m.k === 'o') { c = mkConn(m.f, m.c, false); emit('connection', c); }
+      if (!c) { if (m.k === 'i') (pend[m.c] = pend[m.c] || []).push(d); return; }
+      var early = pend[m.c]; delete pend[m.c];
+      c._signal(m.k, d).then(function () { if (early) early.forEach(function (x) { c._signal('i', x); }); }).catch(function () {});
+    }
+    function listen() {
+      if (unsub) try { unsub(); } catch (e) {}
+      unsub = inbox(id).onSnapshot(function (snap) {
+        var l = [];
+        snap.docChanges().forEach(function (ch) { if (ch.type === 'added') l.push(ch.doc); });
+        l.sort(function (a, b) { var x = a.data(), y = b.data(); return (x.t || 0) - (y.t || 0); });
+        l.forEach(function (doc) { var m = doc.data(); doc.ref.delete().catch(function () {}); if (Date.now() - (m.t || 0) < 120000) onMsg(m); });
+      }, function (e) { if (!self.destroyed) emit('error', { type: errType(e) }); });
+    }
+    function beat() {
+      clearInterval(hbT);
+      hbT = setInterval(function () {
+        if (self.destroyed) return;
+        me().set({ t: Date.now(), o: owner }).then(function () { hbFail = 0; if (self.disconnected) { self.disconnected = false; } }, function () {
+          if (++hbFail >= 3 && !self.disconnected) { self.disconnected = true; emit('disconnected'); }
+        });
+      }, HB);
+    }
+    self.connect = function (remote, o) {
+      var cid = 'c' + Math.random().toString(36).slice(2, 10), c = mkConn(remote, cid, true);
+      // 對方的名字標記不存在或太久沒更新 ＝ 對方不在線上
+      withTimeout(db.collection('sig').doc(remote).get(), 12000).then(function (s) {
+        if (!s.exists || Date.now() - (s.data().t || 0) > STALE) { delete conns[cid]; try { c.close(); } catch (e) {} if (!self.destroyed) emit('error', { type: 'peer-unavailable' }); }
+      }, function () {});
+      return c;
+    };
+    self.reconnect = function () {
+      if (self.destroyed) return;
+      claim().then(function () { self.disconnected = false; hbFail = 0; listen(); beat(); }, function () {});
+    };
+    self.destroy = function () {
+      if (self.destroyed) return;
+      self.destroyed = true; self.open = false; clearInterval(hbT);
+      Object.keys(conns).forEach(function (k) { try { conns[k].close(); } catch (e) {} });
+      if (unsub) try { unsub(); } catch (e) {}
+      me().get().then(function (s) { if (s.exists && s.data().o === owner) return me().delete(); }).catch(function () {});
+      emit('close');
+    };
+    setTimeout(function () {
+      withTimeout(claim(), 12000).then(function () {
+        if (self.destroyed) { me().delete().catch(function () {}); return; }
+        listen(); beat(); self.open = true; emit('open', id);
+      }, function (e) { if (!self.destroyed) emit('error', e && e.type ? e : { type: errType(e) }); });
+    }, 0);
   }
   // 網路環境不同（手機行動網路、公司學校網路）時，直連常常穿不過去；多放幾個 STUN／TURN，並且每隔幾次嘗試改成「強制走中繼」，提高連上的機率
   var ICE_SERVERS = [
@@ -5397,6 +5507,9 @@ html.glass #tut { background: rgba(0,0,0,.38); }
   })();
   function netReason(e) {
     var t = String(e && (e.code === 'upstream_error' ? e.message : (e.type || e.message)) || e || '');
+    if (/fb-off/.test(t)) return '網頁裡的 Firebase 設定還沒填，聯機需要它';
+    if (/fb-lib/.test(t)) return '載入 Firebase 失敗（網路可能擋住 gstatic.com / Google 服務）';
+    if (/permission/.test(t)) return 'Firestore 規則還沒加上聯機牽線的設定（要把新的 firestore.rules 貼上並發布）';
     if (/peerjs/.test(t)) return '連線工具庫載入失敗（可能被網路擋住，換 Wi‑Fi 或關掉 VPN／廣告攔截試試）';
     if (/timeout/.test(t)) return '連線逾時（雙方網路可能互相連不到，試試換成同一個 Wi‑Fi，或換行動網路）';
     if (/network|server-error|socket/.test(t)) return '連不到配對伺服器（網路不穩或被防火牆擋住）';
@@ -5658,6 +5771,7 @@ html.glass #tut { background: rgba(0,0,0,.38); }
         return A.fb;
       });
     }
+    A.ready = ready;
     function chip() { $('btnAcct').textContent = A.user ? '👤 ' + (A.nick || '玩家') + ((typeof FR !== 'undefined' && FR.inc && FR.inc.length) ? '（' + FR.inc.length + '）' : '') : (A.on ? '👤 登入' : '👤 登入（未設定）'); }
     function settingsNow() { var o = {}; SYNC_KEYS.forEach(function (k) { try { var v = localStorage.getItem(k); if (v !== null) o[k] = v; } catch (e) {} }); return o; }
     function useName() { if (!A.user || !A.nick) return; try { nameIn.value = A.nick; localStorage.setItem('drone-name', A.nick); } catch (e) {} }
