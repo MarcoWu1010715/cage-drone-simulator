@@ -524,7 +524,7 @@ html.glass body {
   background-attachment: fixed;
 }
 html.glass body::before { background: transparent; }
-html.glass :is(.board, .hud > div, .pill, .msg, #uiBox, .gear, .lights, #backStage, #flipHud, #szHud, .netbox, .chelp, #ctlMode),
+html.glass :is(.board, .hud > div, .pill, .msg, #uiBox, .gear, .lights, #backStage, #flipHud, #szHud, .netbox, .match, .chelp, #ctlMode),
 html.glass button:not(.opts.seg > button):not(#setTabs button):not(#rc button) {
   background: linear-gradient(145deg, var(--g-fill), var(--g-fill2)) !important;
   -webkit-backdrop-filter: blur(18px) saturate(1.8); backdrop-filter: blur(18px) saturate(1.8);
@@ -532,7 +532,7 @@ html.glass button:not(.opts.seg > button):not(#setTabs button):not(#rc button) {
   box-shadow: inset 0 1px 0 var(--g-hi), inset 0 -1px 0 var(--g-lo), 0 8px 24px -10px var(--g-shadow) !important;
   color: var(--fg);
 }
-html.glass :is(.board, .hud > div, #uiBox, .msg, .netbox) { border-radius: 22px; }
+html.glass :is(.board, .hud > div, #uiBox, .msg, .netbox, .match) { border-radius: 22px; }
 html.glass #playerName, html.glass #roomCode, html.glass #pairPin { background: linear-gradient(145deg, var(--g-fill), var(--g-fill2)) !important; border: 1px solid var(--g-edge) !important; border-radius: 999px; padding-left: 14px; padding-right: 14px; color: var(--fg); box-shadow: inset 0 1px 0 var(--g-hi), inset 0 -1px 0 var(--g-lo), 0 6px 18px -10px var(--g-shadow) !important; -webkit-backdrop-filter: blur(14px) saturate(1.6); backdrop-filter: blur(14px) saturate(1.6); }
 html.glass button:not(.opts.seg > button):not(#rc button) { border-radius: 999px; }   /* LiquidButton 是 Capsule */
 html.glass .pill { border-radius: 999px; }
@@ -695,10 +695,11 @@ html.glass #acct input { background: linear-gradient(145deg, var(--g-fill), var(
 html.glass #setBody #uiBox { background: color-mix(in srgb, var(--panel) 25%, transparent) !important; box-shadow: inset 0 1px 0 var(--g-hi) !important; }
 /* 玻璃風格統一圓角：所有外框（彈出視窗、卡片、選項排、聯機區）都是 22px，按鈕與輸入框是膠囊形 */
 html.glass { --r-pop: 22px; --r-card: 22px; }
-html.glass .netbox { padding: 12px 14px !important; }
+html.glass .netbox, html.glass .match { padding: 12px 14px !important; }
+#btnSolo[hidden] { display: none !important; }
 html.glass .msg { padding: 10px 14px !important; height: calc(6.2em + 20px); }   /* 圓角變大，內容往內縮一點，不要貼到邊 */
 html.glass #setBody:not([hidden]), html.glass #acct .acard, html.glass #man .acard, html.glass #tut .tcard { border-radius: var(--r-pop) !important; }
-html.glass :is(.board, .hud > div, #uiBox, .msg, .netbox, .opts.seg, #acct .astat div) { border-radius: var(--r-card) !important; }
+html.glass :is(.board, .hud > div, #uiBox, .msg, .netbox, .match, .opts.seg, #acct .astat div) { border-radius: var(--r-card) !important; }
 html.glass #tut .tbtns button, html.glass #tut .tskip { border-radius: 999px !important; }
 html.glass #tut .tbtns button.pri { background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 92%, #fff), var(--accent)) !important; color: var(--accent-ink); font-weight: 700; }
 html.glass #tut .tskip { background: none !important; border: 0 !important; box-shadow: none !important; -webkit-backdrop-filter: none; backdrop-filter: none; }
@@ -768,6 +769,21 @@ html.glass #tut { background: rgba(0,0,0,.38); }
 #tut .tbtns button { flex: 1; font: inherit; font-size: 15px; padding: 9px 10px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); cursor: pointer; }
 #tut .tbtns button.pri { background: var(--accent); color: var(--accent-ink); border-color: transparent; font-weight: 700; }
 #tut .tbtns button[hidden] { display: none; }
+#tut.live { background: none !important; pointer-events: none; align-items: flex-start; padding: 8px; -webkit-backdrop-filter: none; backdrop-filter: none; }
+#tut.live .tcard { pointer-events: auto; width: min(100%, 380px); padding: 10px 14px; box-shadow: 0 10px 30px rgba(0,0,0,.45); }
+#tut.live h3 { font-size: 16px; margin-bottom: 4px; }
+#tut.live .tbody { font-size: 13.5px; line-height: 1.5; }
+#tut.live .tbody p { margin: 0 0 4px; }
+#tut.live .tdots { display: none; }
+#tut.live .tbtns { margin-top: 6px; }
+#tut.live .tbtns button { padding: 6px 8px; font-size: 14px; }
+#tut.live.done .tcard { border-color: var(--good); }
+#tut.live.done h3 { color: var(--good); }
+#tut.live.done .tbody { display: none; }
+#ucRow, #ubRow { display: flex; align-items: center; gap: 10px; margin: 4px 0 8px; }
+#ucRow[hidden], #ubRow[hidden] { display: none !important; }
+#ucRow input[type=color], #ubRow input[type=color] { width: 56px; height: 38px; padding: 2px; border-radius: 10px; border: 1px solid var(--line); background: transparent; cursor: pointer; }
+#ucRow .chex, #ubRow .chex { font: 600 14px/1 ui-monospace, monospace; color: var(--muted); }
 #tut .tskip { display: block; margin: 8px auto 0; background: none; border: 0; color: var(--muted); font: inherit; font-size: 13px; cursor: pointer; text-decoration: underline; }
 </style>
 
@@ -892,7 +908,7 @@ html.glass #tut { background: rgba(0,0,0,.38); }
 </div></div>
 <div class="wrap">
   <header>
-    <h1>無人機足球模擬器 <small class="ver" id="verTag">v238</small></h1>
+    <h1>無人機足球模擬器 <small class="ver" id="verTag">v241</small></h1>
     <span class="pill" id="status" data-s="idle">待機中</span>
   </header>
   <div class="netbox">
@@ -905,6 +921,7 @@ html.glass #tut { background: rgba(0,0,0,.38); }
       <button type="button" id="btnJoin" disabled>加入</button>
       <button type="button" id="btnRand" disabled>隨機房號</button>
       <button type="button" id="btnLobby" disabled>回大廳</button>
+      <button type="button" id="btnSolo" hidden>回單機</button>
     </div>
     <ul class="plist" id="plist" aria-label="房間內的玩家" hidden></ul>
   </div>
@@ -1207,7 +1224,9 @@ html.glass #tut { background: rgba(0,0,0,.38); }
       <button type="button" data-ui="2" aria-pressed="false">橘</button>
       <button type="button" data-ui="3" aria-pressed="false">紫</button>
       <button type="button" data-ui="4" aria-pressed="false">粉</button>
+      <button type="button" data-ui="5" aria-pressed="false">自訂</button>
     </div>
+    <div data-cat="ui" class="crow" id="ucRow" hidden><span class="lab">自訂主色</span><input type="color" id="ucA" value="#ff8a3d" aria-label="自訂主色"><span class="chex" id="ucAH">#ff8a3d</span></div>
     <div data-cat="ui" class="opts" role="group" aria-label="背景深淺">
       <span class="lab">背景</span>
       <button type="button" data-bg="0" aria-pressed="true">自動</button>
@@ -1215,7 +1234,9 @@ html.glass #tut { background: rgba(0,0,0,.38); }
       <button type="button" data-bg="2" aria-pressed="false">灰</button>
       <button type="button" data-bg="3" aria-pressed="false">深</button>
       <button type="button" data-bg="4" aria-pressed="false">黑</button>
+      <button type="button" data-bg="5" aria-pressed="false">自訂</button>
     </div>
+    <div data-cat="ui" class="crow" id="ubRow" hidden><span class="lab">自訂背景色</span><input type="color" id="ucB" value="#1d2433" aria-label="自訂背景色"><span class="chex" id="ucBH">#1d2433</span><button type="button" id="ucReset">還原預設色</button></div>
     <div data-cat="ui" class="opts" role="group" aria-label="選中加底色">
       <span class="lab">選中底色</span>
       <button type="button" data-fill="0" aria-pressed="true">不加</button>
@@ -2092,38 +2113,63 @@ html.glass #tut { background: rgba(0,0,0,.38); }
     function steps() {
       var m = CTL, st = [];
       st.push({ t: '歡迎！先認識目標', b: '<p>你操作一台被護籠包住的無人機，<b>穿過對方的球框就得分</b>。</p><p>藍方進攻紅方的球框，紅方進攻藍方的球框。上方的比分板會顯示雙方得分。</p><p>接下來幾個小步驟，教你起飛、移動、設定和比賽。可以隨時跳過，之後按「❓ 新手教學」再看。</p>' });
-      st.push({ t: '第 1 步：解鎖', b: m === 'touch' ? '<p>先把遙控器中間左邊的<b>「解鎖」滑桿往上撥</b>。沒有解鎖，搖桿推了也不會動。</p>' :
-        m === 'key' ? '<p>先按 ' + kn('unlock') + ' 解鎖。沒有解鎖，按方向鍵也不會動。</p>' :
-        '<p>先按手把的 <kbd>' + padName('unlock') + '</kbd> 解鎖。沒有解鎖，推搖桿也不會動。</p>' });
-      st.push({ t: '第 2 步：起飛與移動', b: m === 'touch' ? '<p><b>左搖桿</b>：往上推＝升高（第一下起槳，第二下起飛），往下推到底＝降落；左右＝轉向。</p><p><b>右搖桿</b>：前後左右平移。</p><p>推的力道越大，飛得越快。</p>' :
-        m === 'key' ? '<p>' + kn('up') + ' ' + kn('down') + ' 升降（第一下起槳，第二下起飛），' + kn('yawl') + ' ' + kn('yawr') + ' 轉向。</p><p>' + kn('fwd') + ' ' + kn('left') + ' ' + kn('back') + ' ' + kn('right') + ' 前、左、後、右平移。</p>' :
-        '<p><b>左搖桿</b>：上下＝升降（第一下起槳，第二下起飛），左右＝轉向。</p><p><b>右搖桿</b>：前後左右平移。</p>' });
-      st.push({ t: '第 3 步：定高、燈光、速度', b: m === 'touch' ? '<p><b>定高</b>滑桿（預設開）：開著時放開搖桿會自動停在原高度，新手建議保持開啟。</p><p><b>燈光</b>、<b>速度</b>按鈕：切換燈光和飛行檔位。</p>' :
+      var bl = S.type === 1, air = function () { return S.mode !== 'landed' && S.mode !== 'fall'; };
+      if (!bl) st.push({ t: '第 1 步：解鎖　👉 現在動手做', b: m === 'touch' ? '<p>把遙控器中間左邊的<b>「解鎖」滑桿往上撥</b>。沒有解鎖，搖桿推了也不會動。</p>' :
+        m === 'key' ? '<p>按 ' + kn('unlock') + ' 解鎖。沒有解鎖，按方向鍵也不會動。</p>' :
+        '<p>按手把的 <kbd>' + padName('unlock') + '</kbd> 解鎖。沒有解鎖，推搖桿也不會動。</p>', live: true, ok: '已解鎖！', wait: function () { return S.unlocked; } });
+      st.push({ t: '第 ' + (bl ? 1 : 2) + ' 步：起飛　👉 現在動手做', b: bl ? '<p><b>長按右下的起降鍵</b>會自動起飛到 1 公尺；或把<b>左搖桿快速上下撥幾次</b>手動起飛。</p>' : (m === 'touch' ? '<p><b>左搖桿往上推</b>＝升高（第一下起槳，第二下起飛）。往下推到底＝降落；左右＝轉向。</p>' :
+        m === 'key' ? '<p>按住 ' + kn('up') + ' 升高（第一下起槳，第二下起飛）。' + kn('down') + ' 下降。</p>' :
+        '<p>左搖桿往上推＝升高（第一下起槳，第二下起飛）。</p>'), live: true, ok: '起飛成功！', wait: function () { return air() && S.z > 0.4; } });
+      st.push({ t: '第 ' + (bl ? 2 : 3) + ' 步：平移　👉 現在動手做', b: m === 'touch' ? '<p><b>右搖桿</b>往前後左右推，讓飛機<b>平移約 1.5 公尺</b>。推的力道越大，飛得越快。</p>' :
+        m === 'key' ? '<p>用 ' + kn('fwd') + ' ' + kn('left') + ' ' + kn('back') + ' ' + kn('right') + ' 前、左、後、右平移約 1.5 公尺。</p>' :
+        '<p><b>右搖桿</b>前後左右平移約 1.5 公尺。</p>', live: true, ok: '飛得很好！', wait: function (c) { return air() && Math.hypot(S.x - c.x, S.y - c.y) > 1.5; } });
+      st.push({ t: '第 ' + (bl ? 3 : 4) + ' 步：轉向　👉 現在動手做', b: m === 'touch' ? '<p><b>左搖桿左右推</b>，讓飛機轉個角度（約 60 度）。</p>' :
+        m === 'key' ? '<p>按 ' + kn('yawl') + ' 或 ' + kn('yawr') + ' 轉向。</p>' : '<p>左搖桿左右推轉向。</p>', live: true, ok: '轉得不錯！', wait: function (c) { var d = Math.atan2(Math.sin(S.yaw - c.yaw), Math.cos(S.yaw - c.yaw)); return air() && Math.abs(d) > 1.0; } });
+      if (!bl) st.push({ t: '定高、燈光、速度', b: m === 'touch' ? '<p><b>定高</b>滑桿（預設開）：開著時放開搖桿會自動停在原高度，新手建議保持開啟。</p><p><b>燈光</b>、<b>速度</b>按鈕：切換燈光和飛行檔位。</p>' :
         m === 'key' ? '<p>' + kn('hold') + ' 定高開關（預設開，新手建議保持開啟）。</p><p>' + kn('light') + ' 燈光，' + kn('speed') + ' 速度檔位。</p>' :
         '<p><kbd>' + padName('hold') + '</kbd> 定高開關（預設開，新手建議保持開啟）。</p><p><kbd>' + padName('light') + '</kbd> 燈光，<kbd>' + padName('speed') + '</kbd> 速度檔位。</p>' });
-      st.push({ t: '第 4 步：視角與站位', b: '<p>按畫面上的<b>「⚙ 設定」</b>會跳出設定視窗，上面一排分頁可以左右滑動或點選。在<b>「視角」</b>分頁可切換視角：<b>選手</b>（跟著選手看）、<b>平視</b>、<b>斜視</b>、<b>俯視</b>，還能換選手站位和球框透明度。</p>' + (m === 'key' ? '<p>快捷鍵：' + kn('view') + ' 切視角，' + kn('stand') + ' 換站位。</p>' : m === 'pad' ? '<p>手把：<kbd>' + padName('view') + '</kbd> 切視角，<kbd>' + padName('stand') + '</kbd> 換站位。</p>' : '') + '<p>橫向手機可以按「版面」，把畫面放大或只留 3D 畫面。</p>' });
-      st.push({ t: '第 5 步：隊伍、場地與賽制', b: '<p><b>隊伍</b>（藍／紅）、<b>角色</b>（攻擊手／防守者）和<b>重新開始</b>直接在主畫面上選。</p><p>按「⚙ 設定」→<b>「比賽」</b>分頁：可以開<b>AI 對打</b>（簡單／普通／困難）、選<b>賽制</b>（1 對 1、3 對 3、5 對 5）和<b>場地</b>：<b>FAI 20cm</b>（6×3×3 m）或較大的 <b>FIDA 20cm</b>（8×4×3 m）。</p><p>「外觀」分頁換球殼和支架顏色，「界面」分頁換風格、配色和畫面大小，「聲音」分頁調馬達聲、嗶聲和測試震動。</p>' });
-      st.push({ t: '第 6 步：比賽與多人', b: '<p>一個人可以直接練習。想和朋友玩：在上方輸入<b>姓名</b>和<b>房號</b>按「加入」，朋友輸入同一個房號就會進同一間。</p><p>房主可以按「開始比賽」進行 3 分鐘的比賽。</p><p>兩支手機也可以<b>PIN 配對</b>：一支當顯示端、一支當操控端（在主畫面的「顯示端／操控端」）。</p>' });
-      if (typeof ACCT !== 'undefined' && ACCT && ACCT.on) st.push({ t: '第 7 步：帳號與好友', b: '<p>按「👤 登入」用 <b>Google 帳號</b>登入：會記住暱稱和所有設定、記錄聯機比賽的<b>戰績</b>（含最近 20 場歷史）、上<b>排行榜</b>。</p><p>每個人有一組<b>好友碼</b>，輸入朋友的好友碼就能加好友；朋友在房間裡時，好友清單會出現「加入」。</p><p>進聯機房間前需要先登入。</p>' });
+      st.push({ t: '第 ' + (bl ? 4 : 5) + ' 步：降落　👉 現在動手做', b: bl ? '<p><b>長按右下起降鍵</b>自動降落；或左搖桿往下拉到底。</p>' : (m === 'touch' ? '<p><b>左搖桿往下推到底</b>，慢慢降落到地面。</p>' : m === 'key' ? '<p>按住 ' + kn('down') + ' 降落。</p>' : '<p>左搖桿往下推到底降落。</p>'), live: true, ok: '安全降落！', wait: function (c) { if (air()) c.seen = true; return S.mode === 'landed' && c.seen; } });
+      st.push({ t: '第 ' + (bl ? 5 : 6) + ' 步：換視角　👉 現在動手做', b: '<p>按「<b>⚙ 設定</b>」→ <b>「視角」</b>分頁，點一個不同的視角：<b>選手</b>、<b>平視</b>、<b>斜視</b>或<b>俯視</b>。</p>' + (m === 'key' ? '<p>也可以按 ' + kn('view') + ' 直接切視角。</p>' : m === 'pad' ? '<p>手把：<kbd>' + padName('view') + '</kbd> 切視角。</p>' : ''), live: true, ok: '視角換好了！', wait: function (c) { return V.mode !== c.v; } });
+      st.push({ t: '第 ' + (bl ? 6 : 7) + ' 步：得分！　👉 挑戰', b: '<p>起飛後<b>穿過對方的球框</b>得 1 分。藍方飛向紅色球框，紅方飛向藍色球框。</p><p>不想挑戰可以按「略過這步」。</p>', live: true, ok: '進球得分！', wait: function (c) { return S.scores.blue + S.scores.red > c.sc; } });
+      st.push({ t: '視角與站位', b: '<p>按畫面上的<b>「⚙ 設定」</b>會跳出設定視窗，上面一排分頁可以左右滑動或點選。在<b>「視角」</b>分頁可切換視角：<b>選手</b>（跟著選手看）、<b>平視</b>、<b>斜視</b>、<b>俯視</b>，還能換選手站位和球框透明度。</p>' + (m === 'key' ? '<p>快捷鍵：' + kn('view') + ' 切視角，' + kn('stand') + ' 換站位。</p>' : m === 'pad' ? '<p>手把：<kbd>' + padName('view') + '</kbd> 切視角，<kbd>' + padName('stand') + '</kbd> 換站位。</p>' : '') + '<p>橫向手機可以按「版面」，把畫面放大或只留 3D 畫面。</p>' });
+      st.push({ t: '隊伍、場地與賽制', b: '<p><b>隊伍</b>（藍／紅）、<b>角色</b>（攻擊手／防守者）和<b>重新開始</b>直接在主畫面上選。</p><p>按「⚙ 設定」→<b>「比賽」</b>分頁：可以開<b>AI 對打</b>（簡單／普通／困難）、選<b>賽制</b>（1 對 1、3 對 3、5 對 5）和<b>場地</b>：<b>FAI 20cm</b>（6×3×3 m）或較大的 <b>FIDA 20cm</b>（8×4×3 m）。</p><p>「外觀」分頁換球殼和支架顏色，「界面」分頁換風格、配色和畫面大小，「聲音」分頁調馬達聲、嗶聲和測試震動。</p>' });
+      st.push({ t: '比賽與多人', b: '<p>一個人可以直接練習。想和朋友玩：在上方輸入<b>姓名</b>和<b>房號</b>按「加入」，朋友輸入同一個房號就會進同一間。</p><p>房主可以按「開始比賽」進行 3 分鐘的比賽。</p><p>兩支手機也可以<b>PIN 配對</b>：一支當顯示端、一支當操控端（在主畫面的「顯示端／操控端」）。</p>' });
+      if (typeof ACCT !== 'undefined' && ACCT && ACCT.on) st.push({ t: '帳號與好友', b: '<p>按「👤 登入」用 <b>Google 帳號</b>登入：會記住暱稱和所有設定、記錄聯機比賽的<b>戰績</b>（含最近 20 場歷史）、上<b>排行榜</b>。</p><p>每個人有一組<b>好友碼</b>，輸入朋友的好友碼就能加好友；朋友在房間裡時，好友清單會出現「加入」。</p><p>進聯機房間前需要先登入。</p>' });
       st.push({ t: '準備好了！', b: '<p>想看完整規則和按鍵，按「📖 說明手冊」。</p><p>去飛一圈吧，祝你玩得開心！</p>' });
       return st;
     }
+    var poll = 0, okT = 0, ctx = {}, TUTLIVE = false;
+    function stopPoll() { clearInterval(poll); poll = 0; clearTimeout(okT); okT = 0; }
     function paint() {
+      stopPoll();
       var st = steps(); idx = clamp(idx, 0, st.length - 1);
-      $('tutN').textContent = '新手教學　' + (idx + 1) + ' / ' + st.length;
-      $('tutT').textContent = st[idx].t; $('tutB').innerHTML = st[idx].b;
+      var cur = st[idx], live = !!cur.live;
+      TUTLIVE = live; el.classList.toggle('live', live);
+      $('tutN').textContent = '新手教學　' + (idx + 1) + ' / ' + st.length + (live ? '　・　跟著做，做到會自動下一步' : '');
+      $('tutT').textContent = cur.t; $('tutB').innerHTML = cur.b;
+      el.classList.remove('done');
       $('tutD').innerHTML = st.map(function (_, i) { return '<i' + (i === idx ? ' class="on"' : '') + '></i>'; }).join('');
       $('tutPrev').hidden = idx === 0;
-      $('tutNext').textContent = idx === st.length - 1 ? '開始飛行' : '下一步';
+      $('tutNext').textContent = idx === st.length - 1 ? '開始飛行' : (live ? '略過這步' : '下一步');
       $('tutSkip').hidden = idx === st.length - 1;
+      if (live) {
+        ctx = { x: S.x, y: S.y, yaw: S.yaw, v: V.mode, sc: S.scores.blue + S.scores.red, seen: false };
+        poll = setInterval(function () {
+          var ok = false; try { ok = cur.wait(ctx); } catch (e) {}
+          if (!ok) return;
+          stopPoll();
+          el.classList.add('done'); $('tutT').textContent = '✓ ' + cur.ok; try { sfx('key'); } catch (e) {}
+          okT = setTimeout(function () { idx++; paint(); }, 1100);
+        }, 120);
+      }
     }
     function open(i) { idx = i || 0; paint(); el.hidden = false; try { $('tutNext').focus(); } catch (e) {} }
-    function close() { el.hidden = true; try { localStorage.setItem('cd_tut', '1'); } catch (e) {} }
+    function close() { stopPoll(); el.classList.remove('live', 'done'); TUTLIVE = false; el.hidden = true; try { localStorage.setItem('cd_tut', '1'); } catch (e) {} }
     $('tutPrev').addEventListener('click', function () { idx--; paint(); });
     $('tutNext').addEventListener('click', function () { if (idx >= steps().length - 1) close(); else { idx++; paint(); } });
     $('tutSkip').addEventListener('click', close);
     $('btnTut').addEventListener('click', function () { open(0); });
-    return { open: open, close: close, el: el };
+    return { open: open, close: close, el: el, get live() { return TUTLIVE; } };
   })();
   document.addEventListener('contextmenu', function (e) { var t = e.target; if (t && t.closest && t.closest('input, textarea')) return; e.preventDefault(); });
   document.addEventListener('selectstart', function (e) { var t = e.target; if (t && t.closest && t.closest('input, textarea')) return; if (t && t.nodeType === 3) t = t.parentNode; if (t && t.closest && t.closest('input, textarea')) return; e.preventDefault(); });
@@ -2159,7 +2205,7 @@ html.glass #tut { background: rgba(0,0,0,.38); }
     });
   })();
   window.addEventListener('pointerdown', function (e) { if (e.target && e.target.closest && e.target.closest('#ctlMode, #tut, #acct, #man, #setBody')) return; setCtl('touch'); }, { passive: true, capture: true });
-  window.addEventListener('keydown', function (e) { if (e.target && e.target.tagName === 'INPUT') return; if (TUT.el && !TUT.el.hidden) return; setCtl('key'); }, true);
+  window.addEventListener('keydown', function (e) { if (e.target && e.target.tagName === 'INPUT') return; if (TUT.el && !TUT.el.hidden && !TUT.live) return; setCtl('key'); }, true);
   // 手把鍵位：Xbox／PS／Switch（瀏覽器的標準對應是依「位置」編號：0 下、1 右、2 左、3 上），自動依手把名稱判斷
   var PAD_LAY = {
     xbox: { n: 'Xbox', id: { unlock: 0, hold: 1, light: 2, speed: 3, view: 4, stand: 5, role: 8, team: 9 } },
@@ -3311,21 +3357,36 @@ html.glass #tut { background: rgba(0,0,0,.38); }
     { l: '#1e6fd6', d: '#5ba3ff', a: '#7db8ff', k: '#06203f' },
     { l: '#d9680f', d: '#ff9a4c', a: '#ffb36b', k: '#3a1c00' },
     { l: '#7b4fd6', d: '#b08cff', a: '#c6a8ff', k: '#1f0f45' },
-    { l: '#d63a8a', d: '#ff7ab8', a: '#ff9ccc', k: '#430a26' }
+    { l: '#d63a8a', d: '#ff7ab8', a: '#ff9ccc', k: '#430a26' },
+    { l: '#d9680f', d: '#ff9a4c', a: '#ff8a3d', k: '#101010' }   // 5：自訂（用 setCustom 算出來）
   ];
+  var UI_CA = '#ff8a3d', UI_CB = '#1d2433';
+  function h2r(h) { h = String(h || '').replace('#', ''); if (h.length === 3) h = h.replace(/./g, '$&$&'); var n = parseInt(h, 16); return isNaN(n) || h.length !== 6 ? [0, 0, 0] : [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+  function r2h(c) { return '#' + c.map(function (v) { v = Math.max(0, Math.min(255, Math.round(v))); return (v < 16 ? '0' : '') + v.toString(16); }).join(''); }
+  function mixC(a, b, t) { return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]; }
+  function lumC(c) { return (0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]) / 255; }
+  function okHex(v) { return /^#[0-9a-fA-F]{6}$/.test(String(v || '')) ? String(v).toLowerCase() : null; }
+  function setCustom() {
+    var c = h2r(UI_CA), W = [255, 255, 255], K = [0, 0, 0];
+    UIC[5] = { l: r2h(mixC(c, K, 0.15)), d: r2h(mixC(c, W, 0.12)), a: r2h(c), k: lumC(c) > 0.55 ? '#101010' : '#ffffff' };
+    var b = h2r(UI_CB), dk = lumC(b) < 0.5, fg = dk ? W : K;
+    BGV[5] = { '--bg': r2h(b), '--panel': r2h(mixC(b, fg, 0.07)), '--line': r2h(mixC(b, fg, 0.2)), '--floor': r2h(mixC(mixC(b, fg, 0.1), c, 0.25)), '--sky': r2h(mixC(b, dk ? K : W, 0.25)), '--muted': r2h(mixC(b, fg, 0.62)) };
+    BGV.dark5 = dk;
+  }
   var UI_I = 0, UI_BG = 0, UI_FILL = 0, UI_FG = 0, UI_GL = 1;   // 預設液態玻璃
   try { UI_I = clamp(parseInt(localStorage.getItem('cd_ui'), 10) || 0, 0, UIC.length - 1); } catch (e) {}
-  try { var u2 = JSON.parse(localStorage.getItem('cd_ui2') || '{}'); UI_BG = clamp(u2.bg | 0, 0, 4); UI_FILL = u2.fill ? 1 : 0; UI_FG = u2.fg ? 1 : 0; if (u2.gl !== undefined) UI_GL = u2.gl ? 1 : 0; } catch (e) {}
+  try { var u2 = JSON.parse(localStorage.getItem('cd_ui2') || '{}'); UI_BG = clamp(u2.bg | 0, 0, 5); UI_CA = okHex(u2.ca) || UI_CA; UI_CB = okHex(u2.cb) || UI_CB; UI_FILL = u2.fill ? 1 : 0; UI_FG = u2.fg ? 1 : 0; if (u2.gl !== undefined) UI_GL = u2.gl ? 1 : 0; } catch (e) {}
   var BGV = {
     2: { '--bg': '#24312f', '--panel': '#2e3e3b', '--line': '#46605b', '--floor': '#35564f', '--sky': '#1c2829', '--muted': '#a3bfb9' },
     4: { '--bg': '#000000', '--panel': '#0a1010', '--line': '#1f2c2a', '--floor': '#10201d', '--sky': '#000000', '--muted': '#7a9893' }
   };
   var BGK = ['--bg', '--panel', '--line', '--floor', '--sky', '--muted'];
+  setCustom();
   var prevGl = null;
   function applyUi() {
     var root = document.documentElement, st = root.style, k;
     // 背景深淺：0 跟系統、1 淺、2 灰、3 深、4 黑
-    if (UI_BG === 0) root.removeAttribute('data-theme'); else root.setAttribute('data-theme', UI_BG === 1 ? 'light' : 'dark');
+    if (UI_BG === 0) root.removeAttribute('data-theme'); else root.setAttribute('data-theme', UI_BG === 1 ? 'light' : (UI_BG === 5 ? (BGV.dark5 ? 'dark' : 'light') : 'dark'));
     for (k = 0; k < BGK.length; k++) st.removeProperty(BGK[k]);
     if (BGV[UI_BG]) for (k in BGV[UI_BG]) st.setProperty(k, BGV[UI_BG][k]);
     root.classList.toggle('glass', !!UI_GL); if (UI_GL) { LG.enable(); LGUI.enable(); } else { LGUI.disable(); LG.disable(); } root.classList.toggle('sel-fill', !!UI_FILL); root.classList.toggle('sel-plain', !!UI_FG);
@@ -3335,6 +3396,8 @@ html.glass #tut { background: rgba(0,0,0,.38); }
     st.setProperty('--accent', c.a); st.setProperty('--accent-ink', c.k);
     st.setProperty('--lg-accent', dark ? c.d : c.l);   // 滑動選項／液態玻璃的強調色跟著「配色」
     LGUI.repaint();   // 液態玻璃的強調色跟著「配色」
+    $('ucRow').hidden = UI_I !== 5; $('ubRow').hidden = UI_BG !== 5;
+    $('ucA').value = UI_CA; $('ucAH').textContent = UI_CA; $('ucB').value = UI_CB; $('ucBH').textContent = UI_CB;
     var pr = [['data-ui', UI_I], ['data-bg', UI_BG], ['data-fill', UI_FILL], ['data-fg', UI_FG], ['data-gl', UI_GL]];
     for (var j = 0; j < pr.length; j++) {
       var bs = document.querySelectorAll('[' + pr[j][0] + ']');
@@ -3342,7 +3405,7 @@ html.glass #tut { background: rgba(0,0,0,.38); }
     }
   }
   function saveUi() {
-    try { localStorage.setItem('cd_ui', String(UI_I)); localStorage.setItem('cd_ui2', JSON.stringify({ bg: UI_BG, fill: UI_FILL, fg: UI_FG, gl: UI_GL })); } catch (e) {}
+    try { localStorage.setItem('cd_ui', String(UI_I)); localStorage.setItem('cd_ui2', JSON.stringify({ bg: UI_BG, fill: UI_FILL, fg: UI_FG, gl: UI_GL, ca: UI_CA, cb: UI_CB })); } catch (e) {}
   }
   (function () {
     var bs = document.querySelectorAll('[data-ui],[data-bg],[data-fill],[data-fg],[data-gl]');
@@ -3354,6 +3417,9 @@ html.glass #tut { background: rgba(0,0,0,.38); }
       else UI_FG = +this.getAttribute('data-fg');
       applyUi(); saveUi();
     });
+    $('ucA').addEventListener('input', function () { UI_CA = okHex(this.value) || UI_CA; UI_I = 5; setCustom(); applyUi(); saveUi(); });
+    $('ucB').addEventListener('input', function () { UI_CB = okHex(this.value) || UI_CB; UI_BG = 5; setCustom(); applyUi(); saveUi(); });
+    $('ucReset').addEventListener('click', function () { UI_CA = '#ff8a3d'; UI_CB = '#1d2433'; setCustom(); applyUi(); saveUi(); });
     try { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyUi); } catch (e) {}
     applyUi();
   })();
@@ -5068,6 +5134,7 @@ html.glass #tut { background: rgba(0,0,0,.38); }
         st = 'net';
       }
     }
+    var sb = $('btnSolo'); if (sb) sb.hidden = !(NET.api && (NET.room || NET.dead || NET.busy));
     var chip = $('netChip');
     if (chip.textContent !== txt) chip.textContent = txt;
     if (chip.getAttribute('data-s') !== st) chip.setAttribute('data-s', st);
@@ -5116,7 +5183,8 @@ html.glass #tut { background: rgba(0,0,0,.38); }
     NET.dead = false;
     NET.code = code;
     var hintEl = $('netHint'), joinTxt = btnJoin.textContent;
-    function netBusy(on, t) { try { btnJoin.textContent = on ? '連線中…' : '加入'; btnJoin.setAttribute('aria-busy', on ? 'true' : 'false'); if (t != null && hintEl) hintEl.textContent = t; } catch (e) {} }
+    function netBusy(on, t) { NET.busy = !!on; try { btnJoin.textContent = on ? '連線中…' : '加入'; btnJoin.setAttribute('aria-busy', on ? 'true' : 'false'); if (t != null && hintEl) hintEl.textContent = t; } catch (e) {} }
+    $('btnSolo').hidden = false;
     if (NET.api.p2p) { netBusy(true, '連線中…最久約 50 秒，請稍候。'); if (!quiet) setMsg('<b>連線中…</b>正在連到房間' + (code ? ' <b>' + code + '</b>' : '（大廳）') + '，最久約 50 秒。'); }
     var req = NET.api.p2p ? NET.api.join(code || 'lobby', NET.retry || 0) : (code ? NET.api.join(code) : Promise.resolve(NET.api));
     req.then(function (room) {
@@ -5196,6 +5264,21 @@ html.glass #tut { background: rgba(0,0,0,.38); }
     roomIn.value = c;
     enterRoom(c);
   });
+  // 回單機：離開房間（連線中也可以取消），回到自己一個人練習
+  var btnSolo = $('btnSolo');
+  function goSolo() {
+    NET.tok++;                     // 讓還在連線中的加入作廢
+    detachRoom();
+    NET.code = ''; NET.dead = false; NET.retry = 0; NET.listKey = '';
+    roomIn.value = '';
+    try { btnJoin.textContent = '加入'; btnJoin.setAttribute('aria-busy', 'false'); } catch (e) {}
+    try { var h = $('netHint'); if (h) h.textContent = ''; } catch (e) {}
+    NET.busy = false; btnSolo.hidden = true;
+    reset(true);
+    netHud();
+    setMsg('已回到<b>單機</b>練習。要再進房間，輸入房號按「加入」。');
+  }
+  btnSolo.addEventListener('click', goSolo);
   btnLobby.addEventListener('click', function () { if (!takeName()) return; roomIn.value = ''; enterRoom(''); });
   btnScore.addEventListener('click', function () { if (netOn() && !NET.amRef) return; clearScores(); setMsg('比分已歸零。'); });
 
