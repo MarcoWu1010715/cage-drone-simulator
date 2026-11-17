@@ -158,7 +158,7 @@ header .pill { flex: 0 1 auto; min-width: 0; max-width: 62%; overflow: hidden; t
 .msg b { color: var(--fg); font-weight: 700; }
 
 html.pair-disp #rc, html.pair-disp #rcstat, html.pair-disp #helpKey, html.pair-disp #helpPad { display: none !important; }
-html.pair-ctl .netbox, html.pair-ctl .match, html.pair-ctl .board, html.pair-ctl .msg, html.pair-ctl .chips, html.pair-ctl .stagebox,
+html.pair-ctl .netbox, html.pair-ctl .match, html.pair-ctl #trBox, html.pair-ctl .board, html.pair-ctl .msg, html.pair-ctl .chips, html.pair-ctl .stagebox,
 html.pair-ctl .hud, html.pair-ctl .hint, html.pair-ctl #flipHud, html.pair-ctl #szHud { display: none !important; }
 html.pair-ctl .wrap .chips { display: flex !important; }   /* 操控端：只留「重新開始」 */
 html.pair-ctl .wrap .chips > :not(#btnReset):not(#btnToSet) { display: none !important; }
@@ -697,6 +697,7 @@ html.glass #setBody #uiBox { background: color-mix(in srgb, var(--panel) 25%, tr
 html.glass { --r-pop: 22px; --r-card: 22px; }
 html.glass .netbox, html.glass .match { padding: 12px 14px !important; }
 #btnSolo[hidden] { display: none !important; }
+#trBox[hidden] { display: none !important; }
 html.glass .msg { padding: 10px 14px !important; height: calc(6.2em + 20px); }   /* 圓角變大，內容往內縮一點，不要貼到邊 */
 html.glass #setBody:not([hidden]), html.glass #acct .acard, html.glass #man .acard, html.glass #tut .tcard { border-radius: var(--r-pop) !important; }
 html.glass :is(.board, .hud > div, #uiBox, .msg, .netbox, .match, .opts.seg, #acct .astat div) { border-radius: var(--r-card) !important; }
@@ -835,6 +836,11 @@ html.glass #tut { background: rgba(0,0,0,.38); }
     <ul><li>球機之間有碰撞，撞到會被彈開。</li></ul>
   </section>
   <section data-sec="ai">
+    <h4>訓練模式（單機）</h4>
+    <ul><li>在「設定」→「比賽」→「訓練模式」選<b>進攻訓練</b>或<b>防守訓練</b>，再用「訓練難度」選簡單、普通、困難。開始時球機會回到起點。</li>
+    <li><b>進攻訓練</b>：你是攻擊手。簡單＝對面沒有防守員，純練穿框；普通＝1 個電腦防守員；困難＝2 個。進球後<b>不用回中線</b>，可以一直練，畫面上方顯示進球數、用時和平均每球秒數。</li>
+    <li><b>防守訓練</b>：你是防守者，電腦的攻擊手會來攻你的球框（簡單、普通 1 個，困難 2 個）。顯示<b>擋下</b>、<b>失分</b>次數和守住率。</li>
+    <li>沒有時間限制；按「重設成績」重新計算，按「結束訓練」回到一般模式。訓練中不能換角色。</li></ul>
     <h4>AI 對打（單機）</h4>
     <ul><li>在「設定」→「比賽」選簡單、普通或困難。</li>
     <li>1 對 1 時，電腦扮演另一隊的攻擊手。</li>
@@ -908,7 +914,7 @@ html.glass #tut { background: rgba(0,0,0,.38); }
 </div></div>
 <div class="wrap">
   <header>
-    <h1>無人機足球模擬器 <small class="ver" id="verTag">v241</small></h1>
+    <h1>無人機足球模擬器 <small class="ver" id="verTag">v246</small></h1>
     <span class="pill" id="status" data-s="idle">待機中</span>
   </header>
   <div class="netbox">
@@ -924,6 +930,13 @@ html.glass #tut { background: rgba(0,0,0,.38); }
       <button type="button" id="btnSolo" hidden>回單機</button>
     </div>
     <ul class="plist" id="plist" aria-label="房間內的玩家" hidden></ul>
+  </div>
+  <div class="match" id="trBox" hidden>
+    <div class="mrow">
+      <span class="pill" id="trChip" data-s="net">訓練</span>
+      <span class="minfo" id="trInfo"></span>
+    </div>
+    <div class="netrow"><button type="button" id="trReset">重設成績</button><button type="button" id="trEnd">結束訓練</button></div>
   </div>
   <div class="match" id="matchBox" hidden>
     <div class="mrow">
@@ -1140,6 +1153,18 @@ html.glass #tut { background: rgba(0,0,0,.38); }
       <button type="button" data-ai="3" aria-pressed="false">困難</button>
       <button type="button" id="aiGo" hidden>開始比賽（倒數 10 秒）</button>
       <button type="button" id="aiFree" hidden>自由練習</button>
+    </div>
+    <div data-cat="play" class="opts" role="group" aria-label="訓練模式">
+      <span class="lab">訓練模式（單機）</span>
+      <button type="button" data-tr="0" aria-pressed="true">關</button>
+      <button type="button" data-tr="atk" aria-pressed="false">進攻訓練</button>
+      <button type="button" data-tr="def" aria-pressed="false">防守訓練</button>
+    </div>
+    <div data-cat="play" class="opts" role="group" aria-label="訓練難度">
+      <span class="lab">訓練難度（進攻：簡單＝沒有防守員、普通＝1 個、困難＝2 個；防守：簡單／普通＝1 個攻擊手、困難＝2 個）</span>
+      <button type="button" data-trl="0" aria-pressed="false">簡單</button>
+      <button type="button" data-trl="1" aria-pressed="true">普通</button>
+      <button type="button" data-trl="2" aria-pressed="false">困難</button>
     </div>
     <div data-cat="play" class="opts" role="group" aria-label="賽制">
       <span class="lab">賽制（3 對 3＝1攻2守，5 對 5＝1攻4守、用 FIDA 場地）</span>
@@ -2321,6 +2346,7 @@ html.glass #tut { background: rgba(0,0,0,.38); }
     return true;
   }
   function teamLockFrame() {
+    if (TR.on) { TL[S.team] = false; S.armed = true; return; }   // 訓練：進球後不用回中線，直接再攻
     if (TL[S.team]) {
       if (S.armed) S.armed = false;
       if (teamHome(S.team)) {
@@ -2718,13 +2744,17 @@ html.glass #tut { background: rgba(0,0,0,.38); }
     for (i = 0; i < roleBtns.length; i++) roleBtns[i].setAttribute('aria-pressed', String(parseInt(roleBtns[i].getAttribute('data-role'), 10) === S.role));
     for (i = 0; i < standBtns.length; i++) standBtns[i].setAttribute('aria-pressed', String(standBtns[i].getAttribute('data-stand') === V.stand));
     for (i = 0; i < shellBtns.length; i++) shellBtns[i].setAttribute('aria-pressed', String(parseInt(shellBtns[i].getAttribute('data-shell'), 10) === S.shell));
-    for (i = 0; i < aiBtns.length; i++) aiBtns[i].setAttribute('aria-pressed', String(parseInt(aiBtns[i].getAttribute('data-ai'), 10) === (AI.on ? AI.lvl + 1 : 0)));
+    for (i = 0; i < aiBtns.length; i++) aiBtns[i].setAttribute('aria-pressed', String(parseInt(aiBtns[i].getAttribute('data-ai'), 10) === ((AI.on && !TR.on) ? AI.lvl + 1 : 0)));
+    var trb = document.querySelectorAll('[data-tr]'), trlb = document.querySelectorAll('[data-trl]');
+    for (i = 0; i < trb.length; i++) trb[i].setAttribute('aria-pressed', String(trb[i].getAttribute('data-tr') === (TR.on ? TR.kind : '0')));
+    for (i = 0; i < trlb.length; i++) trlb[i].setAttribute('aria-pressed', String(parseInt(trlb[i].getAttribute('data-trl'), 10) === TR.pref));
     for (i = 0; i < fmtBtns.length; i++) fmtBtns[i].setAttribute('aria-pressed', String(parseInt(fmtBtns[i].getAttribute('data-fmt'), 10) === AI.fmt));
     for (i = 0; i < fieldBtns.length; i++) fieldBtns[i].setAttribute('aria-pressed', String(fieldBtns[i].getAttribute('data-field') === FIELD));
     for (i = 0; i < frameBtns.length; i++) frameBtns[i].setAttribute('aria-pressed', String(parseInt(frameBtns[i].getAttribute('data-frame'), 10) === S.frame));
     for (i = 0; i < dtypeBtns.length; i++) dtypeBtns[i].setAttribute('aria-pressed', String(parseInt(dtypeBtns[i].getAttribute('data-dtype'), 10) === S.type));
   }
   function setRole(n) {
+    if (TR.on) { setMsg('訓練中角色是固定的（進攻訓練＝攻擊手、防守訓練＝防守者）。要換角色請先結束訓練。'); return; }
     if (S.mode !== 'landed') { setMsg('請先降落，再切換攻擊手或防守者。'); return; }
     S.role = n;
     applyRole();
@@ -3729,9 +3759,25 @@ html.glass #tut { background: rgba(0,0,0,.38); }
         }
       }
 
+      // 真實手感：搖桿放開時機身會慢慢亂飄（風、馬達誤差）；往前飛時機頭下壓，高度會稍微往下掉
+      var calm = 1 - clamp(Math.max(Math.abs(mx), Math.abs(my), Math.abs(yw), Math.abs(al)) * 3, 0, 1);
+      if (S.mode === 'flying') {
+        S.dwT = (S.dwT || 0) - dt;
+        if (S.dwT <= 0) { S.dwT = rnd(1.2, 2.6); S.dtx = rnd(-1, 1) * 0.17; S.dty = rnd(-1, 1) * 0.17; S.dtz = rnd(-1, 1) * 0.07; }
+        var kd = Math.min(1, dt * 1.3);
+        S.wx = (S.wx || 0) + (S.dtx * calm - (S.wx || 0)) * kd;
+        S.wy = (S.wy || 0) + (S.dty * calm - (S.wy || 0)) * kd;
+        S.wz = (S.wz || 0) + (S.dtz * calm - (S.wz || 0)) * kd;
+      } else { S.wx = S.wy = S.wz = 0; }
+      S.fwdS = (S.fwdS || 0) + ((S.mode === 'flying' ? clamp(fwd, 0, 1) : 0) - (S.fwdS || 0)) * Math.min(1, dt * 4);
       var px0 = S.x;
-      S.x += (S.vx + S.drx) * dt;
-      S.y += (S.vy + S.dry) * dt;
+      S.x += (S.vx + S.drx + S.wx) * dt;
+      S.y += (S.vy + S.dry + S.wy) * dt;
+      if (S.mode === 'flying') {
+        var dzv = S.wz; if (S.z < 0.25) dzv = Math.max(dzv, 0);          // 離地面太近就不再往下飄，免得自己降落
+        var snk = S.z < 0.12 ? 0 : S.fwdS * 0.12;                         // 全速往前時每秒約掉 12 cm
+        S.z = clamp(S.z + (dzv - snk) * dt, 0.02, ZMAX);
+      }
       if (Math.abs(S.drz) > 0.01) S.z = clamp(S.z + S.drz * dt, 0.02, ZMAX);
       var dkk = Math.exp(-1.1 * dt);
       S.drx *= dkk; S.dry *= dkk; S.drz *= dkk;
@@ -3828,7 +3874,7 @@ html.glass #tut { background: rgba(0,0,0,.38); }
               addGoal(S.team);
               S.armed = false;
               S.pulse = 1; sfx('goal');
-              setMsg('<b>得分！</b>目前 ' + S.scores[S.team] + ' 分。要<b>全隊</b>都回到中線才能再次得分。');
+              setMsg(TR.on ? '<b>進球！</b>已經 ' + S.scores[S.team] + ' 球，繼續攻。' : '<b>得分！</b>目前 ' + S.scores[S.team] + ' 分。要<b>全隊</b>都回到中線才能再次得分。');
             } else {
               setMsg('還不能得分，要等<b>全隊</b>都回到中線才能再次得分。');
             }
@@ -4366,13 +4412,14 @@ html.glass #tut { background: rgba(0,0,0,.38); }
   }
   function matchHud() {
     var on = netOn();
+    if ($('trBox').hidden === TR.on) trUi(true);   // 訓練開關了（含被別的操作關掉）就更新訓練框
     setHidden(mBox, !on);
     if (!on) {
       var aiLow = AI.on && AI.run && AI.clock <= 10;
       var cdl = cdLeft();
-      setTxt(bTime, !AI.on ? '--:--' : (AI.over ? '0:00' : fmtTime(AI.clock * 1000)));
-      setTxt(bLab, !AI.on ? '練習' : (AI.over ? '比賽結束' : (cdl >= 0 ? 'AI 對打・賽前倒數' : (AI.run ? 'AI 對打・比賽中' : 'AI 對打・按「開始比賽」'))));
-      setHidden(aiGo, !(AI.on && !AI.run && cdl < 0));
+      setTxt(bTime, (!AI.on || TR.on) ? '--:--' : (AI.over ? '0:00' : fmtTime(AI.clock * 1000)));
+      setTxt(bLab, TR.on ? (TR.kind === 'atk' ? '訓練・進攻' : '訓練・防守') : !AI.on ? '練習' : (AI.over ? '比賽結束' : (cdl >= 0 ? 'AI 對打・賽前倒數' : (AI.run ? 'AI 對打・比賽中' : 'AI 對打・按「開始比賽」'))));
+      setHidden(aiGo, TR.on || !(AI.on && !AI.run && cdl < 0));
       setHidden(aiFree, !(AI.on && AI.over));
       if (bTime.getAttribute('data-low') !== String(aiLow)) bTime.setAttribute('data-low', String(aiLow));
       return;
@@ -4468,6 +4515,7 @@ html.glass #tut { background: rgba(0,0,0,.38); }
   // 1 對 1：電腦扮演對面的攻擊手。3 對 3：每隊 1 個攻擊手加 2 個防守員，你自己佔一個位置，其他由電腦補滿。
   // 電腦盡量做得像人：有反應延遲、會恍神、手會抖、起飛時間不一樣、會閃躲隊友、
   // 攻擊手會等空檔、假動作、瞄不準而撞到球框；防守員會守在己方球框前面，跟著對方攻擊手左右上下移動擋路。
+  var TR = { on: false, kind: '', lvl: 1, pref: 1, t0: 0, att: 0, blk: 0, tick: 0 };   // 訓練模式（單機）
   var AI = { on: false, lvl: 1, fmt: 1, bots: [], run: false, over: false, clock: PLAY_MS / 1000, hitT: -9 };
   var AI_LV = [
     { name: '簡單', v: 0.6, react: 0.55, miss: 0.4, jit: 0.06, pause: 6, lapse: 0.25 },
@@ -4478,6 +4526,11 @@ html.glass #tut { background: rgba(0,0,0,.38); }
   function rnd(a, b) { return a + Math.random() * (b - a); }
   function aiRoster() {
     var pt = S.team, ot = pt === 'blue' ? 'red' : 'blue';
+    if (TR.on) {   // 訓練：進攻＝對面只放防守員（簡單 0 個、普通 1 個、困難 2 個）；防守＝對面放攻擊手（簡單／普通 1 個、困難 2 個）
+      var tn = TR.kind === 'atk' ? [0, 1, 2][TR.lvl] : [1, 1, 2][TR.lvl], tr = [], ti;
+      for (ti = 0; ti < tn; ti++) tr.push({ team: ot, role: TR.kind === 'atk' ? 1 : 0, lane: tn === 1 ? 0 : (ti ? 1 : -1) * LANE_Y * (TR.kind === 'atk' ? 1 : 0.8) });
+      return tr;
+    }
     if (AI.fmt === 1) return [{ team: ot, role: 0, lane: 0 }];
     if (AI.fmt === 5) {   // 5 對 5：每隊 1 個攻擊手加 4 個防守員，橫向分散站開
       var L5 = 0.5, r5 = [{ team: ot, role: 0, lane: 0 }, { team: ot, role: 1, lane: -L5 }, { team: ot, role: 1, lane: L5 }, { team: ot, role: 1, lane: -2 * L5 }, { team: ot, role: 1, lane: 2 * L5 }];
@@ -4527,11 +4580,12 @@ html.glass #tut { background: rgba(0,0,0,.38); }
     }
     aiAssign();
     AI.run = false; AI.over = false; AI.clock = PLAY_MS / 1000;
+    if (TR.on) { AI.run = true; AI.clock = 1e9; }   // 訓練：沒有倒數、沒有時間限制
     for (i = 0; i < AI.bots.length; i++) aiPublish(AI.bots[i]);
     recomputeScores();
   }
   function aiOff() {
-    AI.on = false; CDAI = 0;
+    AI.on = false; CDAI = 0; TR.on = false;
     aiClear();
     recomputeScores();
   }
@@ -4553,7 +4607,7 @@ html.glass #tut { background: rgba(0,0,0,.38); }
     setMsg('<b>賽前倒數 10 秒</b>：所有球機回到起點，倒數結束才能起飛、開始比賽。');
   }
   function setAi(n) {
-    CDAI = 0;
+    CDAI = 0; TR.on = false;
     if (netOn()) { setMsg('聯機房間裡不能開 AI 對打，要先回單機。'); return; }
     if (n === 0) { aiOff(); syncOpts(); setMsg('AI 對打已關閉。'); return; }
     AI.on = true; AI.lvl = n - 1;
@@ -4582,6 +4636,7 @@ html.glass #tut { background: rgba(0,0,0,.38); }
     if (netOn()) msSet('idle', {});
   }
   function setFmt(n) {
+    TR.on = false;
     if (netOn()) { setMsg('聯機房間裡不能開 AI 對打，要先回單機。'); return; }
     if (n === 5 && FIELD !== 'b') applyField('b', true);
     AI.fmt = n;
@@ -4590,6 +4645,68 @@ html.glass #tut { background: rgba(0,0,0,.38); }
     syncOpts();
     setMsg('<b>' + aiDesc() + '</b>（AI ' + AI_LV[AI.lvl].name + '）。' + (n === 3 ? '你是' + (S.role === 0 ? '攻擊手，隊友是 2 個防守員' : '防守員，隊友是 1 個攻擊手和 1 個防守員') + '，對面是 1 個攻擊手和 2 個防守員。' : (n === 5 ? '已切到FIDA 場地。你是' + (S.role === 0 ? '攻擊手，隊友是 4 個防守員' : '防守員，隊友是 1 個攻擊手和 3 個防守員') + '，對面是 1 個攻擊手和 4 個防守員。' : '')));
   }
+  /* ---------- 訓練模式（單機）：進攻訓練、防守訓練 ---------- */
+  function trOpp() { return S.team === 'blue' ? 'red' : 'blue'; }
+  function trStart(kind, lvl) {
+    if (netOn()) { setMsg('聯機房間裡不能訓練，要先按「回單機」。'); return false; }
+    aiOff();
+    TR.on = true; TR.kind = kind; TR.lvl = lvl; TR.pref = lvl; TR.att = 0; TR.blk = 0; TR.t0 = performance.now();
+    S.role = kind === 'atk' ? 0 : 1; applyRole();
+    AI.on = true; AI.lvl = lvl; AI.fmt = 1;
+    goHome();
+    clearScores();
+    syncOpts(); trUi(true);
+    var n = kind === 'atk' ? [0, 1, 2][lvl] : [1, 1, 2][lvl];
+    setMsg(kind === 'atk'
+      ? '<b>進攻訓練（' + AI_LV[lvl].name + '）</b>：' + (n ? '對面有 ' + n + ' 個電腦防守員會擋路。' : '對面沒有防守員。') + '穿過<b>' + teamName(trOpp()) + '球框</b>得分，進球後不用回中線，可以一直練。'
+      : '<b>防守訓練（' + AI_LV[lvl].name + '）</b>：電腦有 ' + n + ' 個攻擊手會來攻你的球框，你是<b>防守者</b>，守在己方球框前面擋住他們。');
+    return true;
+  }
+  function trStop(quiet) {
+    if (!TR.on) return;
+    aiOff();
+    syncOpts(); trUi(true);
+    if (!quiet) setMsg('訓練結束。');
+  }
+  function trStats() {
+    var my = S.scores[S.team] | 0, op = S.scores[trOpp()] | 0, sec = Math.max(1, (performance.now() - TR.t0) / 1000), m = Math.floor(sec / 60), ss = Math.floor(sec % 60);
+    var tm = m + ':' + String(ss).padStart(2, '0');
+    if (TR.kind === 'atk') return '進球 <b>' + my + '</b>　用時 ' + tm + (my ? '　平均 ' + (sec / my).toFixed(1) + ' 秒／球' : '');
+    var tot = TR.blk + op;
+    return '擋下 <b>' + TR.blk + '</b>　失分 <b>' + op + '</b>　用時 ' + tm + (tot ? '　守住率 ' + Math.round(TR.blk / tot * 100) + '%' : '');
+  }
+  function trUi(force) {
+    var box = $('trBox'); if (!box) return;
+    box.hidden = !TR.on;
+    if (!TR.on) return;
+    $('trChip').textContent = (TR.kind === 'atk' ? '進攻訓練' : '防守訓練') + '・' + AI_LV[TR.lvl].name;
+    var h = trStats(); if (force || $('trInfo').innerHTML !== h) $('trInfo').innerHTML = h;
+  }
+  function trTick() {
+    if (!TR.on) return;
+    if (netOn()) { trStop(true); return; }
+    if (TR.kind === 'def') {   // 擋下：電腦攻擊手出手後沒進球就算擋下
+      for (var i = 0; i < AI.bots.length; i++) {
+        var q = AI.bots[i], lg = ledger[q.id] || [0, 0], lc = lg[0] + lg[1];
+        if (q.st === 'shoot' && !q.trS) { q.trS = true; q.trL = lc; TR.att++; }
+        else if (q.st !== 'shoot' && q.trS) { q.trS = false; if (lc === q.trL) TR.blk++; }
+      }
+    }
+    var now = performance.now(); if (now - TR.tick > 300) { TR.tick = now; trUi(); }
+  }
+  (function () {
+    var tb = document.querySelectorAll('[data-tr]'), lb = document.querySelectorAll('[data-trl]'), i;
+    for (i = 0; i < tb.length; i++) tb[i].addEventListener('click', function () {
+      var v = this.getAttribute('data-tr');
+      if (v === '0') { if (TR.on) trStop(); else syncOpts(); } else { if (!trStart(v, TR.pref)) syncOpts(); }
+    });
+    for (i = 0; i < lb.length; i++) lb[i].addEventListener('click', function () {
+      var l = parseInt(this.getAttribute('data-trl'), 10);
+      if (TR.on) { if (!trStart(TR.kind, l)) syncOpts(); } else { TR.pref = l; syncOpts(); }
+    });
+    $('trEnd').addEventListener('click', function () { trStop(); });
+    $('trReset').addEventListener('click', function () { if (!TR.on) return; var k = TR.kind; trStart(k, TR.lvl); });
+  })();
   function aiPublish(q) {
     var rm = remotes[q.id];
     if (!rm) return;
@@ -4788,6 +4905,7 @@ html.glass #tut { background: rgba(0,0,0,.38); }
     aiPublish(q);
   }
   function aiStep(dt) {
+    trTick();
     if (!AI.on || netOn()) return;
     var L = AI_LV[AI.lvl];
     if (AI.run && !AI.over) {
@@ -4798,6 +4916,13 @@ html.glass #tut { background: rgba(0,0,0,.38); }
         var wasOn = AI.on; AI.on = false; goHome(); AI.on = wasOn;   // 你的球機也回原位停住
         setMsg('<b>時間到</b>。' + resultText());
       }
+    }
+    // 電腦那一隊進球後也要鎖住、等回到中線才能再攻；鎖一定要有人解開，不然電腦只會進攻一次
+    var tt = S.team === 'blue' ? 'red' : 'blue';
+    if (TL[tt]) {
+      var allHome = true, hb;
+      for (hb = 0; hb < AI.bots.length; hb++) if (AI.bots[hb].team === tt && AI.bots[hb].st !== 'ground' && !ownHalf(AI.bots[hb].x, tt)) allHome = false;
+      if (TR.on || allHome) TL[tt] = false;
     }
     var ents = aiEntities();
     for (var i = 0; i < AI.bots.length; i++) aiBotStep(AI.bots[i], dt, ents, L);
@@ -5296,6 +5421,7 @@ html.glass #tut { background: rgba(0,0,0,.38); }
   /* 和 PeerJS 的 Peer 介面一樣的小子集（open/error/connection/disconnected/close、connect、destroy、reconnect；連線物件有 open/data/close/error、send、close）。
      牽線資料放在 Firestore：sig/{peerId} 是「這個名字被佔用」的標記（定時更新），sig/{peerId}/m/* 是寄給它的信（offer／answer／ICE），讀完就刪。 */
   function FsPeer(id, opts) {
+    if (!id) id = 'g' + Math.random().toString(36).slice(2, 12) + Date.now().toString(36).slice(-4);   // 操控端不指定名字：自己取一個隨機的
     var self = this, db = ACCT.db, fv = ACCT.fb.firestore, cfg = (opts && opts.config) || {};
     var owner = Math.random().toString(36).slice(2) + Date.now().toString(36);
     var hs = {}, conns = {}, pend = {}, unsub = null, hbT = 0, hbFail = 0;
